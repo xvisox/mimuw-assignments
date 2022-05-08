@@ -5,11 +5,13 @@ import pl.edu.mimuw.matrix.Shape;
 
 public abstract class Matrix implements IDoubleMatrix {
     protected final Shape shape;
+    protected String name;
 
-    protected Matrix(Shape shape) {
+    protected Matrix(Shape shape, String name) {
         assert (shape.columns != 0);
         assert (shape.rows != 0);
         this.shape = shape;
+        this.name = name;
     }
 
     @Override
@@ -46,8 +48,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix plus(IDoubleMatrix other) {
-        assert (shape.rows == other.shape().rows);
-        assert (shape.columns == other.shape().columns);
+        assert (shape.equals(other.shape()));
 
         IDoubleMatrix result = new FullMatrix(new double[shape.rows][shape.columns]);
         for (int i = 0; i < shape.rows; i++)
@@ -69,8 +70,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix minus(IDoubleMatrix other) {
-        assert (shape.rows == other.shape().rows);
-        assert (shape.columns == other.shape().columns);
+        assert (shape.equals(other.shape()));
 
         IDoubleMatrix result = new FullMatrix(new double[shape.rows][shape.columns]);
         for (int i = 0; i < shape.rows; i++) {
@@ -88,6 +88,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public double get(int row, int column) {
+        shape.assertInShape(row, column);
         return data()[row][column];
     }
 
@@ -135,5 +136,29 @@ public abstract class Matrix implements IDoubleMatrix {
     @Override
     public Shape shape() {
         return shape;
+    }
+
+    protected static String fmt(double d) {
+        if (d == (int) d) return String.format("%6d", (int) d);
+        else return String.format("%6.2f", d);
+    }
+
+    protected static String centerString(int width, String s) {
+        return String.format("%-" + width + "s", String.format("%" + (s.length() + (width - s.length()) / 2) + "s", s));
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        for (int i = 0; i < shape.rows; i++) {
+            for (int j = 0; j < shape.columns; j++) {
+                sb.append(fmt(data()[i][j]));
+                sb.append(' ');
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
     }
 }

@@ -5,6 +5,6 @@ import pl.edu.mimuw.matrix.Shape;
 public class ZeroMatrix extends ConstantMatrix {
 
     public ZeroMatrix(Shape shape) {
-        super(shape, 0);
+        super(shape, 0, "Zero");
     }
 }

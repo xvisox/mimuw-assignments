@@ -5,7 +5,7 @@ import pl.edu.mimuw.matrix.Shape;
 public class RowMatrix extends MoreThanOneValue {
 
     public RowMatrix(Shape shape, double[] values) {
-        super(shape, values);
+        super(shape, values, "Row");
         assert (shape.columns == values.length);
     }
 
@@ -16,5 +16,30 @@ public class RowMatrix extends MoreThanOneValue {
             System.arraycopy(values, 0, result[i], 0, shape.columns);
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        if (shape.columns < 5 || shape.rows < 5) return super.toString();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+
+        for (int i = 0; i < shape.columns; i++) {
+            sb.append(fmt(values[i]));
+        }
+        sb.append('\n');
+
+        for (int i = 0; i < 3; i++) {
+            sb.append(String.valueOf(String.format("%6c", '.')).repeat(shape.columns));
+            sb.append('\n');
+        }
+
+        for (int i = 0; i < shape.columns; i++) {
+            sb.append(fmt(values[i]));
+        }
+
+        sb.append('\n');
+        return sb.toString();
     }
 }
