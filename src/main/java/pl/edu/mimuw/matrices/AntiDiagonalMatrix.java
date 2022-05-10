@@ -1,6 +1,10 @@
 package pl.edu.mimuw.matrices;
 
+import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
+
+import static pl.edu.mimuw.utility.StringFormat.centerString;
+import static pl.edu.mimuw.utility.StringFormat.getMatrixPrint;
 
 public class AntiDiagonalMatrix extends MoreThanOneValue {
 
@@ -19,11 +23,38 @@ public class AntiDiagonalMatrix extends MoreThanOneValue {
     }
 
     @Override
+    public IDoubleMatrix times(double scalar) {
+        double[] result = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = scalar * values[i];
+        }
+        return new AntiDiagonalMatrix(shape, result);
+    }
+
+    @Override
+    public IDoubleMatrix plus(double scalar) {
+        double[] result = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = scalar + values[i];
+        }
+        return new AntiDiagonalMatrix(shape, result);
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        double[] result = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = values[i] - scalar;
+        }
+        return new AntiDiagonalMatrix(shape, result);
+    }
+
+    @Override
     public String toString() {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
 
         sb.append("     0...");
         sb.append(centerString(shape.rows * 4 - 8, " "));

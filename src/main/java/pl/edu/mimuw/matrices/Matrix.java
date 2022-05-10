@@ -3,6 +3,8 @@ package pl.edu.mimuw.matrices;
 import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
+import static pl.edu.mimuw.utility.StringFormat.*;
+
 public abstract class Matrix implements IDoubleMatrix {
     protected final Shape shape;
     protected String name;
@@ -18,9 +20,8 @@ public abstract class Matrix implements IDoubleMatrix {
     public IDoubleMatrix times(IDoubleMatrix other) {
         int rows1 = shape.rows;
         int columns1 = shape.columns;
-        int rows2 = other.shape().rows;
         int columns2 = other.shape().columns;
-        assert (columns1 == rows2);
+        assertMultiplication(other);
 
         int sum;
         IDoubleMatrix result = new FullMatrix(new double[rows1][columns2]);
@@ -138,20 +139,15 @@ public abstract class Matrix implements IDoubleMatrix {
         return shape;
     }
 
-    protected static String fmt(double d) {
-        if (d == (int) d) return String.format("%6d", (int) d);
-        else return String.format("%6.2f", d);
+    // Utility method to check if one matrix can be multiplied by another.
+    protected void assertMultiplication(IDoubleMatrix other) {
+        assert (shape.columns == other.shape().rows);
     }
-
-    protected static String centerString(int width, String s) {
-        return String.format("%-" + width + "s", String.format("%" + (s.length() + (width - s.length()) / 2) + "s", s));
-    }
-
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
         for (int i = 0; i < shape.rows; i++) {
             for (int j = 0; j < shape.columns; j++) {
                 sb.append(fmt(data()[i][j]));

@@ -4,6 +4,8 @@ import pl.edu.mimuw.matrix.Shape;
 
 import java.util.Arrays;
 
+import static pl.edu.mimuw.utility.StringFormat.*;
+
 public class ColumnMatrix extends MoreThanOneValue {
 
     public ColumnMatrix(Shape shape, double[] values) {
@@ -25,7 +27,7 @@ public class ColumnMatrix extends MoreThanOneValue {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
 
         for (int i = 0; i < shape.rows; i++) {
             sb.append(fmt(values[i]));

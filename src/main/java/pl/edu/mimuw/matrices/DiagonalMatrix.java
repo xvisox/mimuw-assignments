@@ -3,6 +3,9 @@ package pl.edu.mimuw.matrices;
 import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
+import static pl.edu.mimuw.utility.StringFormat.centerString;
+import static pl.edu.mimuw.utility.StringFormat.getMatrixPrint;
+
 public class DiagonalMatrix extends MoreThanOneValue {
 
     public DiagonalMatrix(Shape shape, double[] values, String name) {
@@ -43,12 +46,28 @@ public class DiagonalMatrix extends MoreThanOneValue {
         if (other instanceof DiagonalMatrix) {
             double[] newValues = new double[Math.min(shape.rows, shape.columns)];
             for (int i = 0; i < newValues.length; i++) {
-                newValues[i] = ((DiagonalMatrix) other).values[i] - this.values[i];
+                newValues[i] = this.values[i] - ((DiagonalMatrix) other).values[i];
             }
             return new DiagonalMatrix(shape, newValues, "Diagonal");
         } else {
-            return super.plus(other);
+            return super.minus(other);
         }
+    }
+
+    @Override
+    public IDoubleMatrix times(double scalar) {
+        double[] result = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = scalar * values[i];
+        }
+        return new DiagonalMatrix(shape, result, "Diagonal");
+    }
+
+    @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        if (row == column) return values[row];
+        else return 0;
     }
 
     @Override
@@ -56,7 +75,7 @@ public class DiagonalMatrix extends MoreThanOneValue {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
 
         sb.append(String.format("%6.2f", values[0]));
         sb.append(centerString((shape.rows - 2) * 4, " "));

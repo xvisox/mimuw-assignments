@@ -2,6 +2,8 @@ package pl.edu.mimuw.matrices;
 
 import pl.edu.mimuw.matrix.Shape;
 
+import static pl.edu.mimuw.utility.StringFormat.*;
+
 public class RowMatrix extends MoreThanOneValue {
 
     public RowMatrix(Shape shape, double[] values) {
@@ -23,7 +25,7 @@ public class RowMatrix extends MoreThanOneValue {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
 
         for (int i = 0; i < shape.columns; i++) {
             sb.append(fmt(values[i]));

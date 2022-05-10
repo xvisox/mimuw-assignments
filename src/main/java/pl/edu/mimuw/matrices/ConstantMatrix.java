@@ -1,8 +1,12 @@
 package pl.edu.mimuw.matrices;
 
+import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
 import java.util.Arrays;
+
+import static pl.edu.mimuw.utility.StringFormat.centerString;
+import static pl.edu.mimuw.utility.StringFormat.getMatrixPrint;
 
 public class ConstantMatrix extends RegularMatrix {
     private final double value;
@@ -22,11 +26,31 @@ public class ConstantMatrix extends RegularMatrix {
     }
 
     @Override
+    public IDoubleMatrix times(double scalar) {
+        return new ConstantMatrix(shape, value * scalar, "Constant");
+    }
+
+    @Override
+    public IDoubleMatrix plus(IDoubleMatrix other) {
+        if (other instanceof ConstantMatrix) {
+            return new ConstantMatrix(shape, value + ((ConstantMatrix) other).value, "Constant");
+        } else {
+            return super.plus(other);
+        }
+    }
+
+    @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        return value;
+    }
+
+    @Override
     public String toString() {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Printing %s matrix of size %dx%d...\n", this.name, shape.rows, shape.columns));
+        sb.append(getMatrixPrint(this, name));
 
         sb.append(String.format("%.2f", value));
         sb.append(centerString(11, "..."));

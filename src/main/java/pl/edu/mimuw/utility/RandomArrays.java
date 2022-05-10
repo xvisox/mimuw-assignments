@@ -1,4 +1,4 @@
-package pl.edu.mimuw;
+package pl.edu.mimuw.utility;
 
 import pl.edu.mimuw.matrix.MatrixCellValue;
 
