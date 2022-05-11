@@ -4,7 +4,7 @@ public final class MatrixCellValue {
 
     public final int row;
     public final int column;
-    public double value;
+    public final double value;
 
     public MatrixCellValue(int row, int column, double value) {
         this.column = column;

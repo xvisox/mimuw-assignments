@@ -40,12 +40,4 @@ public final class Shape {
     public static Shape vector(int size) {
         return Shape.matrix(size, 1);
     }
-
-    public int getRows() {
-        return rows;
-    }
-
-    public int getColumns() {
-        return columns;
-    }
 }

@@ -11,5 +11,4 @@ public class IdentityMatrix extends DiagonalMatrix {
             values[i] = 1;
         }
     }
-
 }

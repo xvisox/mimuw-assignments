@@ -7,8 +7,6 @@ import java.util.Random;
 
 import static pl.edu.mimuw.utility.RandomArrays.*;
 import static pl.edu.mimuw.matrix.DoubleMatrixFactory.*;
-import static pl.edu.mimuw.matrix.MatrixCellValue.cell;
-import static pl.edu.mimuw.matrix.Shape.matrix;
 
 public class Main {
     public static void main(String[] args) {
@@ -58,7 +56,6 @@ public class Main {
             IDoubleMatrix antiDiagonalMatrix = antiDiagonal(randomOneDimArray(random, n));
             System.out.println(antiDiagonalMatrix);
         }
-
 
     }
 }

@@ -66,8 +66,25 @@ public class DiagonalMatrix extends MoreThanOneValue {
     @Override
     public double get(int row, int column) {
         shape.assertInShape(row, column);
-        if (row == column) return values[row];
-        else return 0;
+        if (row == column) {
+            return values[row];
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public double normOne() {
+        double max = -Double.MAX_VALUE;
+        for (double val : values) {
+            max = Math.max(Math.abs(val), max);
+        }
+        return max;
+    }
+
+    @Override
+    public double normInfinity() {
+        return normOne();
     }
 
     @Override

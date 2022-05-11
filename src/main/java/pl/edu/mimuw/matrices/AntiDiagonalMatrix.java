@@ -49,6 +49,21 @@ public class AntiDiagonalMatrix extends MoreThanOneValue {
         return new AntiDiagonalMatrix(shape, result);
     }
 
+
+    @Override
+    public double normOne() {
+        double max = -Double.MAX_VALUE;
+        for (double val : values) {
+            max = Math.max(Math.abs(val), max);
+        }
+        return max;
+    }
+
+    @Override
+    public double normInfinity() {
+        return normOne();
+    }
+
     @Override
     public String toString() {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();

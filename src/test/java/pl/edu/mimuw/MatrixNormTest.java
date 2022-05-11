@@ -34,6 +34,24 @@ public class MatrixNormTest {
       );
     }
 
+      @Test
+      void testRow() {
+        testMatrixNorm(
+          rowMatrix(matrix(6,6), 1, 2, 3, 4, 5, 6),
+          IDoubleMatrix::frobeniusNorm,
+          FROBENIUS_NORM
+        );
+      }
+
+      @Test
+      void testColumn() {
+       testMatrixNorm(
+        columnMatrix(matrix(6,6),1, 2, 3, 4, 5, 6),
+        IDoubleMatrix::frobeniusNorm,
+        FROBENIUS_NORM
+       );
+      }
+
     @Test
     void testSparseMatrices() {
       testMatrixNorm(
@@ -95,6 +113,24 @@ public class MatrixNormTest {
       );
     }
 
+      @Test
+      void testRow() {
+        testMatrixNorm(
+          rowMatrix(matrix(6,6), 1, 2, 3, 4, 5, 6),
+          IDoubleMatrix::normOne,
+          6*6
+        );
+      }
+
+      @Test
+      void testColumn() {
+        testMatrixNorm(
+        columnMatrix(matrix(6,6),1, 2, 3, 4, 5, 6),
+        IDoubleMatrix::normOne,
+        1+2+3+4+5+6
+        );
+      }
+
     @Test
     void testSparseMatrices() {
       testMatrixNorm(
@@ -155,6 +191,24 @@ public class MatrixNormTest {
         5 + 6
       );
     }
+
+      @Test
+      void testRow() {
+        testMatrixNorm(
+         rowMatrix(matrix(6,6), 1, 2, 3, 4, 5, 6),
+         IDoubleMatrix::normInfinity,
+         1+2+3+4+5+6
+        );
+      }
+
+      @Test
+      void testColumn() {
+        testMatrixNorm(
+         columnMatrix(matrix(6,6),1, 2, 3, 4, 5, 6),
+         IDoubleMatrix::normInfinity,
+         6*6
+        );
+      }
 
     @Test
     void testSparseMatrices() {

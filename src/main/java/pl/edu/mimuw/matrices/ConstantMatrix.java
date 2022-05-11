@@ -46,6 +46,21 @@ public class ConstantMatrix extends RegularMatrix {
     }
 
     @Override
+    public double normOne() {
+        return shape.rows * value;
+    }
+
+    @Override
+    public double normInfinity() {
+        return shape.columns * value;
+    }
+
+    @Override
+    public double frobeniusNorm() {
+        return shape.rows * shape.columns * Math.pow(value, 2);
+    }
+
+    @Override
     public String toString() {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 

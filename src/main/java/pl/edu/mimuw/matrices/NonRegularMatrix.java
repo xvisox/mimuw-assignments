@@ -5,6 +5,8 @@ import pl.edu.mimuw.matrix.MatrixCellValue;
 import pl.edu.mimuw.matrix.Shape;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NonRegularMatrix extends SparseMatrix {
     private final ArrayList<MatrixCellValue> cellValues;
@@ -22,8 +24,8 @@ public class NonRegularMatrix extends SparseMatrix {
         this.cellValues = new ArrayList<>();
     }
 
-    private MatrixCellValue getMatrixCellMultiply(MatrixCellValue cell, MatrixCellValue other) {
-        return new MatrixCellValue(cell.row, other.column, cell.value * other.value);
+    private MatrixCellValue getMatrixCellMultiply(MatrixCellValue cell, MatrixCellValue other, double additional) {
+        return new MatrixCellValue(cell.row, other.column, cell.value * other.value + additional);
     }
 
     private MatrixCellValue getMatrixCellOperation(char operation, MatrixCellValue cell, double scalar) {
@@ -99,6 +101,7 @@ public class NonRegularMatrix extends SparseMatrix {
             return super.times(other);
         }
 
+        MatrixCellValue resCell;
         Shape newShape = Shape.matrix(shape.rows, other.shape().columns);
         NonRegularMatrix result = new NonRegularMatrix(newShape);
         boolean found;
@@ -107,17 +110,17 @@ public class NonRegularMatrix extends SparseMatrix {
             for (MatrixCellValue cellOther : ((NonRegularMatrix) other).cellValues) {
                 if (cell.column == cellOther.row) {
                     found = false;
-                    for (MatrixCellValue resCell : result.cellValues) {
+                    for (int i = 0; i < result.cellValues.size(); i++) {
+                        resCell = result.cellValues.get(i);
                         if (resCell.column == cellOther.column && resCell.row == cell.row) {
-                            resCell.value += cell.value * cellOther.value;
+                            result.cellValues.set(i, getMatrixCellMultiply(cell, cellOther, resCell.value));
                             found = true;
                             break;
                         } else if (resCell.column > cell.column || resCell.row > cell.row) {
                             break;
                         }
                     }
-                    if (!found)
-                        result.cellValues.add(getMatrixCellMultiply(cell, cellOther));
+                    if (!found) result.cellValues.add(getMatrixCellMultiply(cell, cellOther, 0));
                 }
             }
         }
@@ -152,5 +155,36 @@ public class NonRegularMatrix extends SparseMatrix {
             result[cell.row][cell.column] = cell.value;
         }
         return result;
+    }
+
+    @Override
+    public double normOne() {
+        double result = 0;
+        Map<Integer, Double> columnSums = new HashMap<>();
+        for (MatrixCellValue cell : cellValues) {
+            columnSums.merge(cell.column, Math.abs(cell.value), Double::sum);
+            result = Math.max(columnSums.get(cell.column), result);
+        }
+        return result;
+    }
+
+    @Override
+    public double normInfinity() {
+        double result = 0;
+        Map<Integer, Double> rowSums = new HashMap<>();
+        for (MatrixCellValue cell : cellValues) {
+            rowSums.merge(cell.row, Math.abs(cell.value), Double::sum);
+            result = Math.max(rowSums.get(cell.row), result);
+        }
+        return result;
+    }
+
+    @Override
+    public double frobeniusNorm() {
+        double result = 0;
+        for (MatrixCellValue cell : cellValues) {
+            result += Math.pow(cell.value, 2);
+        }
+        return Math.sqrt(result);
     }
 }

@@ -23,6 +23,24 @@ public class ColumnMatrix extends MoreThanOneValue {
     }
 
     @Override
+    public double normOne() {
+        double result = 0;
+        for (double val : values) {
+            result += Math.abs(val);
+        }
+        return result;
+    }
+
+    @Override
+    public double normInfinity() {
+        double result = 0;
+        for (double val : values) {
+            result = Math.max(result, Math.abs(val));
+        }
+        return result * shape.rows;
+    }
+
+    @Override
     public String toString() {
         if (shape.columns < 5 || shape.rows < 5) return super.toString();
 
