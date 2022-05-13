@@ -24,7 +24,11 @@ public class TestMatrixData {
 
   public static final IDoubleMatrix DIAGONAL_3X3 = diagonal(7, 8, 9);
 
+  public static final IDoubleMatrix DIAGONAL_4X4 = diagonal(7, 8, 9, 10);
+
   public static final IDoubleMatrix ANTI_DIAGONAL_3X3 = antiDiagonal(10, 11, 12);
+
+  public static final IDoubleMatrix ANTI_DIAGONAL_4X4 = antiDiagonal(10, 11, 12, 13);
 
   public static final IDoubleMatrix SPARSE_2X3 = sparse(matrix(2, 3),
     cell(0, 0, 1),
@@ -53,4 +57,6 @@ public class TestMatrixData {
   public static final IDoubleMatrix ID_3 = identity(3);
 
   public static final IDoubleMatrix ZERO_3X2 = zero(matrix(3, 2));
+
+  public static final IDoubleMatrix ZERO_2X2 = zero(matrix(2, 2));
 }

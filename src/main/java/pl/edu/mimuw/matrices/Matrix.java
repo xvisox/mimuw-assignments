@@ -10,8 +10,8 @@ public abstract class Matrix implements IDoubleMatrix {
     protected String name;
 
     protected Matrix(Shape shape, String name) {
-        assert (shape.columns != 0);
-        assert (shape.rows != 0);
+        assert (shape.columns > 0 && shape.rows > 0);
+        assert (name != null);
         this.shape = shape;
         this.name = name;
     }
@@ -142,6 +142,11 @@ public abstract class Matrix implements IDoubleMatrix {
     // Utility method to check if one matrix can be multiplied by another.
     protected void assertMultiplication(IDoubleMatrix other) {
         assert (shape.columns == other.shape().rows);
+    }
+
+    // Utility method to check if one matrix can be added to another.
+    protected void assertAddition(IDoubleMatrix other) {
+        assert (shape.equals(other.shape()));
     }
 
     @Override

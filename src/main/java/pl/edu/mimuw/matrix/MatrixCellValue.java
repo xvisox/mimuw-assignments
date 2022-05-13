@@ -12,6 +12,12 @@ public final class MatrixCellValue {
         this.value = value;
     }
 
+    public MatrixCellValue(MatrixCellValue cell) {
+        this.column = cell.column;
+        this.row = cell.row;
+        this.value = cell.value;
+    }
+
     @Override
     public String toString() {
         return "{" + value + " @[" + row + ", " + column + "]}";
@@ -19,5 +25,13 @@ public final class MatrixCellValue {
 
     public static MatrixCellValue cell(int row, int column, double value) {
         return new MatrixCellValue(row, column, value);
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getColumn() {
+        return column;
     }
 }

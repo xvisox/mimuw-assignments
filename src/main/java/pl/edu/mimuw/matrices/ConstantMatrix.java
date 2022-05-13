@@ -31,12 +31,29 @@ public class ConstantMatrix extends RegularMatrix {
     }
 
     @Override
+    public IDoubleMatrix plus(double scalar) {
+        return new ConstantMatrix(shape, value + scalar, "Constant");
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        return new ConstantMatrix(shape, value - scalar, "Constant");
+    }
+
+    @Override
     public IDoubleMatrix plus(IDoubleMatrix other) {
+        assertAddition(other);
         if (other instanceof ConstantMatrix) {
             return new ConstantMatrix(shape, value + ((ConstantMatrix) other).value, "Constant");
         } else {
             return super.plus(other);
         }
+    }
+
+    @Override
+    public IDoubleMatrix minus(IDoubleMatrix other) {
+        assertAddition(other);
+        return plus(other.times(-1));
     }
 
     @Override

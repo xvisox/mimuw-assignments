@@ -28,7 +28,7 @@ public class DiagonalMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix plus(IDoubleMatrix other) {
-        assert (shape.equals(other.shape()));
+        assertAddition(other);
         if (other instanceof DiagonalMatrix) {
             double[] newValues = new double[Math.min(shape.rows, shape.columns)];
             for (int i = 0; i < newValues.length; i++) {
@@ -42,7 +42,7 @@ public class DiagonalMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix minus(IDoubleMatrix other) {
-        assert (shape.equals(other.shape()));
+        assertAddition(other);
         if (other instanceof DiagonalMatrix) {
             double[] newValues = new double[Math.min(shape.rows, shape.columns)];
             for (int i = 0; i < newValues.length; i++) {

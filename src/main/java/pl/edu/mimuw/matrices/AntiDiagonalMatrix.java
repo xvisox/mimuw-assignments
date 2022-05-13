@@ -42,13 +42,15 @@ public class AntiDiagonalMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix minus(double scalar) {
-        double[] result = new double[values.length];
-        for (int i = 0; i < values.length; i++) {
-            result[i] = values[i] - scalar;
-        }
-        return new AntiDiagonalMatrix(shape, result);
+        return plus(-scalar);
     }
 
+    @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        if (shape.rows - 1 - column == row) return values[column];
+        else return 0;
+    }
 
     @Override
     public double normOne() {
