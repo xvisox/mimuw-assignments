@@ -14,48 +14,44 @@ public class Main {
         Shape shape = Shape.matrix(n, n);
         Random random = new Random();
 
-        boolean showMatrices = true;
-        if (showMatrices) {
-            // Full matrix of random values
-            IDoubleMatrix commonMatrix = full(randomTwoDimArray(random, n));
-            System.out.println(commonMatrix);
+        // 1) Full matrix of random values
+        IDoubleMatrix commonMatrix = full(randomTwoDimArray(random, n));
+        System.out.println(commonMatrix);
 
-            // Diagonal matrix of random values
-            IDoubleMatrix diagonalMatrix = diagonal(randomOneDimArray(random, n));
-            System.out.println(diagonalMatrix);
+        // 2) Diagonal matrix of random values
+        IDoubleMatrix diagonalMatrix = diagonal(randomOneDimArray(random, n));
+        System.out.println(diagonalMatrix);
 
-            // Column matrix of random values
-            IDoubleMatrix columnMatrix = columnMatrix(shape, randomOneDimArray(random, n));
-            System.out.println(columnMatrix);
+        // 3) Column matrix of random values
+        IDoubleMatrix columnMatrix = columnMatrix(shape, randomOneDimArray(random, n));
+        System.out.println(columnMatrix);
 
-            // Row matrix of random values
-            IDoubleMatrix rowMatrix = rowMatrix(shape, randomOneDimArray(random, n));
-            System.out.println(rowMatrix);
+        // 4) Row matrix of random values
+        IDoubleMatrix rowMatrix = rowMatrix(shape, randomOneDimArray(random, n));
+        System.out.println(rowMatrix);
 
-            // Constant matrix of random value
-            IDoubleMatrix constantMatrix = constant(shape, random.nextDouble() * 50);
-            System.out.println(constantMatrix);
+        // 5) Constant matrix of random value
+        IDoubleMatrix constantMatrix = constant(shape, random.nextDouble() * 50);
+        System.out.println(constantMatrix);
 
-            // Identity matrix
-            IDoubleMatrix identityMatrix = identity(n);
-            System.out.println(identityMatrix);
+        // 6) Identity matrix
+        IDoubleMatrix identityMatrix = identity(n);
+        System.out.println(identityMatrix);
 
-            // Non regular sparse matrix of random values
-            IDoubleMatrix nonRegularSparseMatrix = sparse(shape, randomMatrixCells(random, n));
-            System.out.println(nonRegularSparseMatrix);
+        // 7) Non regular sparse matrix of random values
+        IDoubleMatrix nonRegularSparseMatrix = sparse(shape, randomMatrixCells(random, n));
+        System.out.println(nonRegularSparseMatrix);
 
-            // Vector matrix of random values
-            IDoubleMatrix vector = vector(randomOneDimArray(random, n));
-            System.out.println(vector);
+        // 8) Vector matrix of random values
+        IDoubleMatrix vector = vector(randomOneDimArray(random, n));
+        System.out.println(vector);
 
-            // Zero matrix
-            IDoubleMatrix zeroMatrix = zero(shape);
-            System.out.println(zeroMatrix);
+        // 9) Zero matrix
+        IDoubleMatrix zeroMatrix = zero(shape);
+        System.out.println(zeroMatrix);
 
-            // Anti-diagonal matrix of random values
-            IDoubleMatrix antiDiagonalMatrix = antiDiagonal(randomOneDimArray(random, n));
-            System.out.println(antiDiagonalMatrix);
-        }
-
+        // 10) Anti-diagonal matrix of random values
+        IDoubleMatrix antiDiagonalMatrix = antiDiagonal(randomOneDimArray(random, n));
+        System.out.println(antiDiagonalMatrix);
     }
 }

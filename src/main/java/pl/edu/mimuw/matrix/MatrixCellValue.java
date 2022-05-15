@@ -34,4 +34,35 @@ public final class MatrixCellValue {
     public int getColumn() {
         return column;
     }
+
+    public static MatrixCellValue getMatrixCellMultiply(MatrixCellValue cell, MatrixCellValue other, double additional) {
+        return new MatrixCellValue(cell.row, other.column, cell.value * other.value + additional);
+    }
+
+    public static MatrixCellValue getMatrixCellOperation(char operation, MatrixCellValue cell, double scalar) {
+        MatrixCellValue result = null;
+        switch (operation) {
+            case '+':
+                result = new MatrixCellValue(cell.row, cell.column, cell.value + scalar);
+                break;
+            case '-':
+                result = new MatrixCellValue(cell.row, cell.column, cell.value - scalar);
+                break;
+            case '*':
+                result = new MatrixCellValue(cell.row, cell.column, cell.value * scalar);
+                break;
+        }
+        return result;
+    }
+
+    // If first is smaller than second returns true;
+    public static boolean compareCells(MatrixCellValue c1, MatrixCellValue c2) {
+        if (c1.row < c2.row) {
+            return true;
+        } else if (c1.row > c2.row) {
+            return false;
+        } else {
+            return c1.column < c2.column;
+        }
+    }
 }

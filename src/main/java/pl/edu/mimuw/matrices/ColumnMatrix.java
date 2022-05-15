@@ -1,5 +1,6 @@
 package pl.edu.mimuw.matrices;
 
+import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
 import java.util.Arrays;
@@ -23,6 +24,27 @@ public class ColumnMatrix extends MoreThanOneValue {
     }
 
     @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        return values[row];
+    }
+
+    @Override
+    public IDoubleMatrix times(double scalar) {
+        return new ColumnMatrix(shape, getNewValues('*', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix plus(double scalar) {
+        return new ColumnMatrix(shape, getNewValues('+', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        return new ColumnMatrix(shape, getNewValues('-', scalar));
+    }
+
+    @Override
     public double normOne() {
         double result = 0;
         for (double val : values) {
@@ -38,6 +60,15 @@ public class ColumnMatrix extends MoreThanOneValue {
             result = Math.max(result, Math.abs(val));
         }
         return result * shape.rows;
+    }
+
+    @Override
+    public double frobeniusNorm() {
+        double result = 0;
+        for (double val : values) {
+            result += shape.columns * Math.pow(val, 2);
+        }
+        return Math.sqrt(result);
     }
 
     @Override

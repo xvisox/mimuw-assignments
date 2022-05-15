@@ -24,25 +24,17 @@ public class AntiDiagonalMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix times(double scalar) {
-        double[] result = new double[values.length];
-        for (int i = 0; i < values.length; i++) {
-            result[i] = scalar * values[i];
-        }
-        return new AntiDiagonalMatrix(shape, result);
+        return new AntiDiagonalMatrix(shape, getNewValues('*', scalar));
     }
 
     @Override
     public IDoubleMatrix plus(double scalar) {
-        double[] result = new double[values.length];
-        for (int i = 0; i < values.length; i++) {
-            result[i] = scalar + values[i];
-        }
-        return new AntiDiagonalMatrix(shape, result);
+        return new AntiDiagonalMatrix(shape, getNewValues('+', scalar));
     }
 
     @Override
     public IDoubleMatrix minus(double scalar) {
-        return plus(-scalar);
+        return new AntiDiagonalMatrix(shape, getNewValues('-', scalar));
     }
 
     @Override

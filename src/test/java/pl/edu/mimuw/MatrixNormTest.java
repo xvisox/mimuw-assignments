@@ -8,7 +8,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.sqrt;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static pl.edu.mimuw.matrix.DoubleMatrixFactory.*;
 import static pl.edu.mimuw.matrix.MatrixCellValue.cell;
@@ -17,6 +16,8 @@ import static pl.edu.mimuw.matrix.Shape.matrix;
 public class MatrixNormTest {
 
   private static final double FROBENIUS_NORM = sqrt(IntStream.range(1, 7).mapToDouble(it -> it * it).sum());
+
+  private static final double FROBENIUS_NORM_6 = sqrt(6 * IntStream.range(1, 7).mapToDouble(it -> it * it).sum());
 
   @Nested
   public class FrobeniusNormTest {
@@ -39,7 +40,7 @@ public class MatrixNormTest {
         testMatrixNorm(
           rowMatrix(matrix(6,6), 1, 2, 3, 4, 5, 6),
           IDoubleMatrix::frobeniusNorm,
-          FROBENIUS_NORM
+          FROBENIUS_NORM_6
         );
       }
 
@@ -48,7 +49,7 @@ public class MatrixNormTest {
        testMatrixNorm(
         columnMatrix(matrix(6,6),1, 2, 3, 4, 5, 6),
         IDoubleMatrix::frobeniusNorm,
-        FROBENIUS_NORM
+        FROBENIUS_NORM_6
        );
       }
 
@@ -95,6 +96,15 @@ public class MatrixNormTest {
         FROBENIUS_NORM
       );
     }
+
+    @Test
+    void testConstant() {
+      testMatrixNorm(
+        constant(matrix(5,5),12),
+        IDoubleMatrix::frobeniusNorm,
+        60
+      );
+    }
   }
 
   @Nested
@@ -128,6 +138,15 @@ public class MatrixNormTest {
         columnMatrix(matrix(6,6),1, 2, 3, 4, 5, 6),
         IDoubleMatrix::normOne,
         1+2+3+4+5+6
+        );
+      }
+
+      @Test
+      void testConstantMatrices() {
+      testMatrixNorm(
+        constant(matrix(5,5), 12),
+        IDoubleMatrix::normOne,
+        12*5
         );
       }
 
@@ -189,6 +208,15 @@ public class MatrixNormTest {
         }),
         IDoubleMatrix::normInfinity,
         5 + 6
+      );
+    }
+
+    @Test
+    void testConstantMatrices() {
+      testMatrixNorm(
+        constant(matrix(5,5), 12),
+        IDoubleMatrix::normInfinity,
+        12*5
       );
     }
 

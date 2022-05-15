@@ -74,7 +74,7 @@ public class ConstantMatrix extends RegularMatrix {
 
     @Override
     public double frobeniusNorm() {
-        return shape.rows * shape.columns * Math.pow(value, 2);
+        return Math.sqrt(shape.rows * shape.columns * Math.pow(value, 2));
     }
 
     @Override

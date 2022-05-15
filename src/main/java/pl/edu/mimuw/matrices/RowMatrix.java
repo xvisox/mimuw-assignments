@@ -1,5 +1,6 @@
 package pl.edu.mimuw.matrices;
 
+import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
 import static pl.edu.mimuw.utility.StringFormat.*;
@@ -21,6 +22,27 @@ public class RowMatrix extends MoreThanOneValue {
     }
 
     @Override
+    public IDoubleMatrix times(double scalar) {
+        return new RowMatrix(shape, getNewValues('*', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix plus(double scalar) {
+        return new RowMatrix(shape, getNewValues('+', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        return new RowMatrix(shape, getNewValues('-', scalar));
+    }
+
+    @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        return values[column];
+    }
+
+    @Override
     public double normOne() {
         double result = 0;
         for (double val : values) {
@@ -36,6 +58,15 @@ public class RowMatrix extends MoreThanOneValue {
             result += Math.abs(val);
         }
         return result;
+    }
+
+    @Override
+    public double frobeniusNorm() {
+        double result = 0;
+        for (double val : values) {
+            result += shape.rows * Math.pow(val, 2);
+        }
+        return Math.sqrt(result);
     }
 
     @Override

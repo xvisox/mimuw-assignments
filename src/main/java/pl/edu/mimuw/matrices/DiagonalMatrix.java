@@ -29,38 +29,52 @@ public class DiagonalMatrix extends MoreThanOneValue {
     @Override
     public IDoubleMatrix plus(IDoubleMatrix other) {
         assertAddition(other);
-        if (other instanceof DiagonalMatrix) {
-            double[] newValues = new double[Math.min(shape.rows, shape.columns)];
-            for (int i = 0; i < newValues.length; i++) {
-                newValues[i] = ((DiagonalMatrix) other).values[i] + this.values[i];
-            }
-            return new DiagonalMatrix(shape, newValues, "Diagonal");
-        } else {
-            return super.plus(other);
+        if (!(other instanceof DiagonalMatrix)) return super.plus(other);
+
+        double[] newValues = new double[Math.min(shape.rows, shape.columns)];
+        for (int i = 0; i < newValues.length; i++) {
+            newValues[i] = this.values[i] + ((DiagonalMatrix) other).values[i];
         }
+        return new DiagonalMatrix(shape, newValues, "Diagonal");
     }
 
     @Override
     public IDoubleMatrix minus(IDoubleMatrix other) {
         assertAddition(other);
-        if (other instanceof DiagonalMatrix) {
-            double[] newValues = new double[Math.min(shape.rows, shape.columns)];
-            for (int i = 0; i < newValues.length; i++) {
-                newValues[i] = this.values[i] - ((DiagonalMatrix) other).values[i];
-            }
-            return new DiagonalMatrix(shape, newValues, "Diagonal");
-        } else {
-            return super.minus(other);
+        if (!(other instanceof DiagonalMatrix)) return super.minus(other);
+
+        double[] newValues = new double[Math.min(shape.rows, shape.columns)];
+        for (int i = 0; i < newValues.length; i++) {
+            newValues[i] = this.values[i] - ((DiagonalMatrix) other).values[i];
         }
+        return new DiagonalMatrix(shape, newValues, "Diagonal");
+    }
+
+    @Override
+    public IDoubleMatrix times(IDoubleMatrix other) {
+        assertMultiplication(other);
+        if (!(other instanceof DiagonalMatrix)) return super.plus(other);
+
+        double[] newValues = new double[Math.min(shape.rows, shape.columns)];
+        for (int i = 0; i < newValues.length; i++) {
+            newValues[i] = this.values[i] * ((DiagonalMatrix) other).values[i];
+        }
+        return new DiagonalMatrix(shape, newValues, "Diagonal");
     }
 
     @Override
     public IDoubleMatrix times(double scalar) {
-        double[] result = new double[values.length];
-        for (int i = 0; i < values.length; i++) {
-            result[i] = scalar * values[i];
-        }
-        return new DiagonalMatrix(shape, result, "Diagonal");
+        return new DiagonalMatrix(shape, getNewValues('*', scalar), "Diagonal");
+    }
+
+    @Override
+    public IDoubleMatrix plus(double scalar) {
+        return new DiagonalMatrix(shape, getNewValues('+', scalar), "Diagonal");
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        return new DiagonalMatrix(shape, getNewValues('-', scalar), "Diagonal");
     }
 
     @Override

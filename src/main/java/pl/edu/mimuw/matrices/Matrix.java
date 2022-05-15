@@ -18,10 +18,10 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix times(IDoubleMatrix other) {
+        assertMultiplication(other);
         int rows1 = shape.rows;
         int columns1 = shape.columns;
         int columns2 = other.shape().columns;
-        assertMultiplication(other);
 
         int sum;
         IDoubleMatrix result = new FullMatrix(new double[rows1][columns2]);
@@ -49,7 +49,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix plus(IDoubleMatrix other) {
-        assert (shape.equals(other.shape()));
+        assertAddition(other);
 
         IDoubleMatrix result = new FullMatrix(new double[shape.rows][shape.columns]);
         for (int i = 0; i < shape.rows; i++)
@@ -71,7 +71,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix minus(IDoubleMatrix other) {
-        assert (shape.equals(other.shape()));
+        assertAddition(other);
 
         IDoubleMatrix result = new FullMatrix(new double[shape.rows][shape.columns]);
         for (int i = 0; i < shape.rows; i++) {
