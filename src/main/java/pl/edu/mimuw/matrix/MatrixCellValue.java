@@ -35,8 +35,8 @@ public final class MatrixCellValue {
         return column;
     }
 
-    public static MatrixCellValue getMatrixCellMultiply(MatrixCellValue cell, MatrixCellValue other, double additional) {
-        return new MatrixCellValue(cell.row, other.column, cell.value * other.value + additional);
+    public static MatrixCellValue getMatrixCellMultiply(MatrixCellValue cell, MatrixCellValue other) {
+        return new MatrixCellValue(cell.row, other.column, cell.value * other.value);
     }
 
     public static MatrixCellValue getMatrixCellOperation(char operation, MatrixCellValue cell, double scalar) {
@@ -53,6 +53,10 @@ public final class MatrixCellValue {
                 break;
         }
         return result;
+    }
+
+    public static boolean areCellsEqual(MatrixCellValue c1, MatrixCellValue c2) {
+        return c1.column == c2.column && c1.row == c2.row;
     }
 
     // If first is smaller than second returns true;

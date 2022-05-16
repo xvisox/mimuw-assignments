@@ -27,6 +27,7 @@ public class ConstantMatrix extends RegularMatrix {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         return new ConstantMatrix(shape, value * scalar, "Constant");
     }
 

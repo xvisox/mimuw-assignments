@@ -23,6 +23,7 @@ public class RowMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         return new RowMatrix(shape, getNewValues('*', scalar));
     }
 

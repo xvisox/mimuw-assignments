@@ -31,6 +31,7 @@ public class ColumnMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         return new ColumnMatrix(shape, getNewValues('*', scalar));
     }
 

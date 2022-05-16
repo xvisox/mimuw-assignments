@@ -39,6 +39,7 @@ public abstract class Matrix implements IDoubleMatrix {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         IDoubleMatrix result = new FullMatrix(new double[shape.rows][shape.columns]);
         for (int i = 0; i < shape.rows; i++)
             for (int j = 0; j < shape.columns; j++) {
@@ -161,5 +162,11 @@ public abstract class Matrix implements IDoubleMatrix {
             sb.append('\n');
         }
         return sb.toString();
+    }
+
+    // TODO (remove)
+    @Override
+    public IDoubleMatrix standardMultiply(IDoubleMatrix other) {
+        return times(other);
     }
 }

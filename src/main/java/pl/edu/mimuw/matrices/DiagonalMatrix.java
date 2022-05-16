@@ -53,7 +53,7 @@ public class DiagonalMatrix extends MoreThanOneValue {
     @Override
     public IDoubleMatrix times(IDoubleMatrix other) {
         assertMultiplication(other);
-        if (!(other instanceof DiagonalMatrix)) return super.plus(other);
+        if (!(other instanceof DiagonalMatrix)) return super.times(other);
 
         double[] newValues = new double[Math.min(shape.rows, shape.columns)];
         for (int i = 0; i < newValues.length; i++) {
@@ -64,6 +64,7 @@ public class DiagonalMatrix extends MoreThanOneValue {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         return new DiagonalMatrix(shape, getNewValues('*', scalar), "Diagonal");
     }
 

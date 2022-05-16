@@ -78,29 +78,33 @@ public class NonRegularMatrix extends SparseMatrix {
         assertMultiplication(other);
         if (!(other instanceof NonRegularMatrix)) return super.times(other);
 
-        MatrixCellValue resCell;
         Shape newShape = Shape.matrix(shape.rows, other.shape().columns);
+        ArrayList<MatrixCellValue> temp = new ArrayList<>();
         NonRegularMatrix result = new NonRegularMatrix(newShape);
-        boolean found;
 
         for (MatrixCellValue cell : cells) {
             for (MatrixCellValue cellOther : ((NonRegularMatrix) other).cells) {
                 if (cell.column == cellOther.row) {
-                    found = false;
-                    // Merging cells with the same row and column.
-                    for (int i = 0; i < result.cells.size(); i++) {
-                        resCell = result.cells.get(i);
-                        if (resCell.column == cellOther.column && resCell.row == cell.row) {
-                            result.cells.set(i, getMatrixCellMultiply(cell, cellOther, resCell.value));
-                            found = true;
-                            break;
-                        } else if (resCell.column > cell.column && resCell.row > cell.row) {
-                            break;
-                        }
-                    }
-                    // If we didn't find cell with particular coordinates, we add new cell to result arraylist.
-                    if (!found) result.cells.add(getMatrixCellMultiply(cell, cellOther, 0));
+                    temp.add(getMatrixCellMultiply(cell, cellOther));
                 }
+            }
+        }
+        // Sorting cells by row and column.
+        Comparator<MatrixCellValue> cellComparator = Comparator
+                .comparing(MatrixCellValue::getRow)
+                .thenComparing(MatrixCellValue::getColumn);
+        temp.sort(cellComparator);
+        // Merging cells with the same row and column.
+        int i = 0;
+        if (temp.size() > 0) {
+            result.cells.add(temp.remove(0));
+        }
+        for (MatrixCellValue cell : temp) {
+            if (areCellsEqual(cell, result.cells.get(i))) {
+                result.cells.set(i, getMatrixCellOperation('+', cell, result.cells.get(i).value));
+            } else {
+                result.cells.add(cell);
+                i++;
             }
         }
         return result;
@@ -128,6 +132,7 @@ public class NonRegularMatrix extends SparseMatrix {
 
     @Override
     public IDoubleMatrix times(double scalar) {
+        if (scalar == 0) return new ZeroMatrix(shape);
         int i = 0;
         MatrixCellValue[] values = new MatrixCellValue[this.cells.size()];
         for (MatrixCellValue cell : cells) {
