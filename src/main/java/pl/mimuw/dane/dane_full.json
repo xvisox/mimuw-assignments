@@ -1,0 +1,904 @@
+{
+  "info": {
+    "dlugosc": 20,
+    "gielda": "zrownowazona",
+    "kara_za_brak_ubran": 21,
+    "ceny": {
+      "programy": 20,
+      "jedzenie": 25,
+      "ubrania": 23,
+      "narzedzia": 26
+    }
+  },
+  "robotnicy": [
+    {
+      "id": "901",
+      "poziom": 1,
+      "kariera": "rolnik",
+      "kupowanie": {
+        "typ": "gadzeciarz",
+        "liczba_narzedzi": 40
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 2
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 200,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 500,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": "902",
+      "poziom": 1,
+      "kariera": "rzemieslnik",
+      "kupowanie": {
+        "typ": "gadzeciarz",
+        "liczba_narzedzi": 30
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 2
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 200,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 600,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": "903",
+      "poziom": 1,
+      "kariera": "inzynier",
+      "kupowanie": {
+        "typ": "gadzeciarz",
+        "liczba_narzedzi": 20
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 2
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 200
+      },
+      "zasoby": {
+        "diamenty": 500,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": "904",
+      "poziom": 1,
+      "kariera": "gornik",
+      "kupowanie": {
+        "typ": "czyscioszek"
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 2
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 200,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": "905",
+      "poziom": 5,
+      "kariera": "programista",
+      "kupowanie": {
+        "typ": "gadzeciarz",
+        "liczba_narzedzi": 69
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 2
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 200,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 500,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 0,
+      "poziom": 1,
+      "kariera": "rolnik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "sredniak",
+        "historia_sredniej_produkcji": 5
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 200,
+        "jedzenie": 200,
+        "diamenty": 200,
+        "ubrania": 200,
+        "narzedzia": 200
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 1,
+      "poziom": 1,
+      "kariera": "gornik",
+      "kupowanie": {
+        "typ": "czyscioszek"
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 3,
+        "okres": 4
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 2,
+      "poziom": 1,
+      "kariera": "inzynier",
+      "kupowanie": {
+        "typ": "zmechanizowany",
+        "liczba_narzedzi": 50
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 3,
+      "poziom": 1,
+      "kariera": "rzemieslnik",
+      "kupowanie": {
+        "typ": "gadzeciarz",
+        "liczba_narzedzi": 100
+      },
+      "produkcja": {
+        "typ": "chciwy"
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 4,
+      "poziom": 1,
+      "kariera": "inzynier",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "krotkowzroczny"
+      },
+      "uczenie": {
+        "typ": "rozkladowy"
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 5,
+      "poziom": 1,
+      "kariera": "programista",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "losowy"
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 6,
+      "poziom": 1,
+      "kariera": "gornik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "sredniak",
+        "historia_sredniej_produkcji": 2
+      },
+      "uczenie": {
+        "typ": "oszczedny",
+        "limit_diamentow": 200
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 7,
+      "poziom": 1,
+      "kariera": "rzemieslnik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 8,
+      "poziom": 1,
+      "kariera": "inzynier",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "losowy"
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 9,
+      "poziom": 1,
+      "kariera": "rolnik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "pracus"
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 10,
+      "poziom": 1,
+      "kariera": "rzemieslnik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "oszczedny",
+        "limit_diamentow": 60
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 11,
+      "poziom": 1,
+      "kariera": "inzynier",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 12,
+      "poziom": 1,
+      "kariera": "programista",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "okresowy",
+        "okresowosc_nauki": 10
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 13,
+      "poziom": 1,
+      "kariera": "programista",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "rozkladowy"
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 14,
+      "poziom": 1,
+      "kariera": "programista",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "konserwatysta",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 15,
+      "poziom": 1,
+      "kariera": "rolnik",
+      "kupowanie": {
+        "typ": "technofob"
+      },
+      "produkcja": {
+        "typ": "perspektywiczny",
+        "historia_perspektywy": 3
+      },
+      "uczenie": {
+        "typ": "student",
+        "zapas": 2,
+        "okres": 5
+      },
+      "zmiana": "rewolucjonista",
+      "produktywnosc": {
+        "programy": 100,
+        "jedzenie": 100,
+        "diamenty": 100,
+        "ubrania": 100,
+        "narzedzia": 100
+      },
+      "zasoby": {
+        "diamenty": 300,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    }
+  ],
+  "spekulanci": [
+    {
+      "id": 100,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 4
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 101,
+      "kariera": {
+        "typ": "wypukly"
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 102,
+      "kariera": {
+        "typ": "regulujacy"
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 103,
+      "kariera": {
+        "typ": "regulujacy"
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 104,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 2
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 105,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 3
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 106,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 7
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 107,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 3
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 108,
+      "kariera": {
+        "typ": "regulujacy"
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 109,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 4
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 110,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 4
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 111,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 2
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 112,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 4
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 113,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 6
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 114,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 2
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 115,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 4
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    },
+    {
+      "id": 116,
+      "kariera": {
+        "typ": "sredni",
+        "historia_spekulanta_sredniego": 8
+      },
+      "zasoby": {
+        "diamenty": 2000,
+        "ubrania": 300,
+        "narzedzia": 300,
+        "jedzenie": 300,
+        "programy": 100
+      }
+    }
+  ]
+}
