@@ -27,6 +27,4 @@ public interface IDoubleMatrix {
     String toString();
 
     Shape shape();
-
-    IDoubleMatrix standardMultiply(IDoubleMatrix other);
 }

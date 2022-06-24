@@ -163,10 +163,4 @@ public abstract class Matrix implements IDoubleMatrix {
         }
         return sb.toString();
     }
-
-    // TODO (remove)
-    @Override
-    public IDoubleMatrix standardMultiply(IDoubleMatrix other) {
-        return times(other);
-    }
 }

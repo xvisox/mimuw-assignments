@@ -14,6 +14,9 @@ public class Main {
         Shape shape = Shape.matrix(n, n);
         Random random = new Random();
 
+        // Code was written in IDE IntelliJ Idea 2020.3
+        System.out.println("-------- EXAMPLE MATRICES --------\n");
+
         // 1) Full matrix of random values
         IDoubleMatrix commonMatrix = full(randomTwoDimArray(random, n));
         System.out.println(commonMatrix);
@@ -53,5 +56,19 @@ public class Main {
         // 10) Anti-diagonal matrix of random values
         IDoubleMatrix antiDiagonalMatrix = antiDiagonal(randomOneDimArray(random, n));
         System.out.println(antiDiagonalMatrix);
+
+        System.out.println("\n-------- OPERATION EXAMPLES --------\n");
+        // a) Multiplication example.
+        System.out.println(commonMatrix.times(diagonalMatrix));
+        // b) Addition example.
+        System.out.println(commonMatrix.plus(diagonalMatrix));
+        // c) Subtracting example.
+        System.out.println(commonMatrix.minus(diagonalMatrix));
+        // d) Scalar multiplication example.
+        System.out.println(commonMatrix.times(10));
+        // e) Scalar addition example.
+        System.out.println(commonMatrix.plus(10));
+        // f) Scalar subtracting example.
+        System.out.println(commonMatrix.minus(10));
     }
 }

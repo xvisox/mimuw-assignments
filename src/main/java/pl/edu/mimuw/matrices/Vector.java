@@ -1,5 +1,6 @@
 package pl.edu.mimuw.matrices;
 
+import pl.edu.mimuw.matrix.IDoubleMatrix;
 import pl.edu.mimuw.matrix.Shape;
 
 public class Vector extends MoreThanOneValue {
@@ -16,6 +17,27 @@ public class Vector extends MoreThanOneValue {
             result[i][0] = values[i];
         }
         return result;
+    }
+
+    @Override
+    public IDoubleMatrix times(double scalar) {
+        return new Vector(getNewValues('*', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix plus(double scalar) {
+        return new Vector(getNewValues('+', scalar));
+    }
+
+    @Override
+    public IDoubleMatrix minus(double scalar) {
+        return new Vector(getNewValues('-', scalar));
+    }
+
+    @Override
+    public double get(int row, int column) {
+        shape.assertInShape(row, column);
+        return values[row];
     }
 
     @Override
