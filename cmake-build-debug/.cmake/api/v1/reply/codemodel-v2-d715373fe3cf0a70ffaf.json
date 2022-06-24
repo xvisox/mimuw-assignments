@@ -1,0 +1,87 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "phone_numbers",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "doc::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-doc-Debug-4b1d8951a8cb977c17af.json",
+					"name" : "doc",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "phone_forward::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-phone_forward-Debug-9463fbf983805ca85163.json",
+					"name" : "phone_forward",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "phone_forward_instrumented::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-phone_forward_instrumented-Debug-613c300158f9b98040ea.json",
+					"name" : "phone_forward_instrumented",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "phone_forward_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-phone_forward_test-Debug-2d05665782d898916d04.json",
+					"name" : "phone_forward_test",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug",
+		"source" : "E:/JetBrains/CLionProjects/IPP-duze"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

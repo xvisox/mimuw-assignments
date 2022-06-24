@@ -1,0 +1,6 @@
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/phone_forward.dir
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/phone_forward_test.dir
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/phone_forward_instrumented.dir
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/doc.dir
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/edit_cache.dir
+E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/CMakeFiles/rebuild_cache.dir

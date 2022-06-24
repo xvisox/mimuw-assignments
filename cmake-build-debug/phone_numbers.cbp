@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="phone_numbers"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward/fast">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward/fast"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward_test">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward_test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward_test"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward_test/fast">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward_test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward_test/fast"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward_instrumented">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward_instrumented.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward_instrumented"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="phone_forward_instrumented/fast">
+				<Option output="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/phone_forward_instrumented.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../include"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/include-fixed"/>
+					<Add directory="E:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.3.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 phone_forward_instrumented/fast"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="doc">
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 doc"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/MinGW/bin/mingw32-make.exe -f &quot;E:/JetBrains/CLionProjects/IPP-duze/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/list.c">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/list.h">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/phone_forward.c">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/phone_forward.h">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/phone_forward_example.c">
+			<Option target="phone_forward"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/phone_forward_tests.c">
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/trie.c">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/src/trie.h">
+			<Option target="phone_forward"/>
+			<Option target="phone_forward_test"/>
+			<Option target="phone_forward_instrumented"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="E:/JetBrains/CLionProjects/IPP-duze/Doxyfile.in">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
