@@ -11,8 +11,7 @@ Program może zostać skompilowany do pojedynczego pliku `jar` z wykorzystaniem 
 ./kompiluj.sh
 ```
 
-wynik budowania znajduje się wówczas w katalogu \
-`target/BajtTrade-1.0-jar-with-dependencies.jar` \
+wynik budowania znajduje się wówczas w katalogu `target` 
 można go uruchomić z konsoli poprzez polecenie
 
 ```shell
