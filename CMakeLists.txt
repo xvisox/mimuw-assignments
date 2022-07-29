@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(ASD Laby/Laby1/Bazarek.cpp)
+add_executable(ASD Laby/Laby2/Debugging.cpp)

@@ -8,6 +8,9 @@ using namespace std;
 // Ta wersja jest z sortowaniem od największych, więc przed oddaniem trzeba ją zmienić!
 // Idea jest taka: liczymy prefiks i tablice największych element nieparzysty (maxNP), który się znajdują w danym prefiksie
 // oraz tablice największych elementów parzystych (maxP), których nie ma w danym prefiksie.
+// Złożoność:
+// 1) Czas O(max(n, m))
+// 2) Pamięć O(n)
 int main() {
     int n, i, m, indeks;
     scanf("%d", &n);
