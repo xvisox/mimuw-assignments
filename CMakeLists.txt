@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD OKI/SegmentTree/Browary.cpp)
+add_executable(ASD OKI/GrafyI/PlusMinusJeden.cpp)
