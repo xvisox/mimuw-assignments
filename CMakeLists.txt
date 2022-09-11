@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Playground/Egzamin2016/RazDwaTrzy.cpp)
+add_executable(ASD Playground/EgzaminPP2014/Wzniesienia.cpp)
