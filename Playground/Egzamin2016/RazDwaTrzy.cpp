@@ -1,35 +1,55 @@
 #include <bits/stdc++.h>
 
+#define MAX_N 500'001
+
 using namespace std;
 set<int> indices[4];
-int idxConv[500001];
-unordered_set<int> last;
+int conv[MAX_N];
+bool last;
+unordered_set<int> odp;
 
-bool check() {
-    auto it = indices[1].begin();
-    auto end = indices[1].end();
-    if (it != end) {
-        int idxOne = *it;
+void tak() {
+    cout << "TAK\n";
+    last = true;
+}
 
-        it = lower_bound(indices[2].begin(), indices[2].end(), idxOne);
-        end = indices[2].end();
+void nie() {
+    cout << "NIE\n";
+    last = false;
+}
 
-        if (it != end) {
-            int idxTwo = *it;
+void check() {
+    odp.clear();
+    if (indices[1].size() && indices[2].size() && indices[3].size()) {
+        int one_begin = *indices[1].begin();
+        int three_end = *indices[3].rbegin();
+        int two_begin = *indices[2].begin();
+        int two_end = *indices[2].rbegin();
 
-            it = lower_bound(indices[3].begin(), indices[3].end(), idxTwo);
-            end = indices[3].end();
-            if (it != end) {
-                cout << "TAK" << '\n';
-                last.insert(idxOne);
-                last.insert(idxTwo);
-                last.insert(*it);
-                return true;
+        if (one_begin < two_begin && two_begin < three_end) {
+            tak();
+            odp.insert(one_begin);
+            odp.insert(two_begin);
+            odp.insert(three_end);
+        } else if (one_begin < two_end && two_end < three_end) {
+            tak();
+            odp.insert(one_begin);
+            odp.insert(two_end);
+            odp.insert(three_end);
+        } else {
+            auto it = upper_bound(indices[2].begin(), indices[2].end(), one_begin);
+            if (it != indices[2].end() && *it < three_end) {
+                tak();
+                odp.insert(one_begin);
+                odp.insert(*it);
+                odp.insert(three_end);
+            } else {
+                nie();
             }
         }
+    } else {
+        nie();
     }
-    cout << "NIE" << '\n';
-    return false;
 }
 
 int main() {
@@ -40,26 +60,27 @@ int main() {
     for (int i = 1; i <= n; i++) {
         scanf("%d", &temp);
         indices[temp].insert(i);
-        idxConv[i] = temp;
+        conv[i] = temp;
     }
-
     check();
 
     cin >> m;
     int idx, to;
     for (int i = 0; i < m; i++) {
         scanf("%d %d", &idx, &to);
-        indices[idxConv[idx]].erase(idx);
-        idxConv[idx] = to;
-        indices[to].insert(idx);
-
-        if (last.empty() || last.find(idx) != last.end()) {
-            if (!check()) {
-                last.clear();
-            }
-        } else {
-            cout << "TAK" << '\n';
+        if (conv[idx] == to) {
+            if (last) tak();
+            else nie();
+            continue;
         }
+
+        indices[conv[idx]].erase(idx);
+        conv[idx] = to;
+        indices[to].insert(idx);
+        if (!odp.empty() && odp.find(idx) == odp.end()) {
+            if (last) tak();
+            else nie();
+        } else check();
     }
 
     return 0;
