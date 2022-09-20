@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Codeforces/1700/349B.cpp)
+add_executable(ASD Codeforces/1500/1391C.cpp)
