@@ -1,0 +1,1668 @@
+{
+  "info" : {
+    "dlugosc" : 20,
+    "kara_za_brak_ubran" : 21,
+    "gielda" : "zrownowazona",
+    "ceny" : {
+      "programy" : 20.0,
+      "jedzenie" : 25.0,
+      "ubrania" : 23.0,
+      "narzedzia" : 26.0
+    }
+  },
+  "robotnicy" : [ {
+    "id" : 901,
+    "zasoby" : {
+      "diamenty" : 27547.543320312587,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 11,
+    "zmiana" : "konserwatysta",
+    "kariera" : "rolnik",
+    "kupowanie" : {
+      "typ" : "gadzeciarz",
+      "liczba_narzedzi" : 40
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 2
+    },
+    "poziomyKariery" : [ 11, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 903,
+    "zasoby" : {
+      "diamenty" : 11700.192249999904,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 11,
+    "zmiana" : "konserwatysta",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "gadzeciarz",
+      "liczba_narzedzi" : 20
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 2
+    },
+    "poziomyKariery" : [ 1, 1, 1, 11, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 904,
+    "zasoby" : {
+      "diamenty" : 2222.1412707775125,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 11,
+    "zmiana" : "konserwatysta",
+    "kariera" : "gornik",
+    "kupowanie" : {
+      "typ" : "czyscioszek"
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 2
+    },
+    "poziomyKariery" : [ 1, 11, 1, 1, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 902,
+    "zasoby" : {
+      "diamenty" : 28.18518333372958,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 608,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 11,
+    "zmiana" : "konserwatysta",
+    "kariera" : "rzemieslnik",
+    "kupowanie" : {
+      "typ" : "gadzeciarz",
+      "liczba_narzedzi" : 30
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 2
+    },
+    "poziomyKariery" : [ 1, 1, 11, 1, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 10,
+    "zasoby" : {
+      "diamenty" : 25.708333333334096,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 41,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 15,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "oszczedny",
+      "limit_diamentow" : 60
+    },
+    "poziomyKariery" : [ 1, 1, 3, 15, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 6,
+    "zasoby" : {
+      "diamenty" : 19.016666666668367,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 15,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "sredniak",
+      "historia_sredniej_produkcji" : 2
+    },
+    "uczenie" : {
+      "typ" : "oszczedny",
+      "limit_diamentow" : 200
+    },
+    "poziomyKariery" : [ 1, 2, 1, 15, 1 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 905,
+    "zasoby" : {
+      "diamenty" : 8.148320312557185,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 67,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 15,
+    "zmiana" : "konserwatysta",
+    "kariera" : "programista",
+    "kupowanie" : {
+      "typ" : "gadzeciarz",
+      "liczba_narzedzi" : 69
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 2
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 15 ],
+    "dniBezJedzenia" : 0
+  }, {
+    "id" : 0,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "konserwatysta",
+    "kariera" : "rolnik",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "sredniak",
+      "historia_sredniej_produkcji" : 5
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 1,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 4,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "czyscioszek"
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 3,
+      "okres" : 4
+    },
+    "poziomyKariery" : [ 1, 2, 1, 4, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 2,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 82,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 82 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "zmechanizowany",
+      "liczba_narzedzi" : 50
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 3,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "rzemieslnik",
+    "kupowanie" : {
+      "typ" : "gadzeciarz",
+      "liczba_narzedzi" : 100
+    },
+    "produkcja" : {
+      "typ" : "chciwy"
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 4,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "krotkowzroczny"
+    },
+    "uczenie" : {
+      "typ" : "rozkladowy"
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 5,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 0,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 0 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "programista",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "losowy"
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 7,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "rzemieslnik",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 8,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "losowy"
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 9,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "rolnik",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "pracus"
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 11,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "inzynier",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 12,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "programista",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "okresowy",
+      "okresowosc_nauki" : 10
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 13,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 2,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "programista",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "rozkladowy"
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 2 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 14,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "konserwatysta",
+    "kariera" : "programista",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  }, {
+    "id" : 15,
+    "zasoby" : {
+      "diamenty" : 0.0,
+      "ubrania" : 0,
+      "narzedzia" : 0,
+      "jedzenie" : 0,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ ],
+        "UBRANIA" : [ 0 ]
+      }
+    },
+    "poziom" : 1,
+    "zmiana" : "rewolucjonista",
+    "kariera" : "rolnik",
+    "kupowanie" : {
+      "typ" : "technofob"
+    },
+    "produkcja" : {
+      "typ" : "perspektywiczny",
+      "historia_perspektywy" : 3
+    },
+    "uczenie" : {
+      "typ" : "student",
+      "zapas" : 2,
+      "okres" : 5
+    },
+    "poziomyKariery" : [ 1, 1, 1, 1, 1 ],
+    "dniBezJedzenia" : -1
+  } ],
+  "spekulanci" : [ {
+    "id" : 113,
+    "zasoby" : {
+      "diamenty" : 22.524166666655333,
+      "ubrania" : 300,
+      "narzedzia" : 457,
+      "jedzenie" : 438,
+      "programy" : 200,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 100 ],
+        "NARZEDZIA" : [ 457 ],
+        "UBRANIA" : [ 300 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 6
+    }
+  }, {
+    "id" : 105,
+    "zasoby" : {
+      "diamenty" : 19.066666666597005,
+      "ubrania" : 396,
+      "narzedzia" : 500,
+      "jedzenie" : 400,
+      "programy" : 246,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 246 ],
+        "NARZEDZIA" : [ 500 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 3
+    }
+  }, {
+    "id" : 116,
+    "zasoby" : {
+      "diamenty" : 18.82182656246941,
+      "ubrania" : 300,
+      "narzedzia" : 424,
+      "jedzenie" : 500,
+      "programy" : 400,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 100, 0, 0, 0, 100, 100 ],
+        "NARZEDZIA" : [ 424 ],
+        "UBRANIA" : [ 300 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 8
+    }
+  }, {
+    "id" : 102,
+    "zasoby" : {
+      "diamenty" : 17.767999999990625,
+      "ubrania" : 602,
+      "narzedzia" : 578,
+      "jedzenie" : 400,
+      "programy" : 151,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 0, 0, 0, 0, 28, 0, 1, 0, 22 ],
+        "NARZEDZIA" : [ 578 ],
+        "UBRANIA" : [ 602 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "regulujacy"
+    }
+  }, {
+    "id" : 103,
+    "zasoby" : {
+      "diamenty" : 17.56800000005811,
+      "ubrania" : 502,
+      "narzedzia" : 726,
+      "jedzenie" : 533,
+      "programy" : 300,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 100 ],
+        "NARZEDZIA" : [ 726 ],
+        "UBRANIA" : [ 502 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "regulujacy"
+    }
+  }, {
+    "id" : 108,
+    "zasoby" : {
+      "diamenty" : 13.767999999995027,
+      "ubrania" : 302,
+      "narzedzia" : 323,
+      "jedzenie" : 400,
+      "programy" : 128,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 0, 0, 0, 0, 28 ],
+        "NARZEDZIA" : [ 323 ],
+        "UBRANIA" : [ 302 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "regulujacy"
+    }
+  }, {
+    "id" : 114,
+    "zasoby" : {
+      "diamenty" : 12.799999999999958,
+      "ubrania" : 300,
+      "narzedzia" : 308,
+      "jedzenie" : 300,
+      "programy" : 200,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 100 ],
+        "NARZEDZIA" : [ 308 ],
+        "UBRANIA" : [ 300 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 2
+    }
+  }, {
+    "id" : 115,
+    "zasoby" : {
+      "diamenty" : 12.799999999999958,
+      "ubrania" : 300,
+      "narzedzia" : 308,
+      "jedzenie" : 300,
+      "programy" : 200,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 100 ],
+        "NARZEDZIA" : [ 308 ],
+        "UBRANIA" : [ 300 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 4
+    }
+  }, {
+    "id" : 104,
+    "zasoby" : {
+      "diamenty" : 12.799999999996974,
+      "ubrania" : 396,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 2
+    }
+  }, {
+    "id" : 107,
+    "zasoby" : {
+      "diamenty" : 12.799999999996974,
+      "ubrania" : 396,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 3
+    }
+  }, {
+    "id" : 109,
+    "zasoby" : {
+      "diamenty" : 12.799999999996974,
+      "ubrania" : 396,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 4
+    }
+  }, {
+    "id" : 110,
+    "zasoby" : {
+      "diamenty" : 12.799999999996974,
+      "ubrania" : 396,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 4
+    }
+  }, {
+    "id" : 111,
+    "zasoby" : {
+      "diamenty" : 12.799999999996974,
+      "ubrania" : 396,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 100,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 2
+    }
+  }, {
+    "id" : 100,
+    "zasoby" : {
+      "diamenty" : 12.48333333333045,
+      "ubrania" : 423,
+      "narzedzia" : 550,
+      "jedzenie" : 349,
+      "programy" : 122,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 122 ],
+        "NARZEDZIA" : [ 550 ],
+        "UBRANIA" : [ 423 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 4
+    }
+  }, {
+    "id" : 112,
+    "zasoby" : {
+      "diamenty" : 5.599999999998545,
+      "ubrania" : 332,
+      "narzedzia" : 300,
+      "jedzenie" : 300,
+      "programy" : 174,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 74 ],
+        "NARZEDZIA" : [ 300 ],
+        "UBRANIA" : [ 332 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 4
+    }
+  }, {
+    "id" : 101,
+    "zasoby" : {
+      "diamenty" : 4.01055291020916,
+      "ubrania" : 599,
+      "narzedzia" : 453,
+      "jedzenie" : 505,
+      "programy" : 119,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 0, 0, 0, 19 ],
+        "NARZEDZIA" : [ 453 ],
+        "UBRANIA" : [ 599 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "wypukly"
+    }
+  }, {
+    "id" : 106,
+    "zasoby" : {
+      "diamenty" : 3.090428571423651,
+      "ubrania" : 396,
+      "narzedzia" : 422,
+      "jedzenie" : 421,
+      "programy" : 101,
+      "poziomyZasobow" : {
+        "PROGRAMY" : [ 100, 0, 0, 0, 0, 0, 1 ],
+        "NARZEDZIA" : [ 422 ],
+        "UBRANIA" : [ 396 ]
+      }
+    },
+    "kariera" : {
+      "typ" : "sredni",
+      "historia_spekulanta_sredniego" : 7
+    }
+  } ],
+  "gielda" : {
+    "dziennik" : {
+      "0" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "1" : {
+        "ceny_srednie" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.700000000000305,
+          "narzedzia" : 23.400000000000045
+        },
+        "ceny_min" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 18.0,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 1200,
+          "narzedzia" : 4000,
+          "jedzenie" : 4400,
+          "programy" : 1400
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 800,
+          "narzedzia" : 100,
+          "jedzenie" : 49,
+          "programy" : 474
+        }
+      },
+      "2" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 22.356000000000332,
+          "narzedzia" : 50.345761589403914
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 22.35600000000033,
+          "narzedzia" : 21.825
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 22.35600000000033,
+          "narzedzia" : 84.24000000000017
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 200,
+          "narzedzia" : 1400,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 6,
+          "narzedzia" : 151,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "3" : {
+        "ceny_srednie" : {
+          "programy" : 20.25,
+          "jedzenie" : 21.75,
+          "ubrania" : 20.34102857142876,
+          "narzedzia" : 22.050000000000082
+        },
+        "ceny_min" : {
+          "programy" : 20.25,
+          "jedzenie" : 21.75,
+          "ubrania" : 20.1204000000003,
+          "narzedzia" : 22.05
+        },
+        "ceny_max" : {
+          "programy" : 20.25,
+          "jedzenie" : 26.583333333333336,
+          "ubrania" : 21.150000000000002,
+          "narzedzia" : 22.05
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 400,
+          "narzedzia" : 1900,
+          "jedzenie" : 400,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 126,
+          "narzedzia" : 200,
+          "jedzenie" : 100,
+          "programy" : 122
+        }
+      },
+      "4" : {
+        "ceny_srednie" : {
+          "programy" : 26.775000000000002,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 28.574999999999974
+        },
+        "ceny_min" : {
+          "programy" : 26.775000000000002,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 28.575
+        },
+        "ceny_max" : {
+          "programy" : 26.775000000000002,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 28.575
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 200,
+          "narzedzia" : 500,
+          "jedzenie" : 0,
+          "programy" : 800
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 100,
+          "jedzenie" : 0,
+          "programy" : 46
+        }
+      },
+      "5" : {
+        "ceny_srednie" : {
+          "programy" : 20.565,
+          "jedzenie" : 21.465000000000003,
+          "ubrania" : 20.700000000000028,
+          "narzedzia" : 22.33856986899571
+        },
+        "ceny_min" : {
+          "programy" : 20.565,
+          "jedzenie" : 21.465000000000003,
+          "ubrania" : 20.7,
+          "narzedzia" : 21.645
+        },
+        "ceny_max" : {
+          "programy" : 20.565,
+          "jedzenie" : 26.235000000000003,
+          "ubrania" : 20.7,
+          "narzedzia" : 25.717499999999976
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 900,
+          "narzedzia" : 1400,
+          "jedzenie" : 800,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 100,
+          "narzedzia" : 229,
+          "jedzenie" : 59,
+          "programy" : 1
+        }
+      },
+      "6" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "7" : {
+        "ceny_srednie" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.700000000000028,
+          "narzedzia" : 23.400000000000045
+        },
+        "ceny_min" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 800,
+          "narzedzia" : 900,
+          "jedzenie" : 800,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 100,
+          "narzedzia" : 100,
+          "jedzenie" : 100,
+          "programy" : 19
+        }
+      },
+      "8" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "9" : {
+        "ceny_srednie" : {
+          "programy" : 20.118823242187496,
+          "jedzenie" : 23.477406249999955,
+          "ubrania" : 23.0,
+          "narzedzia" : 24.216679652255625
+        },
+        "ceny_min" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 23.424187500000002,
+          "jedzenie" : 30.381083333333336,
+          "ubrania" : 23.0,
+          "narzedzia" : 25.00725
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 800,
+          "narzedzia" : 900,
+          "jedzenie" : 800,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 190,
+          "jedzenie" : 600,
+          "programy" : 256
+        }
+      },
+      "10" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 400,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "11" : {
+        "ceny_srednie" : {
+          "programy" : 23.53414570312498,
+          "jedzenie" : 23.29832285156249,
+          "ubrania" : 20.700000000000028,
+          "narzedzia" : 24.049198296693316
+        },
+        "ceny_min" : {
+          "programy" : 23.534145703124995,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 23.534145703124995,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 20.7,
+          "narzedzia" : 24.209145703124996
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 800,
+          "narzedzia" : 1300,
+          "jedzenie" : 800,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 100,
+          "narzedzia" : 86,
+          "jedzenie" : 200,
+          "programy" : 100
+        }
+      },
+      "12" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 400,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "13" : {
+        "ceny_srednie" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.69999999999992,
+          "narzedzia" : 23.400000000000052
+        },
+        "ceny_min" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 18.0,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 800,
+          "narzedzia" : 1300,
+          "jedzenie" : 800,
+          "programy" : 1000
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 200,
+          "narzedzia" : 117,
+          "jedzenie" : 4,
+          "programy" : 1
+        }
+      },
+      "14" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 300,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "15" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.69999999999992,
+          "narzedzia" : 23.400000000000055
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 20.7,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 1000,
+          "narzedzia" : 1200,
+          "jedzenie" : 1000,
+          "programy" : 1200
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 200,
+          "narzedzia" : 129,
+          "jedzenie" : 1,
+          "programy" : 0
+        }
+      },
+      "16" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "17" : {
+        "ceny_srednie" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000013
+        },
+        "ceny_min" : {
+          "programy" : 18.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 18.0,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 1000,
+          "narzedzia" : 1100,
+          "jedzenie" : 1000,
+          "programy" : 1200
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 200,
+          "jedzenie" : 33,
+          "programy" : 122
+        }
+      },
+      "18" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      },
+      "19" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.40000000000006
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 22.5,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000002
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 27.500000000000004,
+          "ubrania" : 23.0,
+          "narzedzia" : 23.400000000000002
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 1000,
+          "narzedzia" : 1100,
+          "jedzenie" : 1000,
+          "programy" : 1200
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 147,
+          "jedzenie" : 100,
+          "programy" : 0
+        }
+      },
+      "20" : {
+        "ceny_srednie" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_min" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ceny_max" : {
+          "programy" : 20.0,
+          "jedzenie" : 25.0,
+          "ubrania" : 23.0,
+          "narzedzia" : 26.0
+        },
+        "ileOfertSprzedazy" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        },
+        "ileOstatecznieSprzedanych" : {
+          "diamenty" : 0.0,
+          "ubrania" : 0,
+          "narzedzia" : 0,
+          "jedzenie" : 0,
+          "programy" : 0
+        }
+      }
+    },
+    "liczbaDni" : 21
+  }
+}
