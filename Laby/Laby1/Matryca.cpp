@@ -1,30 +1,37 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 
-#define RAND '%'
+#define FASTIO ios_base::sync_with_stdio(false); cin.tie(0), cout.tie(0)
+#define ll long long
+#define pll pair<ll, ll>
+#define pii pair<int, int>
+#define vi vector<int>
+#define vii vector<pii>
+#define vl vector<ll>
+#define vll vector<pll>
+#define endl '\n'
 using namespace std;
 
-// To zadanie jeszcze do ogarnięcia:
-// Dlaczego i < between?
-// Złożoność:
-// 1) Czas O(n))
-// 2) Pamięć O(1)
 int main() {
-    string pattern;
-    cin >> pattern;
-    int len = pattern.size();
-    int between = len - 1, lastIdx;
-    char lastChar = RAND;
-
-    for (int i = 0; i < between; i++) {
-        if (pattern[i] != '*') {
-            if (lastChar != pattern[i]) {
-                between = min(i - lastIdx - 1, between);
+    FASTIO;
+    string temp;
+    cin >> temp;
+    int n = temp.length();
+    int i = 0, mini = INT_MAX, lastIdx = -1;
+    char lastChar = '&';
+    while (i < n) {
+        if (temp[i] != '*') {
+            if (lastChar == temp[i]) {
+                lastIdx = i;
+            } else {
+                if (lastIdx != -1) mini = min(mini, i - lastIdx - 1);
+                lastIdx = i;
+                lastChar = temp[i];
             }
-            lastChar = pattern[i];
-            lastIdx = i;
         }
+        i++;
     }
+    if (mini == INT_MAX) cout << 1 << endl;
+    else cout << n - mini << endl;
 
-    cout << len - between;
     return 0;
 }
