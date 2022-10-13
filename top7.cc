@@ -42,11 +42,11 @@ oset_pair_64_32 stworzNotowanie(umap32_64 &glosowanie) {
     return notowanie;
 }
 
-void aktualizujrankingOgolny(umap32_64 &rankingOgolny, oset_pair_64_32 &notowanie) {
-    int i = 1;
+void aktualizujRankingOgolny(umap32_64 &rankingOgolny, oset_pair_64_32 &notowanie) {
+    int ilePkt = ROZMIAR_NOTOWANIA - notowanie.size() + 1;
     for (auto [punkty, piosenka]: notowanie) {
-        rankingOgolny[piosenka] += i;
-        i++;
+        rankingOgolny[piosenka] += ilePkt;
+        ilePkt++;
     }
 }
 
@@ -81,7 +81,7 @@ void usunPiosenki(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usuni
 }
 
 umap32_8 stworzArchiwum(oset_pair_64_32 &notowanie) {
-    uint8_t miejsce = notowanie.size();
+    int8_t miejsce = notowanie.size();
     umap32_8 archiwum;
     for (auto [glosy, piosenka]: notowanie) {
         archiwum[piosenka] = miejsce;
@@ -135,7 +135,7 @@ int main() {
                 if (prawidloweGlosy(ss, wybranePiosenki, usunietePiosenki, aktualnyMax)) {
                     oddajGlos(glosowanie, wybranePiosenki);
                 } else {
-                    printError(input, line);
+                    printError(input, line++);
                     continue;
                 }
             } else if (regex_match(input, newVoteRegex)) {
@@ -146,7 +146,7 @@ int main() {
                 if (prawidlowyMax(nowyMax, aktualnyMax)) {
                     if (aktualnyMax != 0) {
                         oset_pair_64_32 notowanie = stworzNotowanie(glosowanie);
-                        aktualizujrankingOgolny(rankingOgolny, notowanie);
+                        aktualizujRankingOgolny(rankingOgolny, notowanie);
                         wypiszNotowanie(notowanie, archiwumNotowania);
                         usunPiosenki(notowanie, archiwumNotowania, usunietePiosenki);
                         archiwumNotowania = stworzArchiwum(notowanie);
@@ -154,14 +154,15 @@ int main() {
                     }
                     aktualnyMax = nowyMax;
                 } else {
-                    printError(input, line);
+                    printError(input, line++);
                     continue;
                 }
             } else if (regex_match(input, topRegex)) {
                 oset_pair_64_32 notowanieOgolne = stworzNotowanie(rankingOgolny);
                 wypiszNotowanie(notowanieOgolne, archiwumOgolne);
+                archiwumOgolne = stworzArchiwum(notowanieOgolne);
             } else {
-                printError(input, line);
+                printError(input, line++);
             }
         }
         line++;
