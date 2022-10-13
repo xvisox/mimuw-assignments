@@ -5,6 +5,20 @@
 #define ROZMIAR_NOTOWANIA 7
 
 using namespace std;
+using pair_64_32 = pair<uint64_t, uint32_t>;
+
+auto cmp = [](pair_64_32 a, pair_64_32 b) {
+    if (a.first != b.first) {
+        return a.first < b.first;
+    } else {
+        return a.second > b.second;
+    }
+};
+
+using umap32_8 = unordered_map<uint32_t, uint8_t>;
+using umap32_64 = unordered_map<uint32_t, uint64_t>;
+using uset_32 = unordered_set<uint32_t>;
+using oset_pair_64_32 = set<pair<uint64_t, uint32_t>, decltype(cmp)>;
 
 void oddajGlos(umap32_64 &glosowanie, uset_32 &wybranePiosenki) {
     for (uint32_t piosenka: wybranePiosenki) {
@@ -37,7 +51,6 @@ void aktualizujrankingOgolny(umap32_64 &rankingOgolny, oset_pair_64_32 &notowani
 }
 
 void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
-    auto it = notowanie.rbegin();
     uint32_t piosenka, miejsce = 1;
     for (auto it = notowanie.rbegin(); it != notowanie.rend(); it++) {
         piosenka = it->second;
@@ -46,6 +59,7 @@ void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
         } else {
             cout << piosenka << " -" << endl;
         }
+        miejsce++;
     }
     cout << endl;
 }
@@ -66,7 +80,7 @@ void usunPiosenki(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usuni
 }
 
 umap32_8 stworzArchiwum(oset_pair_64_32 &notowanie) {
-    uint8_t miejsce = ROZMIAR_NOTOWANIA;
+    uint8_t miejsce = notowanie.size();
     umap32_8 archiwum;
     for (auto [glosy, piosenka]: notowanie) {
         archiwum[piosenka] = miejsce;
