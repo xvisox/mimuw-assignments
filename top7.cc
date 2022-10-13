@@ -74,7 +74,7 @@ void usunPiosenki(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usuni
         }
     }
     for (auto &it: archiwum) {
-        if (it.second == 0) {
+        if (it.second != 0) {
             usuniete.insert(it.first);
         }
     }
