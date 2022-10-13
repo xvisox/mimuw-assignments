@@ -15,7 +15,7 @@ auto cmp = [](pair_64_32 a, pair_64_32 b) {
     }
 };
 
-using umap32_8 = unordered_map<uint32_t, uint8_t>;
+using umap32_8 = unordered_map<uint32_t, int8_t>;
 using umap32_64 = unordered_map<uint32_t, uint64_t>;
 using uset_32 = unordered_set<uint32_t>;
 using oset_pair_64_32 = set<pair<uint64_t, uint32_t>, decltype(cmp)>;
@@ -51,7 +51,8 @@ void aktualizujrankingOgolny(umap32_64 &rankingOgolny, oset_pair_64_32 &notowani
 }
 
 void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
-    uint32_t piosenka, miejsce = 1;
+    uint32_t piosenka;
+    int8_t miejsce = 1;
     for (auto it = notowanie.rbegin(); it != notowanie.rend(); it++) {
         piosenka = it->second;
         if (archiwum.find(piosenka) != archiwum.end()) {
