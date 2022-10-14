@@ -66,7 +66,6 @@ void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
         }
         miejsce++;
     }
-    cout << endl;
 }
 
 void usunPiosenki(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usunietePiosenki) {
