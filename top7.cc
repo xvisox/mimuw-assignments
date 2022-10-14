@@ -1,10 +1,9 @@
+#include <iostream>
+#include <regex>
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
-#include <iostream>
-#include <regex>
 
-#define endl '\n'
 #define ROZMIAR_NOTOWANIA 7
 
 using namespace std;
@@ -23,93 +22,106 @@ using umap32_64 = unordered_map<uint32_t, uint64_t>;
 using uset_32 = unordered_set<uint32_t>;
 using oset_pair_64_32 = set<pair<uint64_t, uint32_t>, decltype(cmp)>;
 
-void aktualizujGlosowanie(umap32_64 &glosowanie, uset_32 &wybranePiosenki) {
-    for (uint32_t piosenka: wybranePiosenki) {
-        glosowanie[piosenka]++;
+void aktualizujGlosowanie(umap32_64 &glosowanie, uset_32 &glos) {
+    for (uint32_t numerUtworu: glos) {
+        glosowanie[numerUtworu]++;
     }
 }
 
 void aktualizujGlosowanieOgolne(umap32_64 &glosowanieOgolne, oset_pair_64_32 &notowanie) {
-    int ilePkt = ROZMIAR_NOTOWANIA - notowanie.size() + 1;
-    for (auto [punkty, piosenka]: notowanie) {
-        glosowanieOgolne[piosenka] += ilePkt;
+    size_t ilePkt = ROZMIAR_NOTOWANIA - notowanie.size() + 1;
+    
+    for (auto [punkty, numerUtworu]: notowanie) {
+        glosowanieOgolne[numerUtworu] += ilePkt;
         ilePkt++;
     }
 }
 
 oset_pair_64_32 stworzNotowanie(umap32_64 &glosowanie) {
+    // Zapisuje pary (liczba głosów, numer utworu) w kolejności niemalejącej według
+    // głosów i malejącej według numerów utworów.
     oset_pair_64_32 notowanie;
-    for (auto [piosenka, glosy]: glosowanie) {
+    
+    for (auto [numerUtworu, liczbaGlosow]: glosowanie) {
         if (notowanie.size() < ROZMIAR_NOTOWANIA) {
-            notowanie.insert({glosy, piosenka});
+            notowanie.insert({liczbaGlosow, numerUtworu});
         } else {
-            // Piosenka, która w danym momencie posiada najmniej punktów i jest w notowaniu.
-            auto najgorszaPiosenka = *notowanie.begin();
-            if (cmp(najgorszaPiosenka, {glosy, piosenka})) {
+            // Utwór, który w danym momencie posiada najmniej głosów,
+            // ma największy numer i jest w notowaniu.
+            auto najgorszyUtwor = *notowanie.begin();
+            if (cmp(najgorszyUtwor, {liczbaGlosow, numerUtworu})) {
                 notowanie.erase(notowanie.begin());
-                notowanie.insert({glosy, piosenka});
+                notowanie.insert({liczbaGlosow, numerUtworu});
             }
         }
     }
+    
     return notowanie;
 }
 
 void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
-    uint32_t piosenka;
+    uint32_t numerUtworu;
     int8_t miejsce = 1;
+    
     for (auto it = notowanie.rbegin(); it != notowanie.rend(); it++) {
-        piosenka = it->second;
-        if (archiwum.find(piosenka) != archiwum.end()) {
-            cout << piosenka << ' ' << archiwum[piosenka] - miejsce << endl;
+        numerUtworu = it->second;
+        if (archiwum.find(numerUtworu) != archiwum.end()) {
+            cout << numerUtworu << ' ' << archiwum[numerUtworu] - miejsce << endl;
         } else {
-            cout << piosenka << " -" << endl;
+            cout << numerUtworu << " -" << endl;
         }
         miejsce++;
     }
 }
 
-void usunPiosenki(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usunietePiosenki) {
-    uint32_t piosenka;
+void usunUtwory(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usunieteUtwory) {
+    uint32_t numerUtworu;
+    
     for (const auto &it: notowanie) {
-        piosenka = it.second;
-        // Oznaczamy w archiwum piosenki, które znalazły się w nowym notowaniu.
-        if (archiwum.find(piosenka) != archiwum.end()) {
-            archiwum[piosenka] = 0;
+        numerUtworu = it.second;
+        // Oznaczamy w archiwum utwory, które znalazły się w nowym notowaniu.
+        if (archiwum.find(numerUtworu) != archiwum.end()) {
+            archiwum[numerUtworu] = 0;
         }
     }
     for (auto &it: archiwum) {
-        // Usuwamy piosenki, które nie zostały oznaczone jako znalezione.
+        // Usuwamy utwory, które nie zostały oznaczone jako znalezione.
         if (it.second != 0) {
-            usunietePiosenki.insert(it.first);
+            usunieteUtwory.insert(it.first);
         }
     }
 }
 
 umap32_8 stworzArchiwum(oset_pair_64_32 &notowanie) {
-    int8_t miejsce = notowanie.size();
+    auto miejsce = (int8_t)notowanie.size();
     umap32_8 archiwum;
-    for (auto [glosy, piosenka]: notowanie) {
-        archiwum[piosenka] = miejsce;
+
+    for (auto [liczbaGlosow, numerUtworu]: notowanie) {
+        archiwum[numerUtworu] = miejsce;
         miejsce--;
     }
+
     return archiwum;
 }
 
-bool prawidloweGlosy(stringstream &ss, uset_32 &wybranePiosenki, uset_32 &usunietePiosenki, uint32_t aktualnyMax) {
-    uint32_t glos;
-    while (ss >> glos) {
-        if (glos > aktualnyMax) return false;
+bool prawidlowyGlos(stringstream &ss, uset_32 &wybraneUtwory, uset_32 &usunieteUtwory,
+                    uint32_t aktualnyMax) {
+    uint32_t numerUtworu;
 
-        if (wybranePiosenki.find(glos) == wybranePiosenki.end() && usunietePiosenki.find(glos) == usunietePiosenki.end()) {
-            wybranePiosenki.insert(glos);
-        } else {
+    while (ss >> numerUtworu) {
+        if (numerUtworu > aktualnyMax)
+            return false;
+        if (wybraneUtwory.find(numerUtworu) != wybraneUtwory.end() ||
+            usunieteUtwory.find(numerUtworu) != usunieteUtwory.end()) {
             return false;
         }
+        wybraneUtwory.insert(numerUtworu);
     }
+
     return true;
 }
 
-void printError(const string &input, size_t line) {
+void wypiszError(const string &input, size_t line) {
     cerr << "Error in line " << line << ": " << input << endl;
 }
 
@@ -117,76 +129,92 @@ bool prawidlowyMax(uint32_t nowyMax, uint32_t aktualnyMax) {
     return aktualnyMax <= nowyMax;
 }
 
-// Funkcja zwraca true, jeśli oddanie głosów się powiodło, w.p.p. false;
-bool oddajGlosy(stringstream &ss, umap32_64 &glosowanie, uset_32 &usunietePiosenki, uint32_t aktualnyMax) {
-    unordered_set<uint32_t> wybranePiosenki;
-    if (prawidloweGlosy(ss, wybranePiosenki, usunietePiosenki, aktualnyMax)) {
-        aktualizujGlosowanie(glosowanie, wybranePiosenki);
+// Funkcja zwraca true, jeśli oddanie głosów się powiodło, w.p.p. false.
+bool oddajGlosy(stringstream &ss, umap32_64 &glosowanie, uset_32 &usunieteUtwory,
+                uint32_t aktualnyMax) {
+    unordered_set<uint32_t> wybraneUtwory;
+
+    if (prawidlowyGlos(ss, wybraneUtwory, usunieteUtwory, aktualnyMax)) {
+        aktualizujGlosowanie(glosowanie, wybraneUtwory);
         return true;
     }
+
     return false;
 }
 
-// TODO: trzeba ładnie złamać linie (ja nie wiem jak) i użyłem wskaźnika (a nie wiem czy można)
-bool rozpocznijNoweGlosowanie(stringstream &ss, umap32_64 &glosowanieOgolne, uset_32 &usunietePiosenki,
-                              umap32_64 &glosowanie, umap32_8 &archiwumNotowania, uint32_t *aktualnyMax) {
+bool rozpocznijNoweGlosowanie(stringstream &ss, umap32_64 &glosowanieOgolne,
+                              uset_32 &usunieteUtwory, umap32_64 &glosowanie,
+                              umap32_8 &archiwumNotowania, uint32_t *aktualnyMax) {
     string komenda;
     uint32_t nowyMax;
     ss >> komenda >> nowyMax;
+
     if (prawidlowyMax(nowyMax, *aktualnyMax)) {
         if (*aktualnyMax != 0) {
             oset_pair_64_32 notowanie = stworzNotowanie(glosowanie);
             aktualizujGlosowanieOgolne(glosowanieOgolne, notowanie);
             wypiszNotowanie(notowanie, archiwumNotowania);
-            usunPiosenki(notowanie, archiwumNotowania, usunietePiosenki);
+            usunUtwory(notowanie, archiwumNotowania, usunieteUtwory);
             archiwumNotowania = stworzArchiwum(notowanie);
             glosowanie.clear();
         }
         *aktualnyMax = nowyMax;
         return true;
     }
+
     return false;
 }
 
-void wypiszNotowanieOgolne(umap32_8 &archiwumOgolne, umap32_64 &glosowanieOgolne) {
+void wypiszPodsumowanie(umap32_8 &archiwumOgolne, umap32_64 &glosowanieOgolne) {
     oset_pair_64_32 notowanieOgolne = stworzNotowanie(glosowanieOgolne);
     wypiszNotowanie(notowanieOgolne, archiwumOgolne);
     archiwumOgolne = stworzArchiwum(notowanieOgolne);
 }
 
 int main() {
-    regex voteRegex(R"(\s*([1-9][0-9]{0,7}\s*)+)");
-    regex newVoteRegex(R"(\s*NEW\s+[1-9][0-9]{0,7}\s*)");
-    regex topRegex(R"(\s*TOP\s*)");
+    regex wzorzecGlosu(R"(\s*([1-9][0-9]{0,7}\s*)+)");
+    regex wzorzecNowegoGlosowania(R"(\s*NEW\s+[1-9][0-9]{0,7}\s*)");
+    regex wzorzecPodsumowania(R"(\s*TOP\s*)");
 
-    size_t line = 1;
-    string input;
+    size_t numerLinii = 1;
+    string liniaWejscia;
 
-    uset_32 usunietePiosenki;
+    // Zbiór utworów, które były notowane w jakimś notowaniu listy przebojów i
+    // nie znalazły się w kolejnym notowaniu.
+    uset_32 usunieteUtwory;
+
+    // Słowniki, gdzie klucz to numer utworu, a wartość to liczba głosów / punktów.
     umap32_64 glosowanie, glosowanieOgolne;
-    umap32_8 archiwumNotowania, archiwumOgolne;
 
+    // Słowniki, gdzie klucz to numer utworu, a wartość to miejsce w ostatnim
+    // notowaniu.
+    umap32_8 archiwumNotowania, archiwumPodsumowania;
+
+    // Maksymalny numer utworu, który jest dopuszczalny.
     uint32_t aktualnyMax = 0;
 
-    while (getline(cin, input)) {
-        if (!input.empty()) {
+    while (getline(cin, liniaWejscia)) {
+        // Ignoruj puste linie.
+        if (!liniaWejscia.empty()) {
             stringstream ss;
-            ss.str(input);
-            if (regex_match(input, voteRegex)) {
-                if (!oddajGlosy(ss, glosowanie, usunietePiosenki, aktualnyMax)) {
-                    printError(input, line);
+            ss.str(liniaWejscia);
+            if (regex_match(liniaWejscia, wzorzecGlosu)) {
+                if (!oddajGlosy(ss, glosowanie, usunieteUtwory, aktualnyMax)) {
+                    wypiszError(liniaWejscia, numerLinii);
                 }
-            } else if (regex_match(input, newVoteRegex)) {
-                if (!rozpocznijNoweGlosowanie(ss, glosowanieOgolne, usunietePiosenki, glosowanie, archiwumNotowania, &aktualnyMax)) {
-                    printError(input, line);
+            } else if (regex_match(liniaWejscia, wzorzecNowegoGlosowania)) {
+                if (!rozpocznijNoweGlosowanie(ss, glosowanieOgolne, usunieteUtwory,
+                                              glosowanie, archiwumNotowania, &aktualnyMax)) {
+                    wypiszError(liniaWejscia, numerLinii);
                 }
-            } else if (regex_match(input, topRegex)) {
-                wypiszNotowanieOgolne(archiwumOgolne, glosowanieOgolne);
+            } else if (regex_match(liniaWejscia, wzorzecPodsumowania)) {
+                wypiszPodsumowanie(archiwumPodsumowania, glosowanieOgolne);
             } else {
-                printError(input, line++);
+                wypiszError(liniaWejscia, numerLinii++);
             }
         }
-        line++;
+        numerLinii++;
     }
+
     return 0;
 }
