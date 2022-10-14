@@ -30,7 +30,7 @@ void aktualizujGlosowanie(umap32_64 &glosowanie, uset_32 &glos) {
 
 void aktualizujGlosowanieOgolne(umap32_64 &glosowanieOgolne, oset_pair_64_32 &notowanie) {
     size_t ilePkt = ROZMIAR_NOTOWANIA - notowanie.size() + 1;
-    
+
     for (auto [punkty, numerUtworu]: notowanie) {
         glosowanieOgolne[numerUtworu] += ilePkt;
         ilePkt++;
@@ -41,7 +41,7 @@ oset_pair_64_32 stworzNotowanie(umap32_64 &glosowanie) {
     // Zapisuje pary (liczba głosów, numer utworu) w kolejności niemalejącej według
     // głosów i malejącej według numerów utworów.
     oset_pair_64_32 notowanie;
-    
+
     for (auto [numerUtworu, liczbaGlosow]: glosowanie) {
         if (notowanie.size() < ROZMIAR_NOTOWANIA) {
             notowanie.insert({liczbaGlosow, numerUtworu});
@@ -55,14 +55,14 @@ oset_pair_64_32 stworzNotowanie(umap32_64 &glosowanie) {
             }
         }
     }
-    
+
     return notowanie;
 }
 
 void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
     uint32_t numerUtworu;
     int8_t miejsce = 1;
-    
+
     for (auto it = notowanie.rbegin(); it != notowanie.rend(); it++) {
         numerUtworu = it->second;
         if (archiwum.find(numerUtworu) != archiwum.end()) {
@@ -76,7 +76,7 @@ void wypiszNotowanie(oset_pair_64_32 &notowanie, umap32_8 &archiwum) {
 
 void usunUtwory(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usunieteUtwory) {
     uint32_t numerUtworu;
-    
+
     for (const auto &it: notowanie) {
         numerUtworu = it.second;
         // Oznaczamy w archiwum utwory, które znalazły się w nowym notowaniu.
@@ -93,7 +93,7 @@ void usunUtwory(oset_pair_64_32 &notowanie, umap32_8 &archiwum, uset_32 &usuniet
 }
 
 umap32_8 stworzArchiwum(oset_pair_64_32 &notowanie) {
-    auto miejsce = (int8_t)notowanie.size();
+    auto miejsce = (int8_t) notowanie.size();
     umap32_8 archiwum;
 
     for (auto [liczbaGlosow, numerUtworu]: notowanie) {
@@ -104,8 +104,8 @@ umap32_8 stworzArchiwum(oset_pair_64_32 &notowanie) {
     return archiwum;
 }
 
-bool prawidlowyGlos(stringstream &ss, uset_32 &wybraneUtwory, uset_32 &usunieteUtwory,
-                    uint32_t aktualnyMax) {
+bool prawidlowyGlos(stringstream &ss, uset_32 &wybraneUtwory,
+                    uset_32 &usunieteUtwory, uint32_t aktualnyMax) {
     uint32_t numerUtworu;
 
     while (ss >> numerUtworu) {
@@ -204,7 +204,8 @@ int main() {
                 }
             } else if (regex_match(liniaWejscia, wzorzecNowegoGlosowania)) {
                 if (!rozpocznijNoweGlosowanie(ss, glosowanieOgolne, usunieteUtwory,
-                                              glosowanie, archiwumNotowania, &aktualnyMax)) {
+                                              glosowanie, archiwumNotowania,
+                                              &aktualnyMax)) {
                     wypiszError(liniaWejscia, numerLinii);
                 }
             } else if (regex_match(liniaWejscia, wzorzecPodsumowania)) {
