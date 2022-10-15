@@ -144,13 +144,13 @@ bool oddajGlosy(stringstream &ss, umap32_64 &glosowanie, uset_32 &usunieteUtwory
 
 bool rozpocznijNoweGlosowanie(stringstream &ss, umap32_64 &glosowanieOgolne,
                               uset_32 &usunieteUtwory, umap32_64 &glosowanie,
-                              umap32_8 &archiwumNotowania, uint32_t *aktualnyMax) {
+                              umap32_8 &archiwumNotowania, uint32_t &aktualnyMax) {
     string komenda;
     uint32_t nowyMax;
     ss >> komenda >> nowyMax;
 
-    if (prawidlowyMax(nowyMax, *aktualnyMax)) {
-        if (*aktualnyMax != 0) {
+    if (prawidlowyMax(nowyMax, aktualnyMax)) {
+        if (aktualnyMax != 0) {
             oset_pair_64_32 notowanie = stworzNotowanie(glosowanie);
             aktualizujGlosowanieOgolne(glosowanieOgolne, notowanie);
             wypiszNotowanie(notowanie, archiwumNotowania);
@@ -158,7 +158,7 @@ bool rozpocznijNoweGlosowanie(stringstream &ss, umap32_64 &glosowanieOgolne,
             archiwumNotowania = stworzArchiwum(notowanie);
             glosowanie.clear();
         }
-        *aktualnyMax = nowyMax;
+        aktualnyMax = nowyMax;
         return true;
     }
 
@@ -211,7 +211,7 @@ int main() {
             } else if (regex_match(liniaWejscia, wzorzecNowegoGlosowania)) {
                 if (!rozpocznijNoweGlosowanie(ss, glosowanieOgolne, usunieteUtwory,
                                               glosowanie, archiwumNotowania,
-                                              &aktualnyMax)) {
+                                              aktualnyMax)) {
                     wypiszError(liniaWejscia, numerLinii);
                 }
             } else if (regex_match(liniaWejscia, wzorzecPodsumowania)) {
