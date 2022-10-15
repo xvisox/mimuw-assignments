@@ -122,7 +122,7 @@ bool prawidlowyGlos(stringstream &ss, uset_32 &wybraneUtwory,
 }
 
 void wypiszError(const string &input, size_t line) {
-    cerr << "Error in line " << line << ": " << input << endl;
+    cerr << "Error in line " << line << ": " << input;
 }
 
 bool prawidlowyMax(uint32_t nowyMax, uint32_t aktualnyMax) {
@@ -171,8 +171,13 @@ void wypiszPodsumowanie(umap32_8 &archiwumOgolne, umap32_64 &glosowanieOgolne) {
     archiwumOgolne = stworzArchiwum(notowanieOgolne);
 }
 
+// Sprawdza, czy podana linia wejścia zawiera same białe znaki.
+bool pustaLinia(string &liniaWejscia) {
+    return liniaWejscia.empty() || all_of(liniaWejscia.begin(), liniaWejscia.end(), [](char c) { return isblank(c); });
+}
+
 int main() {
-    regex wzorzecGlosu(R"(\s*([1-9][0-9]{0,7}\s*)+)");
+    regex wzorzecGlosu(R"(\s*([1-9][0-9]{0,7}\s+)+)");
     regex wzorzecNowegoGlosowania(R"(\s*NEW\s+[1-9][0-9]{0,7}\s*)");
     regex wzorzecPodsumowania(R"(\s*TOP\s*)");
 
@@ -195,7 +200,8 @@ int main() {
 
     while (getline(cin, liniaWejscia)) {
         // Ignoruj puste linie.
-        if (!liniaWejscia.empty()) {
+        if (!pustaLinia(liniaWejscia)) {
+            liniaWejscia += '\n';
             stringstream ss;
             ss.str(liniaWejscia);
             if (regex_match(liniaWejscia, wzorzecGlosu)) {
@@ -211,7 +217,7 @@ int main() {
             } else if (regex_match(liniaWejscia, wzorzecPodsumowania)) {
                 wypiszPodsumowanie(archiwumPodsumowania, glosowanieOgolne);
             } else {
-                wypiszError(liniaWejscia, numerLinii++);
+                wypiszError(liniaWejscia, numerLinii);
             }
         }
         numerLinii++;
