@@ -21,14 +21,26 @@ public class Main {
         Vector v2 = new Vector(randomValues2);
 
         Vector vSum = v1.sum(v2);
-        Vector vDot = v1.dot(v2);
+        int vDot = v1.dot(v2);
         Vector vSumSeq = v1.sumSeq(v2);
-        Vector vDotSeq = v1.dotSeq(v2);
+        int vDotSeq = v1.dotSeq(v2);
+
+        System.out.println("Sum:");
+        System.out.println(vSum.toString());
+        System.out.println("SumSeq:");
+        System.out.println(vSumSeq.toString());
+        System.out.println();
+
+        System.out.println("Dot:");
+        System.out.println(vDot);
+        System.out.println("DotSeq:");
+        System.out.println(vDotSeq);
+        System.out.println();
 
         for (int i = 0; i < HOW_MANY; i++) {
             assert (vSumSeq.getValues()[i] == vSum.getValues()[i]);
-            assert (vDotSeq.getValues()[i] == vDot.getValues()[i]);
         }
+        assert (vDotSeq == vDot);
         System.out.println("Test passed!");
     }
 }

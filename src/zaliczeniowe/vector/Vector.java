@@ -23,26 +23,22 @@ public class Vector {
 
     public Vector sumSeq(Vector other) {
         int[] newValues = new int[length];
-        int i = 0;
-        while (i < length) {
+        for (int i = 0; i < length; i++) {
             newValues[i] = other.values[i] + values[i];
-            i++;
         }
         return new Vector(newValues);
     }
 
-    public Vector dotSeq(Vector other) {
-        int[] newValues = new int[length];
-        int i = 0;
-        while (i < length) {
-            newValues[i] = other.values[i] * values[i];
-            i++;
+    public int dotSeq(Vector other) {
+        int result = 0;
+        for (int i = 0; i < length; i++) {
+            result += (other.values[i] * values[i]);
         }
-        return new Vector(newValues);
+        return result;
     }
 
     private Vector operationOnVectors(Vector other, Operation operation) {
-        int[] newValues = new int[length];
+        int[] newValues = new int[operation == Operation.MULTIPLY ? 1 : length];
         ArrayList<Thread> threads = new ArrayList<>();
         int i = 0;
         while (i < length) {
@@ -65,8 +61,8 @@ public class Vector {
         return operationOnVectors(other, Operation.ADD);
     }
 
-    public Vector dot(Vector other) {
-        return operationOnVectors(other, Operation.MULTIPLY);
+    public int dot(Vector other) {
+        return operationOnVectors(other, Operation.MULTIPLY).values[0];
     }
 
     @Override
@@ -80,10 +76,10 @@ public class Vector {
         @Override
         public void run() {
             int i = start;
-            int end = Math.min(start + SUBVECTOR_LENGTH, newValues.length);
+            int end = Math.min(start + SUBVECTOR_LENGTH, values1.length);
             if (operation.equals(Operation.MULTIPLY)) {
                 while (i < end) {
-                    newValues[i] = values1[i] * values2[i];
+                    newValues[0] += (values1[i] * values2[i]);
                     i++;
                 }
             } else {
