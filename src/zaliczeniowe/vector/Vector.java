@@ -2,11 +2,13 @@ package zaliczeniowe.vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.Semaphore;
 
 public class Vector {
     private final int[] values;
     private final int length;
     private static final int SUBVECTOR_LENGTH = 10;
+    private static final Semaphore mutex = new Semaphore(1, true);
 
     public Vector(int... values) {
         this.values = values;
@@ -79,7 +81,14 @@ public class Vector {
             int end = Math.min(start + SUBVECTOR_LENGTH, values1.length);
             if (operation.equals(Operation.MULTIPLY)) {
                 while (i < end) {
+                    try {
+                        mutex.acquire();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException(e);
+                    }
                     newValues[0] += (values1[i] * values2[i]);
+                    mutex.release();
                     i++;
                 }
             } else {
