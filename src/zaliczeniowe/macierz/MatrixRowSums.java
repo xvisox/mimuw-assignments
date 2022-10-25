@@ -12,9 +12,7 @@ public class MatrixRowSums {
         private final int rows;
         private final int columns;
         private final IntBinaryOperator definition;
-
         private CyclicBarrier barrier;
-        private static int row = 0;
 
         public Matrix(int rows, int columns, IntBinaryOperator definition) {
             this.rows = rows;
@@ -76,6 +74,8 @@ public class MatrixRowSums {
         }
 
         private record SumOneRow(int[] rowSums, int[] oneRow) implements Runnable {
+            private static int row = 0;
+
             @Override
             public void run() {
                 for (int val : oneRow) {
