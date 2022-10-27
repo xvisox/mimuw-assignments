@@ -26,13 +26,13 @@ namespace {
     hash_tbls_t hashTables;
 
     struct Hasher {
-        size_t operator()(const sequence_t& sequence) const {
+        size_t operator()(const sequence_t &sequence) const {
             hash_functions_t::iterator it = hashFunctions.find(sequence.second);
             return it->second(&sequence.first[0], sequence.first.size());
         }
     };
 
-    std::string seq_to_string(uint64_t const * seq, size_t size) {
+    std::string seq_to_string(uint64_t const *seq, size_t size) {
         if (seq == NULL) {
             std::string s = "NULL";
             return s;
@@ -43,7 +43,7 @@ namespace {
         ss << '\"';
 
         if (size > 0) {
-            for(size_t i = 0; i < size - 1; i++)
+            for (size_t i = 0; i < size - 1; i++)
                 ss << seq[i] << ' ';
 
             ss << seq[size - 1];
@@ -54,44 +54,44 @@ namespace {
         return ss.str();
     }
 
-    void print_input_1(const char * function_name,
+    void print_input_1(const char *function_name,
                        hash_function_t hash_function) {
         std::cerr << function_name << '(' << hash_function << ')'
                   << std::endl;
     }
 
-    void print_input_2(const char * function_name, unsigned long id) {
+    void print_input_2(const char *function_name, unsigned long id) {
         std::cerr << function_name << '(' << id << ')' << std::endl;
     }
 
-    void print_input_3(const char * function_name, unsigned long id,
-                       uint64_t const * seq, size_t size) {
+    void print_input_3(const char *function_name, unsigned long id,
+                       uint64_t const *seq, size_t size) {
         std::cerr << function_name << '(' << id << ", "
                   << seq_to_string(seq, size) << ", " << size << ')'
                   << std::endl;
     }
 
-    void print_operation_1(const char * function_name, unsigned long id,
-                           const char * info) {
+    void print_operation_1(const char *function_name, unsigned long id,
+                           const char *info) {
         std::cerr << function_name << ": hash table #" << id << ' ' << info
                   << std::endl;
     }
 
-    void print_operation_2(const char * function_name, unsigned long id,
-                           const char * info_1, size_t size,
-                           const char * info_2) {
+    void print_operation_2(const char *function_name, unsigned long id,
+                           const char *info_1, size_t size,
+                           const char *info_2) {
         std::cerr << function_name << ": hash table #" << id << ' ' << info_1
                   << ' ' << size << ' ' << info_2 << std::endl;
     }
 
-    void print_operation_3(const char * function_name, unsigned long id,
-                       const char * info_1, uint64_t const * seq, size_t size,
-                       const char * info_2) {
-    std::cerr << function_name << ": hash table #" << id << info_1
-              << ' ' << seq_to_string(seq, size) << ' ' << info_2 << std::endl;
+    void print_operation_3(const char *function_name, unsigned long id,
+                           const char *info_1, uint64_t const *seq, size_t size,
+                           const char *info_2) {
+        std::cerr << function_name << ": hash table #" << id << info_1
+                  << ' ' << seq_to_string(seq, size) << ' ' << info_2 << std::endl;
     }
 
-    bool check_input(const char * function_name, uint64_t const * seq,
+    bool check_input(const char *function_name, uint64_t const *seq,
                      size_t size) {
         bool correct = true;
 
@@ -167,7 +167,7 @@ size_t hash_size(unsigned long id) {
     }
 }
 
-bool hash_insert(unsigned long id, uint64_t const * seq, size_t size) {
+bool hash_insert(unsigned long id, uint64_t const *seq, size_t size) {
     if (debug)
         print_input_3(__func__, id, seq, size);
 
@@ -203,7 +203,7 @@ bool hash_insert(unsigned long id, uint64_t const * seq, size_t size) {
     return true;
 }
 
-bool hash_remove(unsigned long id, uint64_t const * seq, size_t size) {
+bool hash_remove(unsigned long id, uint64_t const *seq, size_t size) {
     if (debug)
         print_input_3(__func__, id, seq, size);
 
@@ -261,7 +261,7 @@ void hash_clear(unsigned long id) {
     }
 }
 
-bool hash_test(unsigned long id, uint64_t const * seq, size_t size) {
+bool hash_test(unsigned long id, uint64_t const *seq, size_t size) {
     if (debug)
         print_input_3(__func__, id, seq, size);
 
