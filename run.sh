@@ -1,3 +1,5 @@
+#!/bin/bash
+
 g++ -Wall -Wextra -O2 -std=c++17 -c hash.cc -o hash.o
 gcc -Wall -Wextra -O2 -std=c17 -c hash_test1.c -o hash_test1.o
 g++ -Wall -Wextra -O2 -std=c++17 -c hash_test2.cc -o hash_test2.o
