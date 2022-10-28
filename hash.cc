@@ -14,7 +14,9 @@ bool const debug = true;
 #include <unordered_set>
 #include "hash.h"
 
-#define debug_stream if (!debug) {} else cerr_stream()
+#define debug_stream \
+    if (debug) \
+        cerr_stream()
 
 namespace {
     using Hasher = struct Hasher;
@@ -24,10 +26,10 @@ namespace {
     using hash_table_t = std::unordered_set<sequence_t, Hasher>;
     using hash_tables_t = std::unordered_map<unsigned long, hash_table_t>;
 
-    unsigned long nextId = 0;
+    unsigned long next_id = 0;
 
     std::ostream &cerr_stream() {
-        static std::ios_base::Init m_initializer;
+        static std::ios_base::Init initializer;
         return std::cerr;
     }
 
@@ -39,7 +41,8 @@ namespace {
     struct Hasher {
         size_t operator()(const sequence_t &sequence) const {
             auto hash_function_it = get_hash_functions().find(sequence.second);
-            return hash_function_it->second(&sequence.first[0], sequence.first.size());
+            return hash_function_it->second(&sequence.first[0],
+                                            sequence.first.size());
         }
     };
 
@@ -49,26 +52,29 @@ namespace {
     }
 
     std::string seq_to_string(uint64_t const *seq, size_t size) {
-        if (seq == nullptr) {
-            std::string s = "NULL";
-            return s;
-        }
+        if (seq == nullptr)
+            return "NULL";
 
         std::stringstream ss;
+
         ss << '\"';
+
         if (size > 0) {
             for (size_t i = 0; i < size - 1; i++)
                 ss << seq[i] << ' ';
 
             ss << seq[size - 1];
         }
+
         ss << '\"';
 
         return ss.str();
     }
 
-    void log_hash_create(const char *function_name, hash_function_t hash_function) {
-        debug_stream << function_name << '(' << &hash_function << ')' << std::endl;
+    void log_hash_create(const char *function_name,
+                         hash_function_t hash_function) {
+        debug_stream << function_name << '(' << &hash_function << ')'
+                     << std::endl;
     }
 
     void log_function_call(const char *function_name, unsigned long id) {
@@ -82,28 +88,34 @@ namespace {
                      << std::endl;
     }
 
-    void log_hash_info(const char *function_name, unsigned long id, const char *info) {
+    void log_hash_info(const char *function_name, unsigned long id,
+                       const char *info) {
         debug_stream << function_name << ": hash table #" << id << ' ' << info
                      << std::endl;
     }
 
-    void log_hash_size(const char *function_name, unsigned long id, size_t size) {
-        debug_stream << function_name << ": hash table #" << id << ' ' << "contains"
-                     << ' ' << size << ' ' << "element(s)" << std::endl;
+    void log_hash_size(const char *function_name, unsigned long id,
+                       size_t size) {
+        debug_stream << function_name << ": hash table #" << id << ' '
+                     << "contains" << ' ' << size << ' ' << "element(s)"
+                     << std::endl;
     }
 
     void log_sequence_info(const char *function_name, unsigned long id,
                            uint64_t const *seq, size_t size,
                            const char *info_2) {
         debug_stream << function_name << ": hash table #" << id << ", sequence"
-                     << ' ' << seq_to_string(seq, size) << ' ' << info_2 << std::endl;
+                     << ' ' << seq_to_string(seq, size) << ' ' << info_2
+                     << std::endl;
     }
 
-    bool check_input(const char *function_name, uint64_t const *seq, size_t size) {
+    bool check_input(const char *function_name, uint64_t const *seq,
+                     size_t size) {
         bool correct = true;
 
         if (seq == nullptr) {
-            debug_stream << function_name << ": invalid pointer (NULL)" << std::endl;
+            debug_stream << function_name << ": invalid pointer (NULL)"
+                         << std::endl;
             correct = false;
         }
 
@@ -122,17 +134,17 @@ namespace jnp1 {
         log_hash_create(__func__, hash_function);
 
         hash_table_t hash_table;
-        get_hash_functions()[nextId] = hash_function;
-        get_hash_tables()[nextId] = hash_table;
-
-        log_hash_info(__func__, nextId, "created");
-        return nextId++;
+        get_hash_functions()[next_id] = hash_function;
+        get_hash_tables()[next_id] = hash_table;
+        log_hash_info(__func__, next_id, "created");
+        return next_id++;
     }
 
     void hash_delete(unsigned long id) {
         log_function_call(__func__, id);
 
         auto hash_table_it = get_hash_tables().find(id);
+
         if (hash_table_it == get_hash_tables().end()) {
             log_hash_info(__func__, id, "does not exist");
         } else {
@@ -146,6 +158,7 @@ namespace jnp1 {
         log_function_call(__func__, id);
 
         auto hash_table_it = get_hash_tables().find(id);
+
         if (hash_table_it == get_hash_tables().end()) {
             log_hash_info(__func__, id, "does not exist");
             return 0;
@@ -160,16 +173,20 @@ namespace jnp1 {
 
         bool correct = true;
         auto hash_table_it = get_hash_tables().find(id);
+
         if (hash_table_it == get_hash_tables().end()) {
             log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
-        if (!check_input(__func__, seq, size) || !correct) return false;
+
+        if (!check_input(__func__, seq, size) || !correct)
+            return false;
 
         std::vector<uint64_t> vec(seq, seq + size);
         sequence_t sequence = make_pair(vec, id);
 
-        if (hash_table_it->second.find(sequence) != hash_table_it->second.end()) {
+        if (hash_table_it->second.find(sequence) !=
+            hash_table_it->second.end()) {
             log_sequence_info(__func__, id, seq, size, "was present");
             return false;
         }
@@ -185,16 +202,20 @@ namespace jnp1 {
 
         bool correct = true;
         auto hash_table_it = get_hash_tables().find(id);
+
         if (hash_table_it == get_hash_tables().end()) {
             log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
-        if (!check_input(__func__, seq, size) || !correct) return false;
+
+        if (!check_input(__func__, seq, size) || !correct)
+            return false;
 
         std::vector<uint64_t> vec(seq, seq + size);
         sequence_t sequence = make_pair(vec, id);
 
-        if (hash_table_it->second.find(sequence) == hash_table_it->second.end()) {
+        if (hash_table_it->second.find(sequence) ==
+            hash_table_it->second.end()) {
             log_sequence_info(__func__, id, seq, size, "was not present");
             return false;
         }
@@ -224,19 +245,23 @@ namespace jnp1 {
 
     bool hash_test(unsigned long id, uint64_t const *seq, size_t size) {
         log_input_sequence(__func__, id, seq, size);
-        bool correct = true;
 
+        bool correct = true;
         auto hash_table_it = get_hash_tables().find(id);
+
         if (hash_table_it == get_hash_tables().end()) {
             log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
-        if (!check_input(__func__, seq, size) || !correct) return false;
+
+        if (!check_input(__func__, seq, size) || !correct)
+            return false;
 
         std::vector<uint64_t> vec(seq, seq + size);
         sequence_t sequence = make_pair(vec, id);
 
-        if (hash_table_it->second.find(sequence) == hash_table_it->second.end()) {
+        if (hash_table_it->second.find(sequence) ==
+            hash_table_it->second.end()) {
             log_sequence_info(__func__, id, seq, size, "is not present");
             return false;
         } else {
