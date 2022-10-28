@@ -4,6 +4,7 @@ bool const debug = false;
 bool const debug = true;
 #endif
 
+#include "hash.h"
 #include <vector>
 #include <cassert>
 #include <cstddef>
@@ -23,7 +24,6 @@ namespace {
 
     unsigned long nextId = 0;
     hash_functions_t hashFunctions;
-    hash_tbls_t hashTables;
 
     struct Hasher {
         size_t operator()(const sequence_t &sequence) const {
@@ -31,6 +31,8 @@ namespace {
             return it->second(&sequence.first[0], sequence.first.size());
         }
     };
+
+    hash_tbls_t hashTables;
 
     std::string seq_to_string(uint64_t const *seq, size_t size) {
         if (seq == NULL) {
@@ -56,7 +58,7 @@ namespace {
 
     void print_input_1(const char *function_name,
                        hash_function_t hash_function) {
-        std::cerr << function_name << '(' << hash_function << ')'
+        std::cerr << function_name << '(' << &hash_function << ')'
                   << std::endl;
     }
 
@@ -112,185 +114,187 @@ namespace {
 
         return correct;
     }
-} /* anonymous namespace */
-
-unsigned long hash_create(hash_function_t hash_function) {
-    assert(hash_function != NULL);
-
-    if (debug)
-        print_input_1(__func__, hash_function);
-
-    hash_tbl_t hash_tbl;
-    hashFunctions[nextId] = hash_function;
-    hashTables[nextId] = hash_tbl;
-
-    if (debug)
-        print_operation_1(__func__, nextId, "created");
-
-    return nextId++;
 }
 
-void hash_delete(unsigned long id) {
-    if (debug)
-        print_input_2(__func__, id);
-
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
-        if (debug)
-            print_operation_1(__func__, id, "does not exist");
-    } else {
-        hashFunctions.erase(id);
-        hashTables.erase(it);
+namespace jnp1 {
+    unsigned long hash_create(hash_function_t hash_function) {
+        assert(hash_function != NULL);
 
         if (debug)
-            print_operation_1(__func__, id, "deleted");
-    }
-}
+            print_input_1(__func__, hash_function);
 
-size_t hash_size(unsigned long id) {
-    if (debug)
-        print_input_2(__func__, id);
+        hash_tbl_t hash_tbl;
+        hashFunctions[nextId] = hash_function;
+        hashTables[nextId] = hash_tbl;
 
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
         if (debug)
-            print_operation_1(__func__, id, "does not exist");
+            print_operation_1(__func__, nextId, "created");
 
-        return 0;
-    } else {
-        if (debug)
-            print_operation_2(__func__, id, "contains", it->second.size(), "element(s)");
-
-        return it->second.size();
-    }
-}
-
-bool hash_insert(unsigned long id, uint64_t const *seq, size_t size) {
-    if (debug)
-        print_input_3(__func__, id, seq, size);
-
-    bool correct = check_input(__func__, seq, size);
-
-    if (!correct)
-        return false;
-
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
-        if (debug)
-            print_operation_1(__func__, id, "does not exist");
-
-        return false;
+        return nextId++;
     }
 
-    std::vector<uint64_t> vec(seq, seq + size);
-    sequence_t sequence = make_pair(vec, id);
-
-    if (it->second.find(sequence) != it->second.end()) {
+    void hash_delete(unsigned long id) {
         if (debug)
-            print_operation_3(__func__, id, ", sequence", seq, size, "was present");
+            print_input_2(__func__, id);
 
-        return false;
-    }
+        hash_tbls_t::iterator it = hashTables.find(id);
 
-    it->second.insert(sequence);
-
-    if (debug)
-        print_operation_3(__func__, id, ", sequence", seq, size, "inserted");
-
-    return true;
-}
-
-bool hash_remove(unsigned long id, uint64_t const *seq, size_t size) {
-    if (debug)
-        print_input_3(__func__, id, seq, size);
-
-    bool correct = check_input(__func__, seq, size);
-
-    if (!correct)
-        return false;
-
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
-        if (debug)
-            print_operation_1(__func__, id, "does not exist");
-
-        return false;
-    }
-
-    std::vector<uint64_t> vec(seq, seq + size);
-    sequence_t sequence = make_pair(vec, id);
-
-    if (it->second.find(sequence) == it->second.end()) {
-        if (debug)
-            print_operation_3(__func__, id, ", sequence", seq, size, "was not present");
-
-        return false;
-    }
-
-    it->second.erase(sequence);
-
-    if (debug)
-        print_operation_3(__func__, id, ", sequence", seq, size, "removed");
-
-    return true;
-}
-
-void hash_clear(unsigned long id) {
-    if (debug)
-        print_input_2(__func__, id);
-
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
-        if (debug)
-            print_operation_1(__func__, id, "does not exist");
-    } else {
-        if (it->second.size() == 0) {
+        if (it == hashTables.end()) {
             if (debug)
-                print_operation_1(__func__, id, "was empty");
+                print_operation_1(__func__, id, "does not exist");
         } else {
-            if (debug)
-                print_operation_1(__func__, id, "cleared");
+            hashFunctions.erase(id);
+            hashTables.erase(it);
 
-            it->second.clear();
+            if (debug)
+                print_operation_1(__func__, id, "deleted");
         }
     }
-}
 
-bool hash_test(unsigned long id, uint64_t const *seq, size_t size) {
-    if (debug)
-        print_input_3(__func__, id, seq, size);
-
-    bool correct = check_input(__func__, seq, size);
-
-    if (!correct)
-        return false;
-
-    hash_tbls_t::iterator it = hashTables.find(id);
-
-    if (it == hashTables.end()) {
+    size_t hash_size(unsigned long id) {
         if (debug)
-            print_operation_1(__func__, id, "does not exist");
+            print_input_2(__func__, id);
 
-        return false;
+        hash_tbls_t::iterator it = hashTables.find(id);
+
+        if (it == hashTables.end()) {
+            if (debug)
+                print_operation_1(__func__, id, "does not exist");
+
+            return 0;
+        } else {
+            if (debug)
+                print_operation_2(__func__, id, "contains", it->second.size(), "element(s)");
+
+            return it->second.size();
+        }
     }
 
-    std::vector<uint64_t> vec(seq, seq + size);
-    sequence_t sequence = make_pair(vec, id);
-
-    if (it->second.find(sequence) == it->second.end()) {
+    bool hash_insert(unsigned long id, uint64_t const *seq, size_t size) {
         if (debug)
-            print_operation_3(__func__, id, ", sequence", seq, size, "is not present");
+            print_input_3(__func__, id, seq, size);
 
-        return false;
-    } else {
+        bool correct = check_input(__func__, seq, size);
+
+        if (!correct)
+            return false;
+
+        hash_tbls_t::iterator it = hashTables.find(id);
+
+        if (it == hashTables.end()) {
+            if (debug)
+                print_operation_1(__func__, id, "does not exist");
+
+            return false;
+        }
+
+        std::vector<uint64_t> vec(seq, seq + size);
+        sequence_t sequence = make_pair(vec, id);
+
+        if (it->second.find(sequence) != it->second.end()) {
+            if (debug)
+                print_operation_3(__func__, id, ", sequence", seq, size, "was present");
+
+            return false;
+        }
+
+        it->second.insert(sequence);
+
         if (debug)
-            print_operation_3(__func__, id, ", sequence", seq, size, "is present");
+            print_operation_3(__func__, id, ", sequence", seq, size, "inserted");
 
         return true;
+    }
+
+    bool hash_remove(unsigned long id, uint64_t const *seq, size_t size) {
+        if (debug)
+            print_input_3(__func__, id, seq, size);
+
+        bool correct = check_input(__func__, seq, size);
+
+        if (!correct)
+            return false;
+
+        hash_tbls_t::iterator it = hashTables.find(id);
+
+        if (it == hashTables.end()) {
+            if (debug)
+                print_operation_1(__func__, id, "does not exist");
+
+            return false;
+        }
+
+        std::vector<uint64_t> vec(seq, seq + size);
+        sequence_t sequence = make_pair(vec, id);
+
+        if (it->second.find(sequence) == it->second.end()) {
+            if (debug)
+                print_operation_3(__func__, id, ", sequence", seq, size, "was not present");
+
+            return false;
+        }
+
+        it->second.erase(sequence);
+
+        if (debug)
+            print_operation_3(__func__, id, ", sequence", seq, size, "removed");
+
+        return true;
+    }
+
+    void hash_clear(unsigned long id) {
+        if (debug)
+            print_input_2(__func__, id);
+
+        hash_tbls_t::iterator it = hashTables.find(id);
+
+        if (it == hashTables.end()) {
+            if (debug)
+                print_operation_1(__func__, id, "does not exist");
+        } else {
+            if (it->second.size() == 0) {
+                if (debug)
+                    print_operation_1(__func__, id, "was empty");
+            } else {
+                if (debug)
+                    print_operation_1(__func__, id, "cleared");
+
+                it->second.clear();
+            }
+        }
+    }
+
+    bool hash_test(unsigned long id, uint64_t const *seq, size_t size) {
+        if (debug)
+            print_input_3(__func__, id, seq, size);
+
+        bool correct = check_input(__func__, seq, size);
+
+        if (!correct)
+            return false;
+
+        hash_tbls_t::iterator it = hashTables.find(id);
+
+        if (it == hashTables.end()) {
+            if (debug)
+                print_operation_1(__func__, id, "does not exist");
+
+            return false;
+        }
+
+        std::vector<uint64_t> vec(seq, seq + size);
+        sequence_t sequence = make_pair(vec, id);
+
+        if (it->second.find(sequence) == it->second.end()) {
+            if (debug)
+                print_operation_3(__func__, id, ", sequence", seq, size, "is not present");
+
+            return false;
+        } else {
+            if (debug)
+                print_operation_3(__func__, id, ", sequence", seq, size, "is present");
+
+            return true;
+        }
     }
 }
