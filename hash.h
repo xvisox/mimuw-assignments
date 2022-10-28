@@ -2,13 +2,18 @@
 #define HASH_H
 
 #ifdef __cplusplus
-    #include <cstdlib>
-    namespace jnp1 {
-        extern "C" {
+#include <cstddef>
+#include <cstdint>
+
+namespace jnp1 {
+    extern "C" {
 #else
-    #include <stdbool.h>
-    #include <stdint.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
 #endif
+
+typedef uint64_t (*hash_function_t)(uint64_t const *, size_t);
 
 // Tworzy tablicę haszującą i zwraca jej identyfikator. Parametr
 // hash_function jest wskaźnikiem na funkcję haszującą, która daje w wyniku
