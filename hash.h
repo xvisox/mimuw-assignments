@@ -28,10 +28,11 @@ void hash_delete(unsigned long id);
 // o identyfikatorze id lub 0, jeśli taka tablica nie istnieje.
 size_t hash_size(unsigned long id);
 
-// Jeżeli istnieje poset o identyfikatorze id i element value nie należy do
-// tego zbioru, to dodaje element do zbioru, a w przeciwnym przypadku nic nie
-// robi. Nowy element nie jest w relacji z żadnym elementem. Wynikiem jest
-// true, gdy element został dodany, a false w przeciwnym przypadku.
+// Wstawia do tablicy haszującej o identyfikatorze id ciąg liczb
+// całkowitych seq o długości size. Wynikiem jest informacja, czy operacja
+// się powiodła. Operacja się nie powiedzie, jeśli nie ma takiej tablicy
+// haszującej, jeśli tablica haszująca zawiera już taki ciąg, jeśli
+// parametr seq ma wartość NULL lub parametr size ma wartość 0.
 bool hash_insert(unsigned long id, uint64_t const *seq, size_t size);
 
 // Usuwa z tablicy haszującej o identyfikatorze id ciąg liczb całkowitych
