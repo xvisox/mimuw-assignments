@@ -38,7 +38,7 @@ namespace {
         return hash_tables;
     }
 
-    std::string seq_to_string(uint64_t const *seq, size_t size) { //  TODO dodanie & (?)
+    std::string seq_to_string(uint64_t const *seq, size_t size) {
         if (seq == nullptr)
             return "NULL";
 
@@ -58,10 +58,8 @@ namespace {
         return ss.str();
     }
 
-    void log_hash_create(const char *function_name,
-                         hash_function_t hash_function) {
-        std::cerr << function_name << '(' << &hash_function << ')'
-                  << std::endl;
+    void log_hash_create(const char *function_name, hash_function_t hash_function) {
+        std::cerr << function_name << '(' << &hash_function << ')' << std::endl;
     }
 
     void log_function_call(const char *function_name, unsigned long id) {
@@ -70,52 +68,37 @@ namespace {
 
     void log_input_sequence(const char *function_name, unsigned long id,
                             uint64_t const *seq, size_t size) {
-        std::cerr << function_name << '(' << id << ", "
-                  << seq_to_string(seq, size) << ", " << size << ')'
-                  << std::endl;
+        std::cerr << function_name << '(' << id << ", " << seq_to_string(seq, size) 
+                  << ", " << size << ')' << std::endl;
     }
 
-    void log_hash_info(const char *function_name, unsigned long id,
+    void log_hash_info(const char *function_name, unsigned long id, 
                        const char *info) {
         std::cerr << function_name << ": hash table #" << id << ' ' << info
                   << std::endl;
     }
 
-    void log_hash_size(const char *function_name, unsigned long id,
-                       size_t size) {
-        std::cerr << function_name << ": hash table #" << id << ' '
-                  << "contains" << ' ' << size << ' ' << "element(s)"
-                  << std::endl;
+    void log_hash_size(const char *function_name, unsigned long id, size_t size) {
+        std::cerr << function_name << ": hash table #" << id << ' ' << "contains" 
+                  << ' ' << size << ' ' << "element(s)" << std::endl;
     }
 
     void log_sequence_info(const char *function_name, unsigned long id,
-                           uint64_t const *seq, size_t size,
-                           const char *info_2) {
+                           uint64_t const *seq, size_t size, const char *info_2) {
         std::cerr << function_name << ": hash table #" << id << ", sequence"
-                  << ' ' << seq_to_string(seq, size) << ' ' << info_2
-                  << std::endl;
+                  << ' ' << seq_to_string(seq, size) << ' ' << info_2 << std::endl;
     }
 
-    bool check_input(const char *function_name, uint64_t const *seq,
-                     size_t size) {
-        bool correct = true;
+    void log_input_info(const char *function_name, uint64_t const *seq, size_t size) {
+        if (seq == nullptr)
+            std::cerr << function_name << ": invalid pointer (NULL)" << std::endl;
 
-        if (seq == nullptr) {
-            if (debug)
-                std::cerr << function_name << ": invalid pointer (NULL)"
-                          << std::endl;
+        if (size == 0)
+            std::cerr << function_name << ": invalid size (0)" << std::endl;
+    }
 
-            correct = false;
-        }
-
-        if (size == 0) {
-            if (debug)
-                std::cerr << function_name << ": invalid size (0)" << std::endl;
-
-            correct = false;
-        }
-
-        return correct;
+    bool check_input(uint64_t const *seq, size_t size) {
+        return !(seq == nullptr || size == 0);
     }
 }
 
@@ -170,13 +153,14 @@ namespace jnp1 {
             correct = false;
         }
 
-        if (!check_input(__func__, seq, size) || !correct)
+        if (debug) log_input_info(__func__, seq, size);
+
+        if (!check_input(seq, size) || !correct)
             return false;
 
         sequence_t sequence(seq, seq + size);
 
-        if (hash_tables_it->second.find(sequence) !=
-            hash_tables_it->second.end()) {
+        if (hash_tables_it->second.find(sequence) != hash_tables_it->second.end()) {
             if (debug) log_sequence_info(__func__, id, seq, size, "was present");
             return false;
         }
@@ -198,13 +182,12 @@ namespace jnp1 {
             correct = false;
         }
 
-        if (!check_input(__func__, seq, size) || !correct)
+        if (!check_input(seq, size) || !correct)
             return false;
 
         sequence_t sequence(seq, seq + size);
 
-        if (hash_tables_it->second.find(sequence) ==
-            hash_tables_it->second.end()) {
+        if (hash_tables_it->second.find(sequence) == hash_tables_it->second.end()) {
             if (debug) log_sequence_info(__func__, id, seq, size, "was not present");
             return false;
         }
@@ -243,13 +226,12 @@ namespace jnp1 {
             correct = false;
         }
 
-        if (!check_input(__func__, seq, size) || !correct)
+        if (!check_input(seq, size) || !correct)
             return false;
 
         sequence_t sequence(seq, seq + size);
 
-        if (hash_tables_it->second.find(sequence) ==
-            hash_tables_it->second.end()) {
+        if (hash_tables_it->second.find(sequence) == hash_tables_it->second.end()) {
             if (debug) log_sequence_info(__func__, id, seq, size, "is not present");
             return false;
         } else {
