@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 
 namespace jnp1 {
     extern "C" {
