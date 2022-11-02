@@ -14,6 +14,8 @@ bool const debug = true;
 #include <unordered_set>
 #include "hash.h"
 
+#define DEBUG if (debug)
+
 namespace {
     using Hasher = struct Hasher;
     using sequence_t = std::vector<uint64_t>;
@@ -68,18 +70,18 @@ namespace {
 
     void log_input_sequence(const char *function_name, unsigned long id,
                             uint64_t const *seq, size_t size) {
-        std::cerr << function_name << '(' << id << ", " << seq_to_string(seq, size) 
+        std::cerr << function_name << '(' << id << ", " << seq_to_string(seq, size)
                   << ", " << size << ')' << std::endl;
     }
 
-    void log_hash_info(const char *function_name, unsigned long id, 
+    void log_hash_info(const char *function_name, unsigned long id,
                        const char *info) {
         std::cerr << function_name << ": hash table #" << id << ' ' << info
                   << std::endl;
     }
 
     void log_hash_size(const char *function_name, unsigned long id, size_t size) {
-        std::cerr << function_name << ": hash table #" << id << ' ' << "contains" 
+        std::cerr << function_name << ": hash table #" << id << ' ' << "contains"
                   << ' ' << size << ' ' << "element(s)" << std::endl;
     }
 
@@ -107,53 +109,53 @@ namespace jnp1 {
         static unsigned long next_id = 0;
 
         assert(hash_function != nullptr);
-        if (debug) log_hash_create(__func__, hash_function);
+        DEBUG log_hash_create(__func__, hash_function);
 
         hash_table_t hash_table(0, Hasher(hash_function));
         get_hash_tables().insert(make_pair(next_id, hash_table));
-        if (debug) log_hash_info(__func__, next_id, "created");
+        DEBUG log_hash_info(__func__, next_id, "created");
         return next_id++;
     }
 
     void hash_delete(unsigned long id) {
-        if (debug) log_function_call(__func__, id);
+        DEBUG log_function_call(__func__, id);
 
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
         } else {
             get_hash_tables().erase(hash_tables_it);
-            if (debug) log_hash_info(__func__, id, "deleted");
+            DEBUG log_hash_info(__func__, id, "deleted");
         }
     }
 
     size_t hash_size(unsigned long id) {
-        if (debug) log_function_call(__func__, id);
+        DEBUG log_function_call(__func__, id);
 
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
             return 0;
         } else {
-            if (debug) log_hash_size(__func__, id, hash_tables_it->second.size());
+            DEBUG log_hash_size(__func__, id, hash_tables_it->second.size());
             return hash_tables_it->second.size();
         }
     }
 
     bool hash_insert(unsigned long id, uint64_t const *seq, size_t size) {
-        if (debug) log_input_sequence(__func__, id, seq, size);
+        DEBUG log_input_sequence(__func__, id, seq, size);
 
         bool correct = true;
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
 
-        if (debug) log_input_info(__func__, seq, size);
+        DEBUG log_input_info(__func__, seq, size);
 
         if (!check_input(seq, size) || !correct)
             return false;
@@ -161,26 +163,28 @@ namespace jnp1 {
         sequence_t sequence(seq, seq + size);
 
         if (hash_tables_it->second.find(sequence) != hash_tables_it->second.end()) {
-            if (debug) log_sequence_info(__func__, id, seq, size, "was present");
+            DEBUG log_sequence_info(__func__, id, seq, size, "was present");
             return false;
         }
 
         hash_tables_it->second.insert(sequence);
-        if (debug) log_sequence_info(__func__, id, seq, size, "inserted");
+        DEBUG log_sequence_info(__func__, id, seq, size, "inserted");
 
         return true;
     }
 
     bool hash_remove(unsigned long id, uint64_t const *seq, size_t size) {
-        if (debug) log_input_sequence(__func__, id, seq, size);
+        DEBUG log_input_sequence(__func__, id, seq, size);
 
         bool correct = true;
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
+
+        DEBUG log_input_info(__func__, seq, size);
 
         if (!check_input(seq, size) || !correct)
             return false;
@@ -188,43 +192,45 @@ namespace jnp1 {
         sequence_t sequence(seq, seq + size);
 
         if (hash_tables_it->second.find(sequence) == hash_tables_it->second.end()) {
-            if (debug) log_sequence_info(__func__, id, seq, size, "was not present");
+            DEBUG log_sequence_info(__func__, id, seq, size, "was not present");
             return false;
         }
 
         hash_tables_it->second.erase(sequence);
-        if (debug) log_sequence_info(__func__, id, seq, size, "removed");
+        DEBUG log_sequence_info(__func__, id, seq, size, "removed");
 
         return true;
     }
 
     void hash_clear(unsigned long id) {
-        if (debug) log_function_call(__func__, id);
+        DEBUG log_function_call(__func__, id);
 
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
         } else {
             if (hash_tables_it->second.empty()) {
-                if (debug) log_hash_info(__func__, id, "was empty");
+                DEBUG log_hash_info(__func__, id, "was empty");
             } else {
-                if (debug) log_hash_info(__func__, id, "cleared");
+                DEBUG log_hash_info(__func__, id, "cleared");
                 hash_tables_it->second.clear();
             }
         }
     }
 
     bool hash_test(unsigned long id, uint64_t const *seq, size_t size) {
-        if (debug) log_input_sequence(__func__, id, seq, size);
+        DEBUG log_input_sequence(__func__, id, seq, size);
 
         bool correct = true;
         auto hash_tables_it = get_hash_tables().find(id);
 
         if (hash_tables_it == get_hash_tables().end()) {
-            if (debug) log_hash_info(__func__, id, "does not exist");
+            DEBUG log_hash_info(__func__, id, "does not exist");
             correct = false;
         }
+
+        DEBUG log_input_info(__func__, seq, size);
 
         if (!check_input(seq, size) || !correct)
             return false;
@@ -232,10 +238,10 @@ namespace jnp1 {
         sequence_t sequence(seq, seq + size);
 
         if (hash_tables_it->second.find(sequence) == hash_tables_it->second.end()) {
-            if (debug) log_sequence_info(__func__, id, seq, size, "is not present");
+            DEBUG log_sequence_info(__func__, id, seq, size, "is not present");
             return false;
         } else {
-            if (debug) log_sequence_info(__func__, id, seq, size, "is present");
+            DEBUG log_sequence_info(__func__, id, seq, size, "is present");
             return true;
         }
     }
