@@ -17,10 +17,19 @@ int t[base << 1], lazy[base << 1];
 int n, m;
 
 void push(int v) {
-    t[v * 2] += lazy[v] / 2;
-    t[v * 2 + 1] += lazy[v] / 2;
-    lazy[v * 2] += lazy[v] / 2;
-    lazy[v * 2 + 1] += lazy[v] / 2;
+    if (lazy[v] == 0) return;
+
+    if (lazy[v] > 0) {
+        t[v * 2] = lazy[v] / 2;
+        t[v * 2 + 1] = lazy[v] / 2;
+        lazy[v * 2] = lazy[v] / 2;
+        lazy[v * 2 + 1] = lazy[v] / 2;
+    } else {
+        t[v * 2] = 0;
+        t[v * 2 + 1] = 0;
+        lazy[v * 2] = -1;
+        lazy[v * 2 + 1] = -1;
+    }
     lazy[v] = 0;
 }
 
@@ -29,7 +38,7 @@ void update(int v, int tl, int tr, int l, int r, int addend) {
         return;
     if (l == tl && tr == r) {
         t[v] = addend * (r - l + 1);
-        lazy[v] = addend * (r - l + 1);
+        lazy[v] = addend > 0 ? addend * (r - l + 1) : -1;
     } else {
         push(v);
         int tm = (tl + tr) / 2;
@@ -50,7 +59,6 @@ int query(int v, int tl, int tr, int l, int r) {
            query(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
 }
 
-// Chyba działa, ale nie do końca wiem dlaczego.
 int main() {
     FASTIO;
     cin >> n >> m;
