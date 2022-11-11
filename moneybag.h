@@ -10,11 +10,11 @@ public:
     constexpr Moneybag(coin_number_t livresNumber, coin_number_t solidusesNumber, coin_number_t deniersNumber)
             : livres(livresNumber), soliduses(solidusesNumber), deniers(deniersNumber) {}
 
-    // zarąbane od mądrych ludzi
     constexpr Moneybag(const Moneybag &other) = default;
 
-    // wsm nie kazali pisać move constructora
-    //constexpr Moneybag(Moneybag &&other) = default;
+    Moneybag() = delete;
+
+    ~Moneybag() = default;
 
     constexpr coin_number_t livre_number() const {
         return livres;
@@ -28,8 +28,6 @@ public:
         return soliduses;
     }
 
-    Moneybag() = delete; // TODO CHYBA :)
-
     friend std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
         stream << "(";
         stream << printCurrency("livr", "es", moneybag.livres);
@@ -42,20 +40,16 @@ public:
         return stream;
     }
 
-    bool operator==(Moneybag const &moneybag)
-        const = default;
+    bool operator==(const Moneybag &moneybag) const = default;
 
-    std::partial_ordering operator<=>(Moneybag const & moneybag) const {
+    std::partial_ordering operator<=>(const Moneybag &moneybag) const {
         if (livres == moneybag.livres && deniers == moneybag.deniers && soliduses == moneybag.soliduses) {
             return std::partial_ordering::equivalent;
-        }
-        else if (livres >= moneybag.livres && deniers >= moneybag.deniers && soliduses >= moneybag.soliduses) {
+        } else if (livres >= moneybag.livres && deniers >= moneybag.deniers && soliduses >= moneybag.soliduses) {
             return std::partial_ordering::less;
-        }
-        else if (livres <= moneybag.livres && deniers <= moneybag.deniers && soliduses <= moneybag.soliduses) {
+        } else if (livres <= moneybag.livres && deniers <= moneybag.deniers && soliduses <= moneybag.soliduses) {
             return std::partial_ordering::greater;
-        }
-        else {
+        } else {
             return std::partial_ordering::unordered;
         }
     }
@@ -72,14 +66,13 @@ public:
         return *this;
     }
 
-    constexpr const Moneybag operator+(Moneybag const &moneybag) const {
+    constexpr Moneybag operator+(const Moneybag &moneybag) const {
         return Moneybag(*this) += moneybag;
     }
 
     constexpr const Moneybag &operator-=(const Moneybag &moneybag) {
         if (livres < moneybag.livres || soliduses < moneybag.soliduses || deniers < moneybag.deniers) {
-            throw std::out_of_range(""); //todo - idk jaki mądry komunikat tu dać wsm
-            return *this;
+            throw std::out_of_range(""); // TODO - idk jaki mądry komunikat tu dać wsm
         }
 
         livres -= moneybag.livres;
@@ -89,7 +82,7 @@ public:
         return *this;
     }
 
-    constexpr const Moneybag operator-(Moneybag const &moneybag) const {
+    constexpr Moneybag operator-(const Moneybag &moneybag) const {
         return Moneybag(*this) -= moneybag;
     }
 
@@ -101,17 +94,14 @@ public:
         return *this;
     }
 
-    ~Moneybag() = default;
-
 private:
     coin_number_t livres;
     coin_number_t soliduses;
     coin_number_t deniers;
 
-    static std::string printCurrency(std::string &&currencyName, std::string &&plural,
-                                     coin_number_t currencyCount) {
-        std::string result = "";
-        result += currencyCount + " " + currencyName;
+    static std::string printCurrency(std::string &&currencyName, std::string &&plural, coin_number_t currencyCount) {
+        std::string result = std::to_string(currencyCount);
+        result += (' ' + currencyName);
         if (currencyCount != 1) {
             result += plural;
         }
@@ -120,19 +110,37 @@ private:
     }
 };
 
-//todo - idk czy tu ma być uint64 czy jakieś using gówno
-constexpr const Moneybag operator*(const Moneybag &left, const uint64_t right) {
+//class Value {
+//public:
+//    explicit Value(Moneybag moneybag) :
+//            deniers(moneybag.denier_number() +
+//                    (moneybag.solidus_number() * SOLIDUS_TO_DENIER) +
+//                    (moneybag.livre_number() * LIVR_TO_DENIER)) {}
+//
+//    explicit Value(Moneybag::coin_number_t deniersNumber) : deniers(deniersNumber) {}
+//
+//    explicit operator int() const {
+//        return deniers;
+//    }
+//
+//private:
+//    Moneybag::coin_number_t deniers;
+//    // TODO - nie wiem czy tak mozna, mi sie podoba
+//    static constexpr Moneybag::coin_number_t LIVR_TO_DENIER = 240;
+//    static constexpr Moneybag::coin_number_t SOLIDUS_TO_DENIER = 12;
+//};
+
+// TODO - idk czy tu ma być uint64 czy jakieś using gówno
+constexpr Moneybag operator*(const Moneybag &left, const uint64_t right) {
     return Moneybag(left) *= right;
 }
 
-constexpr const Moneybag operator*(const uint64_t left, const Moneybag &right) {
+constexpr Moneybag operator*(const uint64_t left, const Moneybag &right) {
     return right * left;
 }
 
-// chyba constexpr to to samo co constinit const
-// (oba inicjalizowane w czasie kompilacji, ale constinit nie daje consta, a constexpr chyba jo)
 constexpr Moneybag Livre = Moneybag(1, 0, 0);
-constexpr Moneybag Solidus = Moneybag(0, 1, 0); 
+constexpr Moneybag Solidus = Moneybag(0, 1, 0);
 constexpr Moneybag Denier = Moneybag(0, 0, 1);
 
 #endif // MONEYBAG_H
