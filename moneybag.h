@@ -131,9 +131,39 @@ public:
 
     ~Value() = default;
 
-    operator unsigned long long() const {
-        return deniers;
+    bool operator==(const Value &value) const = default;
+
+    std::partial_ordering operator<=>(const Value &value) const {
+        if (deniers == value.deniers) {
+            return std::partial_ordering::equivalent;
+        } else if (deniers > value.deniers) {
+            return std::partial_ordering::greater;
+        } else if (deniers < value.deniers) {
+            return std::partial_ordering::less;
+        } else {
+            return std::partial_ordering::unordered;
+        }
     }
+
+    bool operator==(uint64_t value) const {
+        return value == deniers;
+    }
+
+    std::partial_ordering operator<=>(uint64_t value) const {
+        if (deniers == value) {
+            return std::partial_ordering::equivalent;
+        } else if (deniers > value) {
+            return std::partial_ordering::greater;
+        } else if (deniers < value) {
+            return std::partial_ordering::less;
+        } else {
+            return std::partial_ordering::unordered;
+        }
+    }
+
+//    operator unsigned long long() const {
+//        return deniers;
+//    }
 
     explicit operator std::string() const {
         return std::to_string(deniers);
