@@ -1,22 +1,17 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include <bits/stdc++.h>
 #include "moneybag.h"
 
 using namespace std;
 
-
 int main() {
-
     // Taka konstrukcja nie powinna się kompilować.
-//     Moneybag m0;
+    // Moneybag m0;
 
     Moneybag m1 = Moneybag(1, 10, 19);
-    cout << m1 << endl;
     Moneybag m2 = 2 * Solidus + 17 * Denier;
-    Moneybag m3(0, 0, 1);
-    cout << m3 << endl;
+    Moneybag m3(0, 0, 0);
     Moneybag m4(m1);
     m4 = m3;
 

@@ -1,8 +1,6 @@
 #ifndef MONEYBAG_H
 #define MONEYBAG_H
 
-#include <compare>
-
 class Moneybag {
 public:
     using coin_number_t = uint64_t;
@@ -29,13 +27,13 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
-        stream << "(";
+        stream << '(';
         stream << printCurrency("livr", "es", moneybag.livres);
         stream << ", ";
         stream << printCurrency("solidus", "es", moneybag.soliduses);
         stream << ", ";
         stream << printCurrency("denier", "s", moneybag.deniers);
-        stream << ")\n";
+        stream << ')';
 
         return stream;
     }
@@ -46,9 +44,9 @@ public:
         if (livres == moneybag.livres && deniers == moneybag.deniers && soliduses == moneybag.soliduses) {
             return std::partial_ordering::equivalent;
         } else if (livres >= moneybag.livres && deniers >= moneybag.deniers && soliduses >= moneybag.soliduses) {
-            return std::partial_ordering::less;
-        } else if (livres <= moneybag.livres && deniers <= moneybag.deniers && soliduses <= moneybag.soliduses) {
             return std::partial_ordering::greater;
+        } else if (livres <= moneybag.livres && deniers <= moneybag.deniers && soliduses <= moneybag.soliduses) {
+            return std::partial_ordering::less;
         } else {
             return std::partial_ordering::unordered;
         }
@@ -110,27 +108,39 @@ private:
     }
 };
 
-//class Value {
-//public:
-//    explicit Value(Moneybag moneybag) :
-//            deniers(moneybag.denier_number() +
-//                    (moneybag.solidus_number() * SOLIDUS_TO_DENIER) +
-//                    (moneybag.livre_number() * LIVR_TO_DENIER)) {}
-//
-//    explicit Value(Moneybag::coin_number_t deniersNumber) : deniers(deniersNumber) {}
-//
-//    explicit operator int() const {
-//        return deniers;
-//    }
-//
-//private:
-//    Moneybag::coin_number_t deniers;
-//    // TODO - nie wiem czy tak mozna, mi sie podoba
-//    static constexpr Moneybag::coin_number_t LIVR_TO_DENIER = 240;
-//    static constexpr Moneybag::coin_number_t SOLIDUS_TO_DENIER = 12;
-//};
+class Value {
+public:
+    using coin_number_t = uint64_t;
 
-// TODO - idk czy tu ma być uint64 czy jakieś using gówno
+    explicit Value(Moneybag moneybag) :
+            deniers(moneybag.denier_number() +
+                    moneybag.solidus_number() * SOLIDUS_TO_DENIER +
+                    moneybag.livre_number() * LIVR_TO_DENIER) {}
+
+    explicit Value(coin_number_t deniersNumber) : deniers(deniersNumber) {}
+
+    Value(const Value &other) = default;
+
+    Value() = default;
+
+    ~Value() = default;
+
+    operator unsigned long long() const {
+        return deniers;
+    }
+
+    explicit operator std::string() const {
+        return std::to_string(deniers);
+    }
+
+private:
+    Moneybag::coin_number_t deniers;
+    // TODO - nie wiem czy tak mozna, mi sie podoba
+    static constexpr Moneybag::coin_number_t LIVR_TO_DENIER = 240;
+    static constexpr Moneybag::coin_number_t SOLIDUS_TO_DENIER = 12;
+};
+
+// TODO - idk czy tu ma być uint64
 constexpr Moneybag operator*(const Moneybag &left, const uint64_t right) {
     return Moneybag(left) *= right;
 }
