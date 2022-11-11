@@ -1,6 +1,10 @@
 #ifndef MONEYBAG_H
 #define MONEYBAG_H
 
+#include <ostream>
+#include <string>
+#include <compare>
+
 class Moneybag {
 public:
     using coin_number_t = uint64_t;
@@ -56,6 +60,7 @@ public:
         return (livres + soliduses + deniers > 0);
     }
 
+    // TODO - out_of_range (?)
     constexpr const Moneybag &operator+=(const Moneybag &moneybag) {
         livres += moneybag.livres;
         soliduses += moneybag.soliduses;
@@ -70,7 +75,7 @@ public:
 
     constexpr const Moneybag &operator-=(const Moneybag &moneybag) {
         if (livres < moneybag.livres || soliduses < moneybag.soliduses || deniers < moneybag.deniers) {
-            throw std::out_of_range(""); // TODO - idk jaki mądry komunikat tu dać wsm
+            throw std::out_of_range("Unexpected subtraction!");
         }
 
         livres -= moneybag.livres;
@@ -97,6 +102,7 @@ private:
     coin_number_t soliduses;
     coin_number_t deniers;
 
+    // TODO - czy to nie przekazuje kopii (?)
     static std::string printCurrency(std::string &&currencyName, std::string &&plural, coin_number_t currencyCount) {
         std::string result = std::to_string(currencyCount);
         result += (' ' + currencyName);
@@ -134,10 +140,9 @@ public:
     }
 
 private:
-    Moneybag::coin_number_t deniers;
-    // TODO - nie wiem czy tak mozna, mi sie podoba
-    static constexpr Moneybag::coin_number_t LIVR_TO_DENIER = 240;
-    static constexpr Moneybag::coin_number_t SOLIDUS_TO_DENIER = 12;
+    coin_number_t deniers;
+    static constexpr coin_number_t LIVR_TO_DENIER = 240;
+    static constexpr coin_number_t SOLIDUS_TO_DENIER = 12;
 };
 
 // TODO - idk czy tu ma być uint64
