@@ -175,7 +175,7 @@ private:
     static constexpr coin_number_t SOLIDUS_TO_DENIER = 12;
 };
 
-// TODO - idk czy tu ma być uint64
+// TODO - Czy tu ma być uint64?
 constexpr Moneybag operator*(const Moneybag &left, const uint64_t right) {
     return Moneybag(left) *= right;
 }
