@@ -49,6 +49,7 @@ int main() {
     cout << string(Value(Livre)) << endl;
 
     assert(v1 == v2);
+    assert(20 < v2);
     assert(!is_neq(v1 <=> v2));
     assert(v1 == 379);
     assert(379 == v2);
