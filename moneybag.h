@@ -99,7 +99,7 @@ private:
     coin_number_t deniers;
 };
 
-std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
+inline std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
     static auto printCurrency =
     [](std::string &&currencyName, std::string &&plural, Moneybag::coin_number_t currencyCount) -> std::string {
         std::string result = std::to_string(currencyCount);
@@ -139,7 +139,7 @@ class Value {
 public:
     using coin_value_t = boost::multiprecision::uint128_t;
 
-    constexpr Value(Moneybag moneybag) :
+    Value(Moneybag moneybag) :
             deniers((coin_value_t) moneybag.denier_number() +
                     (coin_value_t) moneybag.solidus_number() * SOLIDUS_TO_DENIER +
                     (coin_value_t) moneybag.livre_number() * LIVR_TO_DENIER) {}
@@ -152,7 +152,7 @@ public:
         return value == deniers;
     };
 
-    constexpr std::strong_ordering operator<=>(const Value &value) const {
+    std::strong_ordering operator<=>(const Value &value) const {
         if (deniers == value.deniers) {
             return std::strong_ordering::equivalent;
         } else if (deniers > value.deniers) {
@@ -162,7 +162,7 @@ public:
         }
     }
 
-    constexpr std::strong_ordering operator<=>(coin_value_t value) const {
+    std::strong_ordering operator<=>(coin_value_t value) const {
         if (deniers == value) {
             return std::strong_ordering::equivalent;
         } else if (deniers > value) {
