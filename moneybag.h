@@ -25,18 +25,6 @@ public:
         return soliduses;
     }
 
-    friend std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
-        stream << '(';
-        stream << printCurrency("livr", "es", moneybag.livres);
-        stream << ", ";
-        stream << printCurrency("solidus", "es", moneybag.soliduses);
-        stream << ", ";
-        stream << printCurrency("denier", "s", moneybag.deniers);
-        stream << ')';
-
-        return stream;
-    }
-
     bool operator==(const Moneybag &moneybag) const = default;
 
     constexpr std::partial_ordering operator<=>(const Moneybag &moneybag) const {
@@ -56,9 +44,9 @@ public:
     }
 
     constexpr const Moneybag &operator+=(const Moneybag &moneybag) {
-        if (INT64_MAX - livres < moneybag.livres
-         || INT64_MAX - soliduses < moneybag.soliduses
-         || INT64_MAX - deniers < moneybag.deniers) {
+        if ((INT64_MAX - livres) < moneybag.livres ||
+            (INT64_MAX - soliduses) < moneybag.soliduses ||
+            (INT64_MAX - deniers) < moneybag.deniers) {
             throw std::out_of_range("Unexpected addition!");
         }
 
@@ -74,7 +62,9 @@ public:
     }
 
     constexpr const Moneybag &operator-=(const Moneybag &moneybag) {
-        if (livres < moneybag.livres || soliduses < moneybag.soliduses || deniers < moneybag.deniers) {
+        if (livres < moneybag.livres ||
+            soliduses < moneybag.soliduses ||
+            deniers < moneybag.deniers) {
             throw std::out_of_range("Unexpected subtraction!");
         }
 
@@ -90,9 +80,9 @@ public:
     }
 
     constexpr const Moneybag &operator*=(coin_number_t multiply) {
-        if (INT64_MAX / multiply < livres
-         || INT64_MAX / multiply < soliduses
-         || INT64_MAX / multiply < deniers) {
+        if ((INT64_MAX / multiply) < livres ||
+            (INT64_MAX / multiply) < soliduses ||
+            (INT64_MAX / multiply) < deniers) {
             throw std::out_of_range("Unexpected multiplication!");
         }
 
@@ -107,18 +97,29 @@ private:
     coin_number_t livres;
     coin_number_t soliduses;
     coin_number_t deniers;
+};
 
-    // toporny kod
-    static std::string printCurrency(std::string &&currencyName, std::string &&plural, coin_number_t currencyCount) {
+std::ostream &operator<<(std::ostream &stream, const Moneybag &moneybag) {
+    static auto printCurrency =
+    [](std::string &&currencyName, std::string &&plural, Moneybag::coin_number_t currencyCount) -> std::string {
         std::string result = std::to_string(currencyCount);
         result += (' ' + currencyName);
         if (currencyCount != 1) {
             result += plural;
         }
-
         return result;
-    }
-};
+    };
+
+    stream << '(';
+    stream << printCurrency("livr", "es", moneybag.livre_number());
+    stream << ", ";
+    stream << printCurrency("solidus", "es", moneybag.solidus_number());
+    stream << ", ";
+    stream << printCurrency("denier", "s", moneybag.denier_number());
+    stream << ')';
+
+    return stream;
+}
 
 // Przy wykonywaniu mnożenia nie wiemy, czy skalar będzie po lewej, czy po prawej stronie
 // (w operatorze deklarowanym w klasie, domyślnie skalar byłby po lewej).
@@ -126,7 +127,6 @@ constexpr Moneybag operator*(const Moneybag &left, Moneybag::coin_number_t right
     return Moneybag(left) *= right;
 }
 
-// overflow todo
 constexpr Moneybag operator*(Moneybag::coin_number_t left, const Moneybag &right) {
     return right * left;
 }
@@ -152,7 +152,7 @@ public:
         return value == deniers;
     };
 
-    std::strong_ordering operator<=>(const Value &value) const {
+    constexpr std::strong_ordering operator<=>(const Value &value) const {
         if (deniers == value.deniers) {
             return std::strong_ordering::equivalent;
         } else if (deniers > value.deniers) {
@@ -162,7 +162,7 @@ public:
         }
     }
 
-    std::strong_ordering operator<=>(coin_value_t value) const {
+    constexpr std::strong_ordering operator<=>(coin_value_t value) const {
         if (deniers == value) {
             return std::strong_ordering::equivalent;
         } else if (deniers > value) {

@@ -1,39 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
-
-project(Moneybag_Tests)
+cmake_minimum_required(VERSION 3.16)
+project(JNP1_3)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -O2")
 
-include(FetchContent)
-FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG release-1.12.1
-)
+include_directories(.)
 
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-enable_testing()
-
-FILE(GLOB InputTestFiles tests/*)
-
-add_library(hash STATIC moneybag.cc)
-target_include_directories(hash PUBLIC . )
-
-add_executable(
-        Tests
-        ${InputTestFiles}
-)
-
-target_include_directories(Tests PUBLIC .)
-
-target_link_libraries(
-        Tests
-        hash
-        GTest::gtest_main
-)
-
-include(GoogleTest)
-gtest_discover_tests(Tests)
+add_executable(JNP1_3
+        moneybag.cc
+        moneybag.h)
