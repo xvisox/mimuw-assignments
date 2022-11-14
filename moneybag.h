@@ -55,8 +55,13 @@ public:
         return livres | soliduses | deniers;
     }
 
-    // TODO - out_of_range (?)
     constexpr const Moneybag &operator+=(const Moneybag &moneybag) {
+        if (INT64_MAX - livres < moneybag.livres
+         || INT64_MAX - soliduses < moneybag.soliduses
+         || INT64_MAX - deniers < moneybag.deniers) {
+            throw std::out_of_range("Unexpected addition!");
+        }
+
         livres += moneybag.livres;
         soliduses += moneybag.soliduses;
         deniers += moneybag.deniers;
@@ -84,7 +89,13 @@ public:
         return Moneybag(*this) -= moneybag;
     }
 
-    constexpr const Moneybag &operator*=(uint64_t multiply) {
+    constexpr const Moneybag &operator*=(coin_number_t multiply) {
+        if (INT64_MAX / multiply < livres
+         || INT64_MAX / multiply < soliduses
+         || INT64_MAX / multiply < deniers) {
+            throw std::out_of_range("Unexpected multiplication!");
+        }
+
         livres *= multiply;
         soliduses *= multiply;
         deniers *= multiply;
@@ -97,7 +108,6 @@ private:
     coin_number_t soliduses;
     coin_number_t deniers;
 
-    // TODO - czy to nie przekazuje kopii (?)
     // toporny kod
     static std::string printCurrency(std::string &&currencyName, std::string &&plural, coin_number_t currencyCount) {
         std::string result = std::to_string(currencyCount);
@@ -129,7 +139,7 @@ class Value {
 public:
     using coin_value_t = boost::multiprecision::uint128_t;
 
-    Value(Moneybag moneybag) :
+    constexpr Value(Moneybag moneybag) :
             deniers((coin_value_t) moneybag.denier_number() +
                     (coin_value_t) moneybag.solidus_number() * SOLIDUS_TO_DENIER +
                     (coin_value_t) moneybag.livre_number() * LIVR_TO_DENIER) {}
