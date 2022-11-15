@@ -15,10 +15,15 @@ public class BlockingQueue<T> {
         while (list.isEmpty()) {
             wait();
         }
-        return list.pollFirst();
+        var result = list.pollFirst();
+        notifyAll();
+        return result;
     }
 
     public synchronized void put(T item) throws InterruptedException {
+        while (list.size() == capacity) {
+            wait();
+        }
         list.addLast(item);
         notifyAll();
     }
