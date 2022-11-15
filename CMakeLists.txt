@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16.3)
 project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Codeforces/1500/1372.cpp)
+add_executable(ASD Laby/Dynamiczny.cpp)
