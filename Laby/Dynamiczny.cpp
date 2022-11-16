@@ -12,149 +12,148 @@
 using namespace std;
 
 struct node {
-    node *left, *right;
-    node *parent;
+    struct node *left, *right;
     ll element, number;
-    ll size;
+    ll size, height;
 
-    node(ll el, ll num) : left(nullptr), right(nullptr), parent(nullptr), element(el), number(num), size(num) {}
+    node(ll el, ll num) : left(nullptr), right(nullptr), element(el), number(num), size(num), height(1) {}
 };
 
 node *root = nullptr;
-
-void left_rotate(node *x) {
-    node *y = x->right;
-    if (y) {
-        x->right = y->left;
-        if (y->left) y->left->parent = x;
-        y->parent = x->parent;
-
-        x->size = x->number;
-        if (x->left) x->size += x->left->size;
-        if (x->right) x->size += x->right->size;
-    }
-
-    if (!x->parent) root = y;
-    else if (x == x->parent->left) x->parent->left = y;
-    else x->parent->right = y;
-    if (y) y->left = x;
-    x->parent = y;
-
-    y->size = y->number;
-    if (y->left) y->size += y->left->size;
-    if (y->right) y->size += y->right->size;
-}
-
-void right_rotate(node *x) {
-    node *y = x->left;
-    if (y) {
-        x->left = y->right;
-        if (y->right) y->right->parent = x;
-        y->parent = x->parent;
-
-        x->size = x->number;
-        if (x->left) x->size += x->left->size;
-        if (x->right) x->size += x->right->size;
-    }
-    if (!x->parent) root = y;
-    else if (x == x->parent->left) x->parent->left = y;
-    else x->parent->right = y;
-    if (y) y->right = x;
-    x->parent = y;
-
-    y->size = y->number;
-    if (y->left) y->size += y->left->size;
-    if (y->right) y->size += y->right->size;
-}
-
-void splay(node *x) {
-    while (x->parent) {
-        if (!x->parent->parent) {
-            if (x->parent->left == x) right_rotate(x->parent);
-            else left_rotate(x->parent);
-        } else if (x->parent->left == x && x->parent->parent->left == x->parent) {
-            right_rotate(x->parent->parent);
-            right_rotate(x->parent);
-        } else if (x->parent->right == x && x->parent->parent->right == x->parent) {
-            left_rotate(x->parent->parent);
-            left_rotate(x->parent);
-        } else if (x->parent->left == x && x->parent->parent->right == x->parent) {
-            right_rotate(x->parent);
-            left_rotate(x->parent);
-        } else {
-            left_rotate(x->parent);
-            right_rotate(x->parent);
-        }
-    }
-}
 
 ll getLeftSize(node *v) {
     return (v->left ? v->left->size : 0);
 }
 
-void insert(ll poz, ll el, ll ile) {
-    node *v = root;
-    node *p = nullptr;
+ll getRightSize(node *v) {
+    return (v->right ? v->right->size : 0);
+}
 
-    bool wasLeft = false;
-    while (v != nullptr) {
-        p = v;
-        if (getLeftSize(v) < poz && poz < getLeftSize(v) + v->number) {
-            break;
-        } else if (poz <= getLeftSize(v) || poz == 0) {
-            wasLeft = true;
-            v = v->left;
-        } else {
-            wasLeft = false;
-            poz -= getLeftSize(v) + v->number;
-            v = v->right;
+ll getLeftHeight(node *v) {
+    return (v->left ? v->left->height : 0);
+}
+
+ll getRightHeight(node *v) {
+    return (v->right ? v->right->height : 0);
+}
+
+ll ll_max(ll a, ll b) {
+    return a > b ? a : b;
+}
+
+ll getHeight(node *v) {
+    if (v == nullptr) {
+        return 0;
+    }
+    return ll_max(getLeftHeight(v), getRightHeight(v)) + 1; // byczku
+}
+
+ll getSize(node *v) {
+    if (v == nullptr) {
+        return 0;
+    }
+    return getLeftSize(v) + getRightSize(v) + v->number;
+}
+
+node *rotateRight(node *v) {
+    node *vLeft = v->left;
+    node *vLeftRight = vLeft->right;
+
+    v->left = vLeftRight;
+    vLeft->right = v;
+
+    v->height = getHeight(v);
+    vLeft->height = getHeight(vLeft);
+
+    v->size = getSize(v);
+    vLeft->size = getSize(vLeft);
+
+    return vLeft;
+}
+
+node *rotateLeft(node *v) {
+    node *vRight = v->right;
+    node *vRightLeft = vRight->left;
+
+    v->right = vRightLeft;
+    vRight->left = v;
+
+    v->height = getHeight(v);
+    vRight->height = getHeight(vRight);
+
+    v->size = getSize(v);
+    vRight->size = getSize(vRight);
+
+    return vRight;
+}
+
+node *splay(node *v) {
+    if (getLeftHeight(v) - getRightHeight(v) > 1) {
+        if (getLeftSize(v->left) > getRightSize(v->left)) {
+            v->left = rotateLeft(v->left);
         }
+
+        v = rotateRight(v);
+    } else if (getLeftHeight(v) - getRightHeight(v) < -1) {
+        if (getLeftSize(v->right) > getRightSize(v->right)) {
+            v->right = rotateRight(v->right);
+        }
+
+        v = rotateLeft(v);
+    }
+    return v;
+}
+
+node *insert(node *v, ll poz, ll el, ll ile) {
+    if (v == nullptr) {
+        return new node(el, ile);
+    }
+    if (poz > getLeftSize(v) + v->number) {
+        v->right = insert(v->right, poz - getLeftSize(v) - v->number, el, ile);
+        v->size = getSize(v);
+        v->height = getHeight(v);
+
+//        return splay(v);
+        return v;
+    } else if (poz < getLeftSize(v)) {
+        v->left = insert(v->left, poz, el, ile);
+        v->size = getSize(v);
+        v->height = getHeight(v);
+
+//        return splay(v);
+        return v;
     }
 
-    if (v) {
-        splay(v);
-        node *main = new node(el, ile);
-        main->left = v->left;
-        main->right = v->right;
+    node *l = (poz - getLeftSize(v)) > 0 ?
+              insert(v->left, getLeftSize(v), v->element, poz - getLeftSize(v)) : v->left;
 
-        if (main->left) main->size += main->left->size;
-        if (main->right) main->size += main->right->size;
+    node *r = (v->number - poz + getLeftSize(v)) > 0 ?
+              insert(v->right, 0, v->element, v->number - poz + getLeftSize(v)) : v->right;
 
-        root = main;
-        insert(v->size - v->number, v->element, poz);
-        insert(v->size - v->number + poz + ile, v->element, v->number - poz);
+    node *main = new node(el, ile);
+    main->left = l;
+    main->right = r;
 
-    } else {
-        v = new node(el, ile);
-        v->parent = p;
-
-        if (!p) root = v;
-        else if (!wasLeft) p->right = v;
-        else p->left = v;
-
-        if (v->parent) p->size += v->size;
-
-        splay(v);
-    }
+    main->size = getSize(main);
+    main->height = getHeight(main);
+    return main;
+//    return splay(main);
 }
 
 ll get(ll poz) {
-    poz++;
     node *v = root;
-    node *p = nullptr;
 
     while (v != nullptr) {
-        p = v;
-        if (getLeftSize(v) < poz && poz <= getLeftSize(v) + v->number) {
-            break;
-        } else if (poz <= getLeftSize(v)) {
-            v = v->left;
-        } else {
+        if (poz >= getLeftSize(v) + v->number) {
             poz -= getLeftSize(v) + v->number;
             v = v->right;
+        } else if (poz < getLeftSize(v)) {
+            v = v->left;
+        } else {
+            break;
         }
     }
-    return p->element;
+    return v->element;
 }
 
 void test() {
@@ -173,9 +172,7 @@ void solve() {
         if (o == 'i') {
             cin >> a >> b >> c;
             a = (a + lastGet) % (n + 1);
-//            cout << a << ' ' << b << ' ' << c << endl;
-            insert(a, b, c);
-//            test();
+            root = insert(root, a, b, c);
         } else {
             cin >> a;
             a = (a + lastGet) % n;
@@ -188,36 +185,17 @@ void solve() {
 
 int main() {
     FASTIO;
-//    insert(0, 2, 3); // 2 2 2
+//    root = insert(root, 0, 1, 5);
 //    test();
-//    insert(1, 1, 2); // 2 1 1 2 2
+//    root = insert(root, 3, 2, 2);
 //    test();
-//    insert(5, 1, 1); // 2 1 1 2 2 1
+//    root = insert(root, 2, 3, 1);
 //    test();
-//    insert(3, 3, 2); // 2 1 1 3 3 2 2 1
-//    test();
-
-//    insert(0, 1, 1);
-//    test();
-//    insert(1, 2, 1);
-//    test();
-//    insert(1, 3, 1);
-//    test();
-//    insert(1, 4, 1);
-//    test();
-//    insert(1, 5, 1);
-//    test();
-//    insert(1, 6, 1);
-//    test();
-//    solve();
-
-    insert(0, 1, 10);
-    test();
-    insert(10, 2, 2);
-    test();
-    insert(5, 6, 3);
+//    root = insert(root, 3, 4, 1);
 //    test();
 
+
+    solve();
 
     return 0;
 }
