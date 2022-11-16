@@ -44,9 +44,9 @@ public:
     }
 
     constexpr const Moneybag &operator+=(const Moneybag &moneybag) {
-        if ((INT64_MAX - livres) < moneybag.livres ||
-            (INT64_MAX - soliduses) < moneybag.soliduses ||
-            (INT64_MAX - deniers) < moneybag.deniers) {
+        if ((UINT64_MAX - livres) < moneybag.livres ||
+            (UINT64_MAX - soliduses) < moneybag.soliduses ||
+            (UINT64_MAX - deniers) < moneybag.deniers) {
             throw std::out_of_range("Unexpected addition!");
         }
 
@@ -80,9 +80,16 @@ public:
     }
 
     constexpr const Moneybag &operator*=(coin_number_t multiply) {
-        if ((INT64_MAX / multiply) < livres ||
-            (INT64_MAX / multiply) < soliduses ||
-            (INT64_MAX / multiply) < deniers) {
+        if (multiply == 0) {
+            livres = 0;
+            soliduses = 0;
+            deniers = 0;
+            return *this;
+        }
+
+        if ((UINT64_MAX / multiply) < livres ||
+            (UINT64_MAX / multiply) < soliduses ||
+            (UINT64_MAX / multiply) < deniers) {
             throw std::out_of_range("Unexpected multiplication!");
         }
 
@@ -144,11 +151,11 @@ public:
                     (coin_value_t) moneybag.solidus_number() * SOLIDUS_TO_DENIER +
                     (coin_value_t) moneybag.livre_number() * LIVR_TO_DENIER) {}
 
-    constexpr Value(coin_value_t deniersNumber = 0) : deniers(deniersNumber) {}
+    constexpr Value(Moneybag::coin_number_t deniersNumber = 0) : deniers(deniersNumber) {}
 
     bool operator==(const Value &value) const = default;
 
-    bool operator==(coin_value_t value) {
+    bool operator==(Moneybag::coin_number_t value) {
         return value == deniers;
     };
 
@@ -162,7 +169,7 @@ public:
         }
     }
 
-    std::strong_ordering operator<=>(coin_value_t value) const {
+    std::strong_ordering operator<=>(Moneybag::coin_number_t value) const {
         if (deniers == value) {
             return std::strong_ordering::equivalent;
         } else if (deniers > value) {
