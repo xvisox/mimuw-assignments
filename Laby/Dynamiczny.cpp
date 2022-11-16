@@ -88,24 +88,26 @@ void splay(node *x) {
     }
 }
 
+ll getLeftSize(node *v) {
+    return (v->left ? v->left->size : 0);
+}
+
 void insert(ll poz, ll el, ll ile) {
     node *v = root;
     node *p = nullptr;
 
     bool wasLeft = false;
     while (v != nullptr) {
-        if (v->size - v->number < poz && poz < v->size) {
+        p = v;
+        if (getLeftSize(v) < poz && poz < getLeftSize(v) + v->number) {
             break;
+        } else if (poz <= getLeftSize(v) || poz == 0) {
+            wasLeft = true;
+            v = v->left;
         } else {
-            p = v;
-            if (poz >= v->size) {
-                poz -= (v->left ? v->left->size : 0) + 1;
-                v = v->right;
-                wasLeft = false;
-            } else {
-                v = v->left;
-                wasLeft = true;
-            }
+            wasLeft = false;
+            poz -= getLeftSize(v) + v->number;
+            v = v->right;
         }
     }
 
@@ -136,10 +138,6 @@ void insert(ll poz, ll el, ll ile) {
     }
 }
 
-ll getLeftSize(node *v) {
-    return (v->left ? v->left->size : 0);
-}
-
 ll get(ll poz) {
     poz++;
     node *v = root;
@@ -166,6 +164,28 @@ void test() {
     cout << endl;
 }
 
+void solve() {
+    ll m, a, b, c, lastGet = 0, n = 0;
+    cin >> m;
+    char o;
+    while (m--) {
+        cin >> o;
+        if (o == 'i') {
+            cin >> a >> b >> c;
+            a = (a + lastGet) % (n + 1);
+//            cout << a << ' ' << b << ' ' << c << endl;
+            insert(a, b, c);
+//            test();
+        } else {
+            cin >> a;
+            a = (a + lastGet) % n;
+            lastGet = get(a);
+            cout << lastGet << endl;
+        }
+        n = root->size;
+    }
+}
+
 int main() {
     FASTIO;
 //    insert(0, 2, 3); // 2 2 2
@@ -179,16 +199,25 @@ int main() {
 
 //    insert(0, 1, 1);
 //    test();
-//    insert(0, 2, 1);
+//    insert(1, 2, 1);
 //    test();
-//    insert(0, 3, 1);
+//    insert(1, 3, 1);
 //    test();
-//    insert(0, 4, 1);
+//    insert(1, 4, 1);
 //    test();
-//    insert(0, 5, 1);
+//    insert(1, 5, 1);
 //    test();
-//    insert(0, 6, 1);
+//    insert(1, 6, 1);
 //    test();
+//    solve();
+
+    insert(0, 1, 10);
+    test();
+    insert(10, 2, 2);
+    test();
+    insert(5, 6, 3);
+//    test();
+
 
     return 0;
 }
