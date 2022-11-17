@@ -144,8 +144,6 @@ constinit const Moneybag Denier = Moneybag(0, 0, 1);
 
 class Value {
 public:
-    using coin_value_t = boost::multiprecision::uint128_t;
-
     Value(Moneybag moneybag) :
             deniers((coin_value_t) moneybag.denier_number() +
                     (coin_value_t) moneybag.solidus_number() * SOLIDUS_TO_DENIER +
@@ -184,6 +182,7 @@ public:
     }
 
 private:
+    using coin_value_t = boost::multiprecision::uint128_t;
     coin_value_t deniers;
     static constexpr coin_value_t LIVR_TO_DENIER = 240;
     static constexpr coin_value_t SOLIDUS_TO_DENIER = 12;
