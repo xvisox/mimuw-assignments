@@ -61,10 +61,8 @@ node *rotateRight(node *v) {
 
     v->left = vLeftRight;
     vLeft->right = v;
-
     v->height = getHeight(v);
     vLeft->height = getHeight(vLeft);
-
     v->size = getSize(v);
     vLeft->size = getSize(vLeft);
 
@@ -77,10 +75,8 @@ node *rotateLeft(node *v) {
 
     v->right = vRightLeft;
     vRight->left = v;
-
     v->height = getHeight(v);
     vRight->height = getHeight(vRight);
-
     v->size = getSize(v);
     vRight->size = getSize(vRight);
 
@@ -88,17 +84,16 @@ node *rotateLeft(node *v) {
 }
 
 node *splay(node *v) {
-    if (getLeftHeight(v) - getRightHeight(v) > 1) {
-        if (getLeftSize(v->left) > getRightSize(v->left)) {
+    ll balans = getLeftHeight(v) - getRightHeight(v);
+    if (balans > 1) {
+        if (getLeftSize(v->left) < getRightSize(v->left)) {
             v->left = rotateLeft(v->left);
         }
-
         v = rotateRight(v);
-    } else if (getLeftHeight(v) - getRightHeight(v) < -1) {
+    } else if (balans < -1) {
         if (getLeftSize(v->right) > getRightSize(v->right)) {
             v->right = rotateRight(v->right);
         }
-
         v = rotateLeft(v);
     }
     return v;
@@ -113,31 +108,26 @@ node *insert(node *v, ll poz, ll el, ll ile) {
         v->size = getSize(v);
         v->height = getHeight(v);
 
-//        return splay(v);
-        return v;
+        return splay(v);
     } else if (poz < getLeftSize(v)) {
         v->left = insert(v->left, poz, el, ile);
         v->size = getSize(v);
         v->height = getHeight(v);
 
-//        return splay(v);
-        return v;
+        return splay(v);
     }
 
-    node *l = (poz - getLeftSize(v)) > 0 ?
-              insert(v->left, getLeftSize(v), v->element, poz - getLeftSize(v)) : v->left;
-
-    node *r = (v->number - poz + getLeftSize(v)) > 0 ?
-              insert(v->right, 0, v->element, v->number - poz + getLeftSize(v)) : v->right;
+    ll lSize = getLeftSize(v);
+    node *l = (poz - lSize) > 0 ? insert(v->left, lSize, v->element, poz - lSize) : v->left;
+    node *r = (v->number - poz + lSize) > 0 ? insert(v->right, 0, v->element, v->number - poz + lSize) : v->right;
 
     node *main = new node(el, ile);
     main->left = l;
     main->right = r;
-
     main->size = getSize(main);
     main->height = getHeight(main);
-    return main;
-//    return splay(main);
+
+    return splay(main);
 }
 
 ll get(ll poz) {
@@ -173,6 +163,7 @@ void solve() {
             cin >> a >> b >> c;
             a = (a + lastGet) % (n + 1);
             root = insert(root, a, b, c);
+//            test();
         } else {
             cin >> a;
             a = (a + lastGet) % n;
@@ -185,17 +176,6 @@ void solve() {
 
 int main() {
     FASTIO;
-//    root = insert(root, 0, 1, 5);
-//    test();
-//    root = insert(root, 3, 2, 2);
-//    test();
-//    root = insert(root, 2, 3, 1);
-//    test();
-//    root = insert(root, 3, 4, 1);
-//    test();
-
-
     solve();
-
     return 0;
 }

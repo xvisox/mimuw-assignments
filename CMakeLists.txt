@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Laby/Dynamiczny.cpp)
+add_executable(ASD Laby/Choinka.cpp)
