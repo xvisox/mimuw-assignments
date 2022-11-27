@@ -12,14 +12,11 @@ import java.util.Collection;
 import cp2022.base.Workplace;
 import cp2022.base.Workshop;
 
-
 public final class WorkshopFactory {
 
-    public final static Workshop newWorkshop(
-            Collection<Workplace> workplaces
-    ) {
-        // FIXME: implement
-        throw new RuntimeException("not implemented");
+    public final static Workshop newWorkshop(Collection<Workplace> workplaces) {
+
+        return null;
     }
-    
+
 }
