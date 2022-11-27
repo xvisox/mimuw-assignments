@@ -15,8 +15,7 @@ import cp2022.base.Workshop;
 public final class WorkshopFactory {
 
     public final static Workshop newWorkshop(Collection<Workplace> workplaces) {
-
-        return null;
+        return new TheWorkshop(workplaces);
     }
 
 }
