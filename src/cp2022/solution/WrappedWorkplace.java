@@ -20,6 +20,10 @@ public class WrappedWorkplace extends Workplace {
         return state;
     }
 
+    public Semaphore workSemaphore() {
+        return work;
+    }
+
     public void setState() {
         this.state = StateOfWork.IN_PROGRESS;
     }
@@ -34,6 +38,5 @@ public class WrappedWorkplace extends Workplace {
 
         workplace.use();
         state = StateOfWork.FINISHED;
-        work.release();
     }
 }

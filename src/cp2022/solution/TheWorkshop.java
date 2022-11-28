@@ -16,15 +16,18 @@ public class TheWorkshop implements Workshop {
 
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
     private final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
+    private final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
     private final List<WrappedThread> waitingRoom = new LinkedList<>();
     private final Semaphore mutex = new Semaphore(1);
-    private final int N = workplaces.size();
-    private int globalTime = 0;
+    private final int N;
+    private int globalTime;
 
     public TheWorkshop(Collection<Workplace> workplaces) {
         for (var workplace : workplaces) {
             this.workplaces.put(workplace.getId(), new WrappedWorkplace(workplace));
         }
+        this.N = workplaces.size();
+        this.globalTime = 0;
     }
 
     @Override
@@ -46,6 +49,12 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
+        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        currentlyOccupying.put(Thread.currentThread().getId(), workplaces.get(wid));
+
+        if (toRelease != null) {
+            toRelease.workSemaphore().release();
+        }
         return workplaces.get(wid);
     }
 
@@ -67,6 +76,12 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
+        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        currentlyOccupying.put(Thread.currentThread().getId(), workplaces.get(wid));
+
+        if (toRelease != null) {
+            toRelease.workSemaphore().release();
+        }
         return workplaces.get(wid);
     }
 
@@ -80,6 +95,13 @@ public class TheWorkshop implements Workshop {
 
         normalize();
         mutex.release();
+
+        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        currentlyOccupying.remove(Thread.currentThread().getId());
+
+        if (toRelease != null) {
+            toRelease.workSemaphore().release();
+        }
     }
 
     boolean isOccupied(WorkplaceId workplaceId) {
@@ -87,7 +109,7 @@ public class TheWorkshop implements Workshop {
     }
 
     void normalize() {
-        WrappedThread toRemove;
+        WrappedThread toRemove, waitingThread;
 
         while (!waitingRoom.isEmpty() && !isOccupied(waitingRoom.get(0).workplaceId)) {
             toRemove = waitingRoom.get(0);
@@ -104,11 +126,13 @@ public class TheWorkshop implements Workshop {
         it.next();
 
         while (it.hasNext()) {
-            if (it.next().moment - first.moment >= 2 * N) {
+            waitingThread = it.next();
+
+            if (waitingThread.moment - first.moment >= 2 * N) {
                 break;
             }
-            if (!isOccupied(it.next().workplaceId)) {
-                toRemove = it.next();
+            if (!isOccupied(waitingThread.workplaceId)) {
+                toRemove = waitingThread;
                 it.remove();
 
                 workplaces.get(toRemove.workplaceId).setState();
