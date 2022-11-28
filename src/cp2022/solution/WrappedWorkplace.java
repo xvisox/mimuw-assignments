@@ -7,14 +7,12 @@ import java.util.concurrent.Semaphore;
 public class WrappedWorkplace extends Workplace {
     private final Workplace workplace;
     private final Semaphore work;
-    private final Semaphore mutex;
     private StateOfWork state;
 
     protected WrappedWorkplace(Workplace workplace) {
         super(workplace.getId());
         this.workplace = workplace;
         this.work = new Semaphore(1);
-        this.mutex = new Semaphore(1);
         this.state = StateOfWork.FINISHED;
     }
 
@@ -22,27 +20,20 @@ public class WrappedWorkplace extends Workplace {
         return state;
     }
 
+    public void setState() {
+        this.state = StateOfWork.IN_PROGRESS;
+    }
+
     @Override
     public void use() {
         try {
             work.acquire();
-            mutex.acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        state = StateOfWork.IN_PROGRESS;
 
-        mutex.release();
         workplace.use();
-
-        try {
-            mutex.acquire();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         state = StateOfWork.FINISHED;
-
-        mutex.release();
         work.release();
     }
 }

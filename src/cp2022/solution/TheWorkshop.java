@@ -7,19 +7,11 @@ import cp2022.base.Workshop;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.LinkedList;
 
 public class TheWorkshop implements Workshop {
 
-    private static class WrappedThread {
-        private final WorkplaceId workplaceId;
-        private final long threadId;
-        private final int moment;
-
-        private WrappedThread(long threadId, int moment, WorkplaceId workplaceId) {
-            this.threadId = threadId;
-            this.moment = moment;
-            this.workplaceId = workplaceId;
-        }
+    private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId) {
     }
 
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
@@ -95,9 +87,33 @@ public class TheWorkshop implements Workshop {
     }
 
     void normalize() {
+        WrappedThread toRemove;
+
         while (!waitingRoom.isEmpty() && !isOccupied(waitingRoom.get(0).workplaceId)) {
-            semaphores.get(waitingRoom.get(0).threadId).release();
-            waitingRoom.remove(0);
+            toRemove = waitingRoom.get(0);
+            waitingRoom.remove(toRemove);
+
+            workplaces.get(toRemove.workplaceId).setState();
+            semaphores.get(toRemove.threadId).release();
+        }
+        if (waitingRoom.isEmpty()) return;
+
+
+        ListIterator<WrappedThread> it = waitingRoom.listIterator();
+        WrappedThread first = waitingRoom.get(0);
+        it.next();
+
+        while (it.hasNext()) {
+            if (it.next().moment - first.moment >= 2 * N) {
+                break;
+            }
+            if (!isOccupied(it.next().workplaceId)) {
+                toRemove = it.next();
+                it.remove();
+
+                workplaces.get(toRemove.workplaceId).setState();
+                semaphores.get(toRemove.threadId).release();
+            }
         }
     }
 }
