@@ -104,22 +104,21 @@ public class TheWorkshop implements Workshop {
         }
     }
 
-    boolean isOccupied(WorkplaceId workplaceId) {
-        return workplaces.get(workplaceId).getState() == StateOfWork.IN_PROGRESS;
+    boolean canOccupy(WorkplaceId workplaceId) {
+        return workplaces.get(workplaceId).getState() != StateOfWork.IN_PROGRESS;
     }
 
     void normalize() {
-        WrappedThread toRemove, waitingThread;
+        WrappedThread threadToRemove, waitingThread;
 
-        while (!waitingRoom.isEmpty() && !isOccupied(waitingRoom.get(0).workplaceId)) {
-            toRemove = waitingRoom.get(0);
-            waitingRoom.remove(toRemove);
+        while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
+            threadToRemove = waitingRoom.get(0);
+            waitingRoom.remove(threadToRemove);
 
-            workplaces.get(toRemove.workplaceId).setState();
-            semaphores.get(toRemove.threadId).release();
+            workplaces.get(threadToRemove.workplaceId).setState();
+            semaphores.get(threadToRemove.threadId).release();
         }
         if (waitingRoom.isEmpty()) return;
-
 
         ListIterator<WrappedThread> it = waitingRoom.listIterator();
         WrappedThread first = waitingRoom.get(0);
@@ -131,12 +130,12 @@ public class TheWorkshop implements Workshop {
             if (waitingThread.moment - first.moment >= 2 * N) {
                 break;
             }
-            if (!isOccupied(waitingThread.workplaceId)) {
-                toRemove = waitingThread;
+            if (canOccupy(waitingThread.workplaceId)) {
+                threadToRemove = waitingThread;
                 it.remove();
 
-                workplaces.get(toRemove.workplaceId).setState();
-                semaphores.get(toRemove.threadId).release();
+                workplaces.get(threadToRemove.workplaceId).setState();
+                semaphores.get(threadToRemove.threadId).release();
             }
         }
     }
