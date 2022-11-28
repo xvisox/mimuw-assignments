@@ -14,9 +14,9 @@ public class TheWorkshop implements Workshop {
     private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId) {
     }
 
+    public static final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
     private final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
-    private final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
     private final List<WrappedThread> waitingRoom = new LinkedList<>();
     private final Semaphore mutex = new Semaphore(1);
     private final int N;
@@ -38,6 +38,8 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
+        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        setStatusToFinished(currentlyOccupied);
         semaphores.putIfAbsent(Thread.currentThread().getId(), new Semaphore(0));
         waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime++, wid));
         normalize();
@@ -49,12 +51,6 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
-        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
-        currentlyOccupying.put(Thread.currentThread().getId(), workplaces.get(wid));
-
-        if (toRelease != null) {
-            toRelease.workSemaphore().release();
-        }
         return workplaces.get(wid);
     }
 
@@ -66,6 +62,14 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
+        // SwitchTo was called to the same place as previously.
+        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        if (currentlyOccupied != null && currentlyOccupied.getId() == wid) {
+            mutex.release();
+            return currentlyOccupied;
+        }
+
+        setStatusToFinished(currentlyOccupied);
         waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid));
         normalize();
         mutex.release();
@@ -76,12 +80,6 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
-        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
-        currentlyOccupying.put(Thread.currentThread().getId(), workplaces.get(wid));
-
-        if (toRelease != null) {
-            toRelease.workSemaphore().release();
-        }
         return workplaces.get(wid);
     }
 
@@ -93,19 +91,24 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
+        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        setStatusToFinished(currentlyOccupied);
         normalize();
         mutex.release();
 
         WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
-        currentlyOccupying.remove(Thread.currentThread().getId());
-
         if (toRelease != null) {
+            currentlyOccupying.remove(Thread.currentThread().getId());
             toRelease.workSemaphore().release();
         }
     }
 
+    void setStatusToFinished(WrappedWorkplace workplace) {
+        if (workplace != null) workplace.setState(StatusOfWork.FINISHED);
+    }
+
     boolean canOccupy(WorkplaceId workplaceId) {
-        return workplaces.get(workplaceId).getState() != StateOfWork.IN_PROGRESS;
+        return workplaces.get(workplaceId).getState() != StatusOfWork.IN_PROGRESS;
     }
 
     void normalize() {
@@ -115,7 +118,7 @@ public class TheWorkshop implements Workshop {
             threadToRemove = waitingRoom.get(0);
             waitingRoom.remove(threadToRemove);
 
-            workplaces.get(threadToRemove.workplaceId).setState();
+            workplaces.get(threadToRemove.workplaceId).setState(StatusOfWork.IN_PROGRESS);
             semaphores.get(threadToRemove.threadId).release();
         }
         if (waitingRoom.isEmpty()) return;
@@ -134,7 +137,7 @@ public class TheWorkshop implements Workshop {
                 threadToRemove = waitingThread;
                 it.remove();
 
-                workplaces.get(threadToRemove.workplaceId).setState();
+                workplaces.get(threadToRemove.workplaceId).setState(StatusOfWork.IN_PROGRESS);
                 semaphores.get(threadToRemove.threadId).release();
             }
         }
