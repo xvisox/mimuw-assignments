@@ -9,16 +9,18 @@ import static cp2022.solution.TheWorkshop.currentlyOccupying;
 public class WrappedWorkplace extends Workplace {
     private final Workplace workplace;
     private final Semaphore work;
-    private StatusOfWork state;
+    private StatusOfWorkplace state;
+    private Long occupiedBy;
 
     protected WrappedWorkplace(Workplace workplace) {
         super(workplace.getId());
         this.workplace = workplace;
         this.work = new Semaphore(1);
-        this.state = StatusOfWork.FINISHED;
+        this.state = StatusOfWorkplace.EMPTY;
+        this.occupiedBy = null;
     }
 
-    public StatusOfWork getState() {
+    public StatusOfWorkplace getState() {
         return state;
     }
 
@@ -26,7 +28,16 @@ public class WrappedWorkplace extends Workplace {
         return work;
     }
 
-    public void setState(StatusOfWork state) {
+    public Long whoIsOccupying() {
+        return occupiedBy;
+    }
+
+    public void setWhoIsOccupying(Long occupiedBy) {
+        this.occupiedBy = occupiedBy;
+        this.state = StatusOfWorkplace.WORKING;
+    }
+
+    public void setState(StatusOfWorkplace state) {
         this.state = state;
     }
 
@@ -45,5 +56,6 @@ public class WrappedWorkplace extends Workplace {
         }
 
         workplace.use();
+        state = StatusOfWorkplace.OCCUPIED;
     }
 }
