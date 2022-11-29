@@ -38,14 +38,15 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
-        semaphores.putIfAbsent(Thread.currentThread().getId(), new Semaphore(0));
-        waitingToOccupy.put(Thread.currentThread().getId(), workplaces.get(wid));
-        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid, true));
+        var threadId = Thread.currentThread().getId();
+        semaphores.putIfAbsent(threadId, new Semaphore(0));
+        waitingToOccupy.put(threadId, workplaces.get(wid));
+        waitingRoom.add(new WrappedThread(threadId, globalTime, wid, true));
         normalize();
         mutex.release();
 
         try {
-            semaphores.get(Thread.currentThread().getId()).acquire();
+            semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -62,45 +63,25 @@ public class TheWorkshop implements Workshop {
         }
 
         // SwitchTo was called to the same place as previously.
-        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        var threadId = Thread.currentThread().getId();
+        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(threadId, null);
         if (currentlyOccupied != null && currentlyOccupied.getId() == wid) {
             mutex.release();
             return currentlyOccupied;
         }
 
-        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid, false));
-        waitingToOccupy.put(Thread.currentThread().getId(), workplaces.get(wid));
+        waitingRoom.add(new WrappedThread(threadId, globalTime, wid, false));
+        waitingToOccupy.put(threadId, workplaces.get(wid));
         normalize();
 
         // Cycle detection.
-        if (waitingToOccupy.containsKey(Thread.currentThread().getId())) {
-            Long firstThreadId = Thread.currentThread().getId();
-            Long waitingThreadId = Thread.currentThread().getId();
-            HashSet<Long> cycle = new HashSet<>();
-            WrappedWorkplace waitingFor;
-            cycle.add(waitingThreadId);
-
-            boolean found = false;
-            while (!found) {
-                waitingFor = waitingToOccupy.get(waitingThreadId);
-                if (waitingFor == null || waitingFor.getState() != StatusOfWorkplace.OCCUPIED) {
-                    break;
-                } else {
-                    waitingThreadId = waitingFor.whoIsOccupying();
-                    if (waitingThreadId.equals(firstThreadId)) {
-                        found = true;
-                    } else {
-                        cycle.add(waitingThreadId);
-                    }
-                }
-            }
-
-            if (found) resolveCycle(cycle);
+        if (waitingToOccupy.containsKey(threadId)) {
+            findAndSolveCycle(threadId);
         }
         mutex.release();
 
         try {
-            semaphores.get(Thread.currentThread().getId()).acquire();
+            semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -116,15 +97,40 @@ public class TheWorkshop implements Workshop {
             throw new RuntimeException(e);
         }
 
-        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        var threadId = Thread.currentThread().getId();
+        WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(threadId, null);
         setStatusToEmpty(currentlyOccupied);
         normalize();
         mutex.release();
 
         if (currentlyOccupied != null) {
-            currentlyOccupying.remove(Thread.currentThread().getId());
+            currentlyOccupying.remove(threadId);
             currentlyOccupied.workSemaphore().release();
         }
+    }
+
+    void findAndSolveCycle(Long threadId) {
+        Long waitingThreadId = threadId;
+        HashSet<Long> cycle = new HashSet<>();
+        WrappedWorkplace waitingFor;
+        cycle.add(waitingThreadId);
+
+        boolean found = false;
+        while (!found) {
+            waitingFor = waitingToOccupy.get(waitingThreadId);
+            if (waitingFor == null || waitingFor.getState() != StatusOfWorkplace.OCCUPIED) {
+                break;
+            } else {
+                waitingThreadId = waitingFor.whoIsOccupying();
+                if (waitingThreadId.equals(threadId)) {
+                    found = true;
+                } else {
+                    cycle.add(waitingThreadId);
+                }
+            }
+        }
+
+        if (found) resolveCycle(cycle);
     }
 
     void resolveCycle(HashSet<Long> cycle) {
@@ -144,57 +150,60 @@ public class TheWorkshop implements Workshop {
         return workplaces.get(workplaceId).getState() == StatusOfWorkplace.EMPTY;
     }
 
-    void releaseThread(WrappedThread threadToRemove) {
-        waitingToOccupy.remove(threadToRemove.threadId);
-        workplaces.get(threadToRemove.workplaceId).setWhoIsOccupying(threadToRemove.threadId);
-        semaphores.get(threadToRemove.threadId).release();
+    void releaseThread(WrappedThread threadToRelease) {
+        waitingToOccupy.remove(threadToRelease.threadId);
+        workplaces.get(threadToRelease.workplaceId).setWhoIsOccupying(threadToRelease.threadId);
+        semaphores.get(threadToRelease.threadId).release();
     }
 
-    // FIXME
-    void normalize() {
-//        for (var el : waitingRoom) {
-//            System.out.print(el.threadId + " ");
-//        }
-//        System.out.println();
-        WrappedThread threadToRemove, waitingThread;
-
+    void releaseThreadsFromBeginning() {
+        WrappedThread threadToRelease;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
-            threadToRemove = waitingRoom.get(0);
+            threadToRelease = waitingRoom.get(0);
 
-            if (threadToRemove.isEnter) globalTime++;
-            waitingRoom.remove(threadToRemove);
-            releaseThread(threadToRemove);
+            if (threadToRelease.isEnter) globalTime++;
+            waitingRoom.remove(threadToRelease);
+            releaseThread(threadToRelease);
         }
-        if (waitingRoom.isEmpty()) return;
+    }
 
+    boolean isStarvation(WrappedThread first) {
+        return (globalTime - first.moment) >= (2 * N - 1);
+    }
+
+    void releaseThreadsWithoutStarvation() {
+        WrappedThread threadToRelease;
         ListIterator<WrappedThread> it = waitingRoom.listIterator();
         WrappedThread first = waitingRoom.get(0);
-        it.next();
+//        it.next();
 
         while (it.hasNext()) {
-            waitingThread = it.next();
+            threadToRelease = it.next();
 
-            if (waitingThread.isEnter && (waitingThread.moment - first.moment) >= (2 * N - 2)) {
+            if (threadToRelease.isEnter && isStarvation(first)) {
                 break;
             }
 
-            if (canOccupy(waitingThread.workplaceId)) {
-                threadToRemove = waitingThread;
-
-                if (threadToRemove.isEnter) globalTime++;
+            if (canOccupy(threadToRelease.workplaceId)) {
+                if (threadToRelease.isEnter) globalTime++;
                 it.remove();
-                releaseThread(threadToRemove);
+                releaseThread(threadToRelease);
             }
         }
 
         while (it.hasNext()) {
-            waitingThread = it.next();
+            threadToRelease = it.next();
 
-            if (!waitingThread.isEnter && canOccupy(waitingThread.workplaceId)) {
-                threadToRemove = waitingThread;
+            if (!threadToRelease.isEnter && canOccupy(threadToRelease.workplaceId)) {
                 it.remove();
-                releaseThread(threadToRemove);
+                releaseThread(threadToRelease);
             }
         }
+    }
+
+    void normalize() {
+        releaseThreadsFromBeginning();
+        if (waitingRoom.isEmpty()) return;
+        releaseThreadsWithoutStarvation();
     }
 }
