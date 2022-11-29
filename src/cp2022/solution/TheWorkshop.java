@@ -144,11 +144,20 @@ public class TheWorkshop implements Workshop {
     }
 
     void resolveCycle(HashSet<Long> cycle) {
+        // Firstly, we set all the necessary variables.
         for (var thread : cycle) {
             waitingToOccupy.get(thread).setWhoIsOccupying(thread);
             waitingToOccupy.remove(thread);
+        }
+        // Releasing threads in cycle.
+        // Disclaimer - we can wake them up in a loop
+        // because all the necessary variables are now set
+        // and the threads will synchronize through the
+        // work semaphore.
+        for (var thread : cycle) {
             semaphores.get(thread).release();
         }
+        // Removing released threads from waiting room.
         waitingRoom.removeIf(wrappedThread -> cycle.contains(wrappedThread.threadId));
     }
 
