@@ -13,14 +13,21 @@ public class TheWorkshop implements Workshop {
     private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId, boolean isEnter) {
     }
 
+    // I am identifying thread as worker.
+    // Information about which worker is where.
     public static final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
+    // Mapping workplace identifier to workplace.
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
+    // A semaphore for every worker.
     private final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
+    // Information about for what workers are waiting for.
     private final Map<Long, WrappedWorkplace> waitingToOccupy = new HashMap<>();
+    // "Queue" of all workers waiting for their workplaces.
     private final List<WrappedThread> waitingRoom = new LinkedList<>();
+
     private final Semaphore mutex = new Semaphore(1);
-    private final int N;
-    private int globalTime;
+    private final int N; // Number of workplaces.
+    private int globalTime; // Time concept of workshop, it increments with ended entries to workshop.
 
     public TheWorkshop(Collection<Workplace> workplaces) {
         for (var workplace : workplaces) {
@@ -42,10 +49,11 @@ public class TheWorkshop implements Workshop {
         semaphores.putIfAbsent(threadId, new Semaphore(0));
         waitingToOccupy.put(threadId, workplaces.get(wid));
         waitingRoom.add(new WrappedThread(threadId, globalTime, wid, true));
-        normalize();
+        normalize(); // Releases waiting threads if possible.
         mutex.release();
 
         try {
+            // Trying to occupy the workplace.
             semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -72,15 +80,18 @@ public class TheWorkshop implements Workshop {
 
         waitingRoom.add(new WrappedThread(threadId, globalTime, wid, false));
         waitingToOccupy.put(threadId, workplaces.get(wid));
-        normalize();
+        normalize(); // Releases waiting threads if possible.
 
-        // Cycle detection.
+        // Cycle detection - if worker is still waiting
+        // for his wanted workplace that might mean
+        // that he is in a cycle and should be released.
         if (waitingToOccupy.containsKey(threadId)) {
             findAndSolveCycle(threadId);
         }
         mutex.release();
 
         try {
+            // Trying to occupy the workplace.
             semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -98,28 +109,27 @@ public class TheWorkshop implements Workshop {
         }
 
         var threadId = Thread.currentThread().getId();
+        // Releasing currently occupied workplace for other workers.
         WrappedWorkplace currentlyOccupied = currentlyOccupying.getOrDefault(threadId, null);
-        setStatusToEmpty(currentlyOccupied);
-        normalize();
-        mutex.release();
+        currentlyOccupied.setStatus(StatusOfWorkplace.EMPTY);
+        normalize(); // Releases waiting threads if possible.
+        currentlyOccupying.remove(threadId);
+        currentlyOccupied.workSemaphore().release();
 
-        if (currentlyOccupied != null) {
-            currentlyOccupying.remove(threadId);
-            currentlyOccupied.workSemaphore().release();
-        }
+        mutex.release();
     }
 
     void findAndSolveCycle(Long threadId) {
         Long waitingThreadId = threadId;
         HashSet<Long> cycle = new HashSet<>();
         WrappedWorkplace waitingFor;
-        cycle.add(waitingThreadId);
+        cycle.add(threadId);
 
         boolean found = false;
         while (!found) {
             waitingFor = waitingToOccupy.get(waitingThreadId);
-            if (waitingFor == null || waitingFor.getState() != StatusOfWorkplace.OCCUPIED) {
-                break;
+            if (waitingFor == null || waitingFor.getStatus() != StatusOfWorkplace.OCCUPIED) {
+                break; // This means that potential cycle has ended.
             } else {
                 waitingThreadId = waitingFor.whoIsOccupying();
                 if (waitingThreadId.equals(threadId)) {
@@ -142,12 +152,8 @@ public class TheWorkshop implements Workshop {
         waitingRoom.removeIf(wrappedThread -> cycle.contains(wrappedThread.threadId));
     }
 
-    void setStatusToEmpty(WrappedWorkplace workplace) {
-        if (workplace != null) workplace.setState(StatusOfWorkplace.EMPTY);
-    }
-
     boolean canOccupy(WorkplaceId workplaceId) {
-        return workplaces.get(workplaceId).getState() == StatusOfWorkplace.EMPTY;
+        return workplaces.get(workplaceId).getStatus() == StatusOfWorkplace.EMPTY;
     }
 
     void releaseThread(WrappedThread threadToRelease) {
@@ -156,6 +162,8 @@ public class TheWorkshop implements Workshop {
         semaphores.get(threadToRelease.threadId).release();
     }
 
+    // Releasing threads from the beginning of list can't cause starvation
+    // so as long as first elements are removed we can continue releasing.
     void releaseThreadsFromBeginning() {
         WrappedThread threadToRelease;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
@@ -167,6 +175,8 @@ public class TheWorkshop implements Workshop {
         }
     }
 
+    // Checking if releasing the thread would cause
+    // the starvation of first waiting thread.
     boolean isStarvation(WrappedThread first) {
         return (globalTime - first.moment) >= (2 * N - 1);
     }
@@ -175,14 +185,12 @@ public class TheWorkshop implements Workshop {
         WrappedThread threadToRelease;
         ListIterator<WrappedThread> it = waitingRoom.listIterator();
         WrappedThread first = waitingRoom.get(0);
-//        it.next();
 
         while (it.hasNext()) {
             threadToRelease = it.next();
 
-            if (threadToRelease.isEnter && isStarvation(first)) {
-                break;
-            }
+            // If we release this worker, it would cause starvation.
+            if (threadToRelease.isEnter && isStarvation(first)) break;
 
             if (canOccupy(threadToRelease.workplaceId)) {
                 if (threadToRelease.isEnter) globalTime++;
@@ -191,6 +199,9 @@ public class TheWorkshop implements Workshop {
             }
         }
 
+        // From this moment, all the threads that are being
+        // released were called from switchTo method,
+        // so they can cause starvation.
         while (it.hasNext()) {
             threadToRelease = it.next();
 

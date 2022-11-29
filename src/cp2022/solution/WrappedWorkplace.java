@@ -9,19 +9,19 @@ import static cp2022.solution.TheWorkshop.currentlyOccupying;
 public class WrappedWorkplace extends Workplace {
     private final Workplace workplace;
     private final Semaphore work;
-    private StatusOfWorkplace state;
-    private Long occupiedBy;
+    private StatusOfWorkplace status;
+    private Long occupiedBy; // Who is currently occupying this place.
 
     protected WrappedWorkplace(Workplace workplace) {
         super(workplace.getId());
         this.workplace = workplace;
         this.work = new Semaphore(1);
-        this.state = StatusOfWorkplace.EMPTY;
+        this.status = StatusOfWorkplace.EMPTY;
         this.occupiedBy = null;
     }
 
-    public StatusOfWorkplace getState() {
-        return state;
+    public StatusOfWorkplace getStatus() {
+        return status;
     }
 
     public Semaphore workSemaphore() {
@@ -34,21 +34,24 @@ public class WrappedWorkplace extends Workplace {
 
     public void setWhoIsOccupying(Long occupiedBy) {
         this.occupiedBy = occupiedBy;
-        this.state = StatusOfWorkplace.WORKING;
+        this.status = StatusOfWorkplace.WORKING;
     }
 
-    public void setState(StatusOfWorkplace state) {
-        this.state = state;
+    public void setStatus(StatusOfWorkplace status) {
+        this.status = status;
     }
 
     @Override
     public void use() {
+        // In this place, we want to release previously occupied workplace.
         WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
         currentlyOccupying.put(Thread.currentThread().getId(), this);
         if (toRelease != null) {
             toRelease.work.release();
+            // If someone else is already on our previous workplace, or if we are on the same
+            // workplace as we were before then nothing should change.
             if (toRelease.occupiedBy == Thread.currentThread().getId() && toRelease != this) {
-                toRelease.state = StatusOfWorkplace.EMPTY;
+                toRelease.status = StatusOfWorkplace.EMPTY;
             }
         }
 
@@ -59,6 +62,6 @@ public class WrappedWorkplace extends Workplace {
         }
 
         workplace.use();
-        state = StatusOfWorkplace.OCCUPIED;
+        status = StatusOfWorkplace.OCCUPIED;
     }
 }
