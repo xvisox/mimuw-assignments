@@ -10,7 +10,24 @@ import java.util.concurrent.Semaphore;
 
 public class TheWorkshop implements Workshop {
 
-    private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId, boolean isEnter) {
+    private static class WrappedThread {
+        private final long threadId;
+        private final WorkplaceId workplaceId;
+        private final boolean isEnter;
+        private boolean marked;
+        private int released;
+
+        private WrappedThread(long threadId, int released, WorkplaceId workplaceId, boolean isEnter) {
+            this.threadId = threadId;
+            this.released = released;
+            this.workplaceId = workplaceId;
+            this.isEnter = isEnter;
+            this.marked = false;
+        }
+
+        private void increment(int count) {
+            released += count;
+        }
     }
 
     // I am identifying thread as worker.
@@ -27,14 +44,12 @@ public class TheWorkshop implements Workshop {
 
     private final Semaphore mutex = new Semaphore(1);
     private final int N; // Number of workplaces.
-    private int globalTime; // Time concept of workshop, it increments with ended entries to workshop.
 
     public TheWorkshop(Collection<Workplace> workplaces) {
         for (var workplace : workplaces) {
             this.workplaces.put(workplace.getId(), new WrappedWorkplace(workplace));
         }
         this.N = workplaces.size();
-        this.globalTime = 0;
     }
 
     @Override
@@ -48,7 +63,7 @@ public class TheWorkshop implements Workshop {
         var threadId = Thread.currentThread().getId();
         semaphores.putIfAbsent(threadId, new Semaphore(0));
         waitingToOccupy.put(threadId, workplaces.get(wid));
-        waitingRoom.add(new WrappedThread(threadId, globalTime, wid, true));
+        waitingRoom.add(new WrappedThread(threadId, 0, wid, true));
         normalize(); // Releases waiting threads if possible.
         mutex.release();
 
@@ -78,7 +93,7 @@ public class TheWorkshop implements Workshop {
             return currentlyOccupied;
         }
 
-        waitingRoom.add(new WrappedThread(threadId, globalTime, wid, false));
+        waitingRoom.add(new WrappedThread(threadId, 0, wid, false));
         waitingToOccupy.put(threadId, workplaces.get(wid));
         normalize(); // Releases waiting threads if possible.
 
@@ -177,43 +192,46 @@ public class TheWorkshop implements Workshop {
         WrappedThread threadToRelease;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
             threadToRelease = waitingRoom.get(0);
-
-            if (threadToRelease.isEnter) globalTime++;
             waitingRoom.remove(threadToRelease);
             releaseThread(threadToRelease);
         }
     }
 
-    // Checking if releasing the thread would cause
-    // the starvation of first waiting thread.
-    boolean isStarvation(WrappedThread first) {
-        return (globalTime - first.moment) >= (2 * N - 1);
-    }
-
     void releaseThreadsWithoutStarvation() {
-        WrappedThread threadToRelease;
+        WrappedThread threadToRelease, previous = null;
         ListIterator<WrappedThread> it = waitingRoom.listIterator();
-        WrappedThread first = waitingRoom.get(0);
+        int releasedAfterFirst = waitingRoom.get(0).released;
 
-        while (it.hasNext()) {
+        while (it.hasNext() && releasedAfterFirst < (2 * N - 1)) {
             threadToRelease = it.next();
 
-            // If we release this worker, it would cause starvation.
-            if (threadToRelease.isEnter && isStarvation(first)) break;
-
             if (canOccupy(threadToRelease.workplaceId)) {
-                if (threadToRelease.isEnter) globalTime++;
                 it.remove();
                 releaseThread(threadToRelease);
+                if (threadToRelease.isEnter) {
+                    releasedAfterFirst++;
+                    assert (previous != null);
+                    previous.marked = true;
+                }
+            }
+
+            previous = threadToRelease;
+        }
+
+        int diff = releasedAfterFirst - waitingRoom.get(0).released;
+        for (var thread : waitingRoom) {
+            thread.increment(diff);
+            if (thread.marked) {
+                diff--;
+                thread.marked = false;
             }
         }
 
         // From this moment, all the threads that are being
         // released were called from switchTo method,
-        // so they can cause starvation.
+        // so they can't cause starvation.
         while (it.hasNext()) {
             threadToRelease = it.next();
-
             if (!threadToRelease.isEnter && canOccupy(threadToRelease.workplaceId)) {
                 it.remove();
                 releaseThread(threadToRelease);
