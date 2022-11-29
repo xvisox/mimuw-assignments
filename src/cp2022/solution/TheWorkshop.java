@@ -10,7 +10,7 @@ import java.util.concurrent.Semaphore;
 
 public class TheWorkshop implements Workshop {
 
-    private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId) {
+    private record WrappedThread(long threadId, int moment, WorkplaceId workplaceId, boolean isEnter) {
     }
 
     public static final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
@@ -33,7 +33,6 @@ public class TheWorkshop implements Workshop {
     @Override
     public Workplace enter(WorkplaceId wid) {
         try {
-//            System.out.println("elo");
             mutex.acquire();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -41,7 +40,7 @@ public class TheWorkshop implements Workshop {
 
         semaphores.putIfAbsent(Thread.currentThread().getId(), new Semaphore(0));
         waitingToOccupy.put(Thread.currentThread().getId(), workplaces.get(wid));
-        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime++, wid));
+        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid, true));
         normalize();
         mutex.release();
 
@@ -69,25 +68,26 @@ public class TheWorkshop implements Workshop {
             return currentlyOccupied;
         }
 
-        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid));
+        waitingRoom.add(new WrappedThread(Thread.currentThread().getId(), globalTime, wid, false));
         waitingToOccupy.put(Thread.currentThread().getId(), workplaces.get(wid));
         normalize();
-        if (waitingToOccupy.containsKey(Thread.currentThread().getId())) {
 
-            Long first = Thread.currentThread().getId();
+        // Cycle detection.
+        if (waitingToOccupy.containsKey(Thread.currentThread().getId())) {
+            Long firstThreadId = Thread.currentThread().getId();
             Long waitingThreadId = Thread.currentThread().getId();
             HashSet<Long> cycle = new HashSet<>();
+            WrappedWorkplace waitingFor;
             cycle.add(waitingThreadId);
 
             boolean found = false;
-            WrappedWorkplace waitingFor;
             while (!found) {
                 waitingFor = waitingToOccupy.get(waitingThreadId);
-                if (waitingFor.getState() != StatusOfWorkplace.OCCUPIED) {
+                if (waitingFor == null || waitingFor.getState() != StatusOfWorkplace.OCCUPIED) {
                     break;
                 } else {
                     waitingThreadId = waitingFor.whoIsOccupying();
-                    if (waitingThreadId.equals(first)) {
+                    if (waitingThreadId.equals(firstThreadId)) {
                         found = true;
                     } else {
                         cycle.add(waitingThreadId);
@@ -95,24 +95,7 @@ public class TheWorkshop implements Workshop {
                 }
             }
 
-            if (found) {
-                for (var thread : cycle) {
-                    waitingToOccupy.get(thread).setWhoIsOccupying(thread);
-                    waitingToOccupy.remove(thread);
-                    semaphores.get(thread).release();
-                }
-                var it = waitingRoom.listIterator();
-                while (it.hasNext()) {
-                    if (cycle.contains(it.next().threadId)) {
-                        it.remove();
-                    }
-                }
-            } else {
-                // nic ?
-            }
-
-        } else {
-            setStatusToEmpty(currentlyOccupied);
+            if (found) resolveCycle(cycle);
         }
         mutex.release();
 
@@ -144,6 +127,15 @@ public class TheWorkshop implements Workshop {
         }
     }
 
+    void resolveCycle(HashSet<Long> cycle) {
+        for (var thread : cycle) {
+            waitingToOccupy.get(thread).setWhoIsOccupying(thread);
+            waitingToOccupy.remove(thread);
+            semaphores.get(thread).release();
+        }
+        waitingRoom.removeIf(wrappedThread -> cycle.contains(wrappedThread.threadId));
+    }
+
     void setStatusToEmpty(WrappedWorkplace workplace) {
         if (workplace != null) workplace.setState(StatusOfWorkplace.EMPTY);
     }
@@ -152,21 +144,26 @@ public class TheWorkshop implements Workshop {
         return workplaces.get(workplaceId).getState() == StatusOfWorkplace.EMPTY;
     }
 
+    void releaseThread(WrappedThread threadToRemove) {
+        waitingToOccupy.remove(threadToRemove.threadId);
+        workplaces.get(threadToRemove.workplaceId).setWhoIsOccupying(threadToRemove.threadId);
+        semaphores.get(threadToRemove.threadId).release();
+    }
+
+    // FIXME
     void normalize() {
-        for (var el : waitingRoom) {
-            System.out.print(el.threadId + " ");
-        }
-        System.out.println();
+//        for (var el : waitingRoom) {
+//            System.out.print(el.threadId + " ");
+//        }
+//        System.out.println();
         WrappedThread threadToRemove, waitingThread;
 
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
-//            System.out.println("wpuszczam");
             threadToRemove = waitingRoom.get(0);
-            waitingRoom.remove(threadToRemove);
 
-            waitingToOccupy.remove(threadToRemove.threadId);
-            workplaces.get(threadToRemove.workplaceId).setWhoIsOccupying(threadToRemove.threadId);
-            semaphores.get(threadToRemove.threadId).release();
+            if (threadToRemove.isEnter) globalTime++;
+            waitingRoom.remove(threadToRemove);
+            releaseThread(threadToRemove);
         }
         if (waitingRoom.isEmpty()) return;
 
@@ -177,19 +174,27 @@ public class TheWorkshop implements Workshop {
         while (it.hasNext()) {
             waitingThread = it.next();
 
-            if (waitingThread.moment - first.moment >= 2 * N) {
+            if (waitingThread.isEnter && (waitingThread.moment - first.moment) >= (2 * N - 2)) {
                 break;
             }
-            if (canOccupy(waitingThread.workplaceId)) {
-//                System.out.println("wpuszczam 1");
-                threadToRemove = waitingThread;
-                it.remove();
 
-                waitingToOccupy.remove(threadToRemove.threadId);
-                workplaces.get(threadToRemove.workplaceId).setWhoIsOccupying(threadToRemove.threadId);
-                semaphores.get(threadToRemove.threadId).release();
+            if (canOccupy(waitingThread.workplaceId)) {
+                threadToRemove = waitingThread;
+
+                if (threadToRemove.isEnter) globalTime++;
+                it.remove();
+                releaseThread(threadToRemove);
             }
         }
-        System.out.println("end of");
+
+        while (it.hasNext()) {
+            waitingThread = it.next();
+
+            if (!waitingThread.isEnter && canOccupy(waitingThread.workplaceId)) {
+                threadToRemove = waitingThread;
+                it.remove();
+                releaseThread(threadToRemove);
+            }
+        }
     }
 }

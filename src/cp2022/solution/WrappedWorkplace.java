@@ -46,7 +46,7 @@ public class WrappedWorkplace extends Workplace {
         WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
         currentlyOccupying.put(Thread.currentThread().getId(), this);
         if (toRelease != null) {
-            toRelease.workSemaphore().release();
+            toRelease.work.release();
             if (toRelease.occupiedBy == Thread.currentThread().getId() && toRelease != this) {
                 toRelease.state = StatusOfWorkplace.EMPTY;
             }
