@@ -5,24 +5,22 @@ import cp2022.base.Workplace;
 import java.util.concurrent.Semaphore;
 
 import static cp2022.solution.TheWorkshop.currentlyOccupying;
+import static cp2022.solution.TheWorkshop.semaphores;
 
 public class WrappedWorkplace extends Workplace {
     private final Workplace workplace;
     private final Semaphore work;
-    private final Semaphore permission;
     private StatusOfWorkplace status;
     private Long occupiedBy; // Who is currently occupying this place.
-    private boolean shouldRelease;
+    private Long threadToRelease; // Thread that we should release.
 
     protected WrappedWorkplace(Workplace workplace) {
         super(workplace.getId());
         this.workplace = workplace;
         this.work = new Semaphore(1);
-        this.permission = new Semaphore(0);
         this.status = StatusOfWorkplace.EMPTY;
         this.occupiedBy = null;
-        this.shouldRelease = false;
-
+        this.threadToRelease = null;
     }
 
     public StatusOfWorkplace getStatus() {
@@ -31,14 +29,6 @@ public class WrappedWorkplace extends Workplace {
 
     public Semaphore workSemaphore() {
         return work;
-    }
-
-    public Semaphore permissionSemaphore() {
-        return permission;
-    }
-
-    public void setRelease() {
-        this.shouldRelease = true;
     }
 
     public Long whoIsOccupying() {
@@ -54,13 +44,15 @@ public class WrappedWorkplace extends Workplace {
         this.status = status;
     }
 
+    public void setThreadToRelease(Long threadToRelease) {
+        this.threadToRelease = threadToRelease;
+    }
+
     @Override
     public void use() {
-        // The thread who is releasing other threads is
-        // waiting for the permission to wake up another thread.
-        if (shouldRelease) {
-            permission.release();
-            shouldRelease = false;
+        if (threadToRelease != null) {
+            semaphores.get(threadToRelease).release();
+            threadToRelease = null;
         }
 
         // In this place, we want to release previously occupied workplace.
