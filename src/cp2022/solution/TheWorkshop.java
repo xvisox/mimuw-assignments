@@ -17,9 +17,9 @@ public class TheWorkshop implements Workshop {
         private boolean marked;
         private int released;
 
-        private WrappedThread(long threadId, int released, WorkplaceId workplaceId, boolean isEnter) {
+        private WrappedThread(long threadId, WorkplaceId workplaceId, boolean isEnter) {
             this.threadId = threadId;
-            this.released = released;
+            this.released = 0;
             this.workplaceId = workplaceId;
             this.isEnter = isEnter;
             this.marked = false;
@@ -32,9 +32,9 @@ public class TheWorkshop implements Workshop {
 
     // I am identifying thread as worker.
     // Information about which worker is where.
-    public static final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
+    public final Map<Long, WrappedWorkplace> currentlyOccupying = new ConcurrentHashMap<>();
     // A semaphore for every worker.
-    public static final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
+    public final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
     // Mapping workplace identifier to workplace.
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
     // Information about for what workers are waiting for.
@@ -42,12 +42,13 @@ public class TheWorkshop implements Workshop {
     // "Queue" of all workers waiting for their workplaces.
     private final List<WrappedThread> waitingRoom = new LinkedList<>();
 
+    private final HashSet<Long> cycle = new HashSet<>();
     private final Semaphore mutex = new Semaphore(1);
     private final int N; // Number of workplaces.
 
     public TheWorkshop(Collection<Workplace> workplaces) {
         for (var workplace : workplaces) {
-            this.workplaces.put(workplace.getId(), new WrappedWorkplace(workplace));
+            this.workplaces.put(workplace.getId(), new WrappedWorkplace(workplace, this));
         }
         this.N = workplaces.size();
     }
@@ -63,7 +64,7 @@ public class TheWorkshop implements Workshop {
         var threadId = Thread.currentThread().getId();
         semaphores.putIfAbsent(threadId, new Semaphore(0));
         waitingToOccupy.put(threadId, workplaces.get(wid));
-        waitingRoom.add(new WrappedThread(threadId, 0, wid, true));
+        waitingRoom.add(new WrappedThread(threadId, wid, true));
         normalize(); // Releases waiting threads if possible.
         mutex.release();
 
@@ -93,7 +94,7 @@ public class TheWorkshop implements Workshop {
             return currentlyOccupied;
         }
 
-        waitingRoom.add(new WrappedThread(threadId, 0, wid, false));
+        waitingRoom.add(new WrappedThread(threadId, wid, false));
         waitingToOccupy.put(threadId, workplaces.get(wid));
         normalize(); // Releases waiting threads if possible.
 
@@ -136,7 +137,6 @@ public class TheWorkshop implements Workshop {
 
     void findAndSolveCycle(Long threadId) {
         Long waitingThreadId = threadId;
-        HashSet<Long> cycle = new HashSet<>();
         WrappedWorkplace waitingFor;
         cycle.add(threadId);
 
@@ -155,10 +155,11 @@ public class TheWorkshop implements Workshop {
             }
         }
 
-        if (found) resolveCycle(cycle);
+        if (found) resolveCycle();
+        cycle.clear();
     }
 
-    void resolveCycle(HashSet<Long> cycle) {
+    void resolveCycle() {
         // Firstly, we set all the necessary variables.
         for (var thread : cycle) {
             waitingToOccupy.get(thread).setWhoIsOccupying(thread);
@@ -193,7 +194,7 @@ public class TheWorkshop implements Workshop {
     // Releasing threads from the beginning of list can't cause starvation
     // as long as first elements are removed in order that they were added
     // to waiting room, so we must wait for previous worker to wake up
-    // another threads.
+    // another threads (cascade releasing).
     WrappedThread releaseThreadsFromBeginning() {
         WrappedThread thread, lastThread = null;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {

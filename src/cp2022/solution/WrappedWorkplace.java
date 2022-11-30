@@ -4,23 +4,22 @@ import cp2022.base.Workplace;
 
 import java.util.concurrent.Semaphore;
 
-import static cp2022.solution.TheWorkshop.currentlyOccupying;
-import static cp2022.solution.TheWorkshop.semaphores;
-
 public class WrappedWorkplace extends Workplace {
-    private final Workplace workplace;
+    private final TheWorkshop workshop; // Workshop to which this workplace belongs.
+    private final Workplace workplace; // The workplace which is being wrapped.
     private final Semaphore work;
     private StatusOfWorkplace status;
     private Long occupiedBy; // Who is currently occupying this place.
     private Long threadToRelease; // Thread that we should release.
 
-    protected WrappedWorkplace(Workplace workplace) {
+    protected WrappedWorkplace(Workplace workplace, TheWorkshop workshop) {
         super(workplace.getId());
         this.workplace = workplace;
         this.work = new Semaphore(1);
         this.status = StatusOfWorkplace.EMPTY;
         this.occupiedBy = null;
         this.threadToRelease = null;
+        this.workshop = workshop;
     }
 
     public StatusOfWorkplace getStatus() {
@@ -50,20 +49,21 @@ public class WrappedWorkplace extends Workplace {
 
     @Override
     public void use() {
+        // Cascade waking up.
         if (threadToRelease != null) {
-            semaphores.get(threadToRelease).release();
+            workshop.semaphores.get(threadToRelease).release();
             threadToRelease = null;
         }
 
         // In this place, we want to release previously occupied workplace.
-        WrappedWorkplace toRelease = currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
-        currentlyOccupying.put(Thread.currentThread().getId(), this);
-        if (toRelease != null) {
-            toRelease.work.release();
+        WrappedWorkplace previous = workshop.currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
+        workshop.currentlyOccupying.put(Thread.currentThread().getId(), this);
+        if (previous != null) {
+            previous.work.release();
             // If someone else is already on our previous workplace, or if we are on the same
             // workplace as we were before then nothing should change.
-            if (toRelease.occupiedBy == Thread.currentThread().getId() && toRelease != this) {
-                toRelease.status = StatusOfWorkplace.EMPTY;
+            if (previous.occupiedBy == Thread.currentThread().getId() && previous != this) {
+                previous.status = StatusOfWorkplace.EMPTY;
             }
         }
 
