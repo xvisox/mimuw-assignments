@@ -187,13 +187,24 @@ public class TheWorkshop implements Workshop {
     }
 
     // Releasing threads from the beginning of list can't cause starvation
-    // so as long as first elements are removed we can continue releasing.
+    // as long as first elements are removed in order that they were added
+    // to waiting room, so we must wait for previous workplace to wake up
+    // another threads.
     void releaseThreadsFromBeginning() {
         WrappedThread threadToRelease;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
             threadToRelease = waitingRoom.get(0);
             waitingRoom.remove(threadToRelease);
+            workplaces.get(threadToRelease.workplaceId).setRelease();
             releaseThread(threadToRelease);
+            if (threadToRelease.threadId == Thread.currentThread().getId()) continue;
+
+            try {
+                // Waiting for the permission from the worker.
+                workplaces.get(threadToRelease.workplaceId).permissionSemaphore().acquire();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -218,12 +229,16 @@ public class TheWorkshop implements Workshop {
             previous = threadToRelease;
         }
 
+        // Updating the information about how many threads
+        // were released after every thread in waiting room.
         int diff = releasedAfterFirst - waitingRoom.get(0).released;
         for (var thread : waitingRoom) {
             thread.increment(diff);
             if (thread.marked) {
                 diff--;
                 thread.marked = false;
+
+                if (diff == 0) break;
             }
         }
 
