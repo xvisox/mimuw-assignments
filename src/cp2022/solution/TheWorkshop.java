@@ -14,15 +14,15 @@ public class TheWorkshop implements Workshop {
         private final long threadId;
         private final WorkplaceId workplaceId;
         private final boolean isEnter;
-        private boolean marked;
+        private int marked;
         private int released;
 
         private WrappedThread(long threadId, WorkplaceId workplaceId, boolean isEnter) {
             this.threadId = threadId;
-            this.released = 0;
             this.workplaceId = workplaceId;
             this.isEnter = isEnter;
-            this.marked = false;
+            this.released = 0;
+            this.marked = 0;
         }
 
         private void increment(int count) {
@@ -216,9 +216,9 @@ public class TheWorkshop implements Workshop {
         int diff = releasedAfterFirst - waitingRoom.get(0).released;
         for (var thread : waitingRoom) {
             thread.increment(diff);
-            if (thread.marked) {
-                diff--;
-                thread.marked = false;
+            if (thread.marked > 0) {
+                diff -= thread.marked;
+                thread.marked = 0;
 
                 if (diff == 0) break;
             }
@@ -226,9 +226,9 @@ public class TheWorkshop implements Workshop {
     }
 
     void releaseThreadsWithoutStarvation(WrappedThread lastThread) {
-        WrappedThread thread, previous = null;
-        ListIterator<WrappedThread> it = waitingRoom.listIterator();
         int releasedAfterFirst = waitingRoom.get(0).released;
+        ListIterator<WrappedThread> it = waitingRoom.listIterator();
+        WrappedThread thread, previous = it.next();
 
         while (it.hasNext() && releasedAfterFirst < (2 * N - 1)) {
             thread = it.next();
@@ -238,8 +238,7 @@ public class TheWorkshop implements Workshop {
 
                 if (thread.isEnter) {
                     releasedAfterFirst++;
-                    assert (previous != null);
-                    previous.marked = true;
+                    previous.marked++;
 
                     if (lastThread == null) {
                         releaseThread(thread);
