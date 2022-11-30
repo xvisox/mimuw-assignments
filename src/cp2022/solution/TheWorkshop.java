@@ -11,11 +11,11 @@ import java.util.concurrent.Semaphore;
 public class TheWorkshop implements Workshop {
 
     private static class WrappedThread {
-        private final long threadId;
-        private final WorkplaceId workplaceId;
-        private final boolean isEnter;
-        private int marked;
-        private int released;
+        private long threadId;             // ThreadId waiting in the queue.
+        private WorkplaceId workplaceId;   // WorkplaceId which this thread wants to occupy.
+        private boolean isEnter;           // Information about which type of method was invoked.
+        private int marked;                // Auxiliary variable to count released threads.
+        private int released;              // N.o. entries to workshop after this thread.
 
         private WrappedThread(long threadId, WorkplaceId workplaceId, boolean isEnter) {
             this.threadId = threadId;
@@ -23,6 +23,14 @@ public class TheWorkshop implements Workshop {
             this.isEnter = isEnter;
             this.released = 0;
             this.marked = 0;
+        }
+
+        private void setThread(WrappedThread thread) {
+            this.threadId = thread.threadId;
+            this.workplaceId = thread.workplaceId;
+            this.isEnter = thread.isEnter;
+            this.marked = thread.marked;
+            this.released = thread.released;
         }
 
         private void increment(int count) {
@@ -37,7 +45,7 @@ public class TheWorkshop implements Workshop {
     public final Map<Long, Semaphore> semaphores = new ConcurrentHashMap<>();
     // Mapping workplace identifier to workplace.
     private final Map<WorkplaceId, WrappedWorkplace> workplaces = new ConcurrentHashMap<>();
-    // Information about for what workers are waiting for.
+    // Information about for which workplaces workers are waiting for.
     private final Map<Long, WrappedWorkplace> waitingToOccupy = new HashMap<>();
     // "Queue" of all workers waiting for their workplaces.
     private final List<WrappedThread> waitingRoom = new LinkedList<>();
@@ -191,25 +199,28 @@ public class TheWorkshop implements Workshop {
         workplaces.get(threadToRelease.workplaceId).setWhoIsOccupying(threadToRelease.threadId);
     }
 
-    // Releasing threads from the beginning of list can't cause starvation
-    // as long as first elements are removed in order that they were added
-    // to waiting room, so we must wait for previous worker to wake up
+    // Releasing threads from the beginning of a list can't cause starvation
+    // as long as first elements are removed in same order as they were added
+    // to a waiting room, so we must wait for previous worker to wake up
     // another threads (cascade releasing).
-    WrappedThread releaseThreadsFromBeginning() {
-        WrappedThread thread, lastThread = null;
+    WrappedThread releaseThreadsFromBeginning(WrappedThread first) {
+        WrappedThread thread, last = null;
         while (!waitingRoom.isEmpty() && canOccupy(waitingRoom.get(0).workplaceId)) {
             thread = waitingRoom.get(0);
             waitingRoom.remove(thread);
-            if (lastThread == null) {
-                releaseThread(thread);
-            } else {
-                occupyWorkplace(thread);
-                workplaces.get(lastThread.workplaceId).setThreadToRelease(thread.threadId);
-            }
 
-            lastThread = thread;
+            if (last == null) {
+                // Setting first thread to release.
+                first.setThread(thread);
+            } else {
+                // Setting information who is going to be released next.
+                workplaces.get(last.workplaceId).setThreadToRelease(thread.threadId);
+            }
+            occupyWorkplace(thread);
+
+            last = thread;
         }
-        return lastThread;
+        return last;
     }
 
     void updateReleasedAfterStatistic(int releasedAfterFirst) {
@@ -225,10 +236,12 @@ public class TheWorkshop implements Workshop {
         }
     }
 
-    void releaseThreadsWithoutStarvation(WrappedThread lastThread) {
+    void releaseThreadsWithoutStarvation(WrappedThread last) {
+        if (waitingRoom.isEmpty()) return;
+
         int releasedAfterFirst = waitingRoom.get(0).released;
         ListIterator<WrappedThread> it = waitingRoom.listIterator();
-        WrappedThread thread, previous = it.next();
+        WrappedThread thread, first = null, previous = it.next();
 
         while (it.hasNext() && releasedAfterFirst < (2 * N - 1)) {
             thread = it.next();
@@ -240,21 +253,27 @@ public class TheWorkshop implements Workshop {
                     releasedAfterFirst++;
                     previous.marked++;
 
-                    if (lastThread == null) {
-                        releaseThread(thread);
+                    if (last == null) {
+                        first = thread;
                     } else {
-                        occupyWorkplace(thread);
-                        workplaces.get(lastThread.workplaceId).setThreadToRelease(thread.threadId);
+                        workplaces.get(last.workplaceId).setThreadToRelease(thread.threadId);
                     }
+                    occupyWorkplace(thread);
 
-                    lastThread = thread;
+                    last = thread;
                 } else {
+                    // Releasing 'switchTo' thread freely.
                     releaseThread(thread);
                 }
             }
 
             previous = thread;
         }
+
+        // If first variable was assigned, this means
+        // that in the previous method we couldn't release
+        // anything, so we do it now.
+        if (first != null) releaseThread(first);
 
         // Updating the information about how many threads
         // were released after every thread in waiting room.
@@ -273,8 +292,11 @@ public class TheWorkshop implements Workshop {
     }
 
     void normalize() {
-        WrappedThread lastThread = releaseThreadsFromBeginning();
-        if (waitingRoom.isEmpty()) return;
+        // Dummy first thread.
+        WrappedThread firstThread = new WrappedThread(-1, null, false);
+        WrappedThread lastThread = releaseThreadsFromBeginning(firstThread);
         releaseThreadsWithoutStarvation(lastThread);
+        // Cascade releasing all the threads.
+        if (firstThread.threadId != -1) releaseThread(firstThread);
     }
 }

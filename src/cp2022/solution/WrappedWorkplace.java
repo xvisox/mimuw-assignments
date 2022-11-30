@@ -63,6 +63,7 @@ public class WrappedWorkplace extends Workplace {
             // If someone else is already on our previous workplace, or if we are on the same
             // workplace as we were before then nothing should change.
             if (previous.occupiedBy == Thread.currentThread().getId() && previous != this) {
+                previous.occupiedBy = null;
                 previous.status = StatusOfWorkplace.EMPTY;
             }
         }
