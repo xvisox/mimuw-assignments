@@ -6,11 +6,11 @@ import java.util.concurrent.Semaphore;
 
 public class WrappedWorkplace extends Workplace {
     private final TheWorkshop workshop; // Workshop to which this workplace belongs.
-    private final Workplace workplace; // The workplace which is being wrapped.
+    private final Workplace workplace;  // The workplace which is being wrapped.
     private final Semaphore work;
     private StatusOfWorkplace status;
-    private Long occupiedBy; // Who is currently occupying this place.
-    private Long threadToRelease; // Thread that we should release.
+    private Long occupiedBy;            // Who is currently occupying this place.
+    private Long threadToRelease;       // Thread that we should release.
 
     protected WrappedWorkplace(Workplace workplace, TheWorkshop workshop) {
         super(workplace.getId());
