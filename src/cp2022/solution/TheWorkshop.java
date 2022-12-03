@@ -225,6 +225,8 @@ public class TheWorkshop implements Workshop {
 
     void updateReleasedAfterStatistic(int releasedAfterFirst) {
         int diff = releasedAfterFirst - waitingRoom.get(0).released;
+        if (diff == 0) return;
+
         for (var thread : waitingRoom) {
             thread.increment(diff);
             if (thread.marked > 0) {
@@ -234,6 +236,8 @@ public class TheWorkshop implements Workshop {
                 if (diff == 0) break;
             }
         }
+        // We want to visit all marked threads.
+        assert (diff == 0);
     }
 
     void releaseThreadsWithoutStarvation(WrappedThread last) {
@@ -265,9 +269,11 @@ public class TheWorkshop implements Workshop {
                     // Releasing 'switchTo' thread freely.
                     releaseThread(thread);
                 }
+            } else {
+                // If current thread was removed, we don't want
+                // to change the previous variable to thread.
+                previous = thread;
             }
-
-            previous = thread;
         }
 
         // If first variable was assigned, this means
