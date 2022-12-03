@@ -15,7 +15,7 @@ public class TheWorkshop implements Workshop {
         private WorkplaceId workplaceId;   // WorkplaceId which this thread wants to occupy.
         private boolean isEnter;           // Information about which type of method was invoked.
         private int marked;                // Auxiliary variable to count released threads.
-        private int released;              // N.o. entries to workshop after this thread.
+        private int released;              // Number of entries to the workshop after this thread.
 
         private WrappedThread(long threadId, WorkplaceId workplaceId, boolean isEnter) {
             this.threadId = threadId;
@@ -66,7 +66,7 @@ public class TheWorkshop implements Workshop {
         try {
             mutex.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         var threadId = Thread.currentThread().getId();
@@ -80,7 +80,7 @@ public class TheWorkshop implements Workshop {
             // Trying to occupy the workplace.
             semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         return workplaces.get(wid);
@@ -91,7 +91,7 @@ public class TheWorkshop implements Workshop {
         try {
             mutex.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         // SwitchTo was called to the same place as previously.
@@ -118,7 +118,7 @@ public class TheWorkshop implements Workshop {
             // Trying to occupy the workplace.
             semaphores.get(threadId).acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         return workplaces.get(wid);
@@ -129,7 +129,7 @@ public class TheWorkshop implements Workshop {
         try {
             mutex.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         var threadId = Thread.currentThread().getId();

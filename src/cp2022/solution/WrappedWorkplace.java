@@ -56,12 +56,15 @@ public class WrappedWorkplace extends Workplace {
         }
 
         // In this place, we want to release previously occupied workplace.
+        // This code is actually executed only if the thread called switchTo() method.
         WrappedWorkplace previous = workshop.currentlyOccupying.getOrDefault(Thread.currentThread().getId(), null);
         workshop.currentlyOccupying.put(Thread.currentThread().getId(), this);
         if (previous != null) {
             previous.work.release();
             // If someone else is already on our previous workplace, or if we are on the same
             // workplace as we were before then nothing should change.
+            // First condition is necessary in releasing the cycle and the second one
+            // covers the case when switchTo() was called with the same workplace as before.
             if (previous.occupiedBy == Thread.currentThread().getId() && previous != this) {
                 previous.occupiedBy = null;
                 previous.status = StatusOfWorkplace.EMPTY;
@@ -71,7 +74,7 @@ public class WrappedWorkplace extends Workplace {
         try {
             work.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("panic: unexpected thread interruption");
         }
 
         workplace.use();
