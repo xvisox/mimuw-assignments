@@ -21,7 +21,7 @@ private:
     class pushFifoGuard {
     public:
         pushFifoGuard(std::shared_ptr<queue_t> fifo, const K &key, const V &value) : fifo(fifo) {
-            fifo->push_back({key, value});
+            fifo->push_back(std::make_pair(key, value));
             rollback = true;
         }
 
@@ -45,7 +45,7 @@ private:
     };
 
     [[nodiscard]] bool shouldCopy() const {
-        return !fifo.unique() > 1 || !keys.unique() > 1 || flag;
+        return !fifo.unique() || !keys.unique() || flag;
     }
 
     void copy_kvfifo() {
