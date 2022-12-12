@@ -1,7 +1,7 @@
 #ifndef KVFIFO_H
 #define KVFIFO_H
 
-#include <bits/stdc++.h> // TODO: change to more specific headers
+#include <bits/stdc++.h> // TODO: zmienić na konkretniejsze nagłówki.
 
 template<typename K, typename V>
 class kvfifo {
@@ -16,6 +16,11 @@ private:
     void throwIfEmpty() const {
         if (fifo->empty())
             throw std::invalid_argument("kvfifo is empty");
+    }
+
+    void throwIfNotExists(const K &key) const {
+        if (keys->find(key) == keys->end())
+            throw std::invalid_argument("key does not exist");
     }
 
     class pushFifoGuard {
@@ -48,22 +53,21 @@ private:
         return !fifo.unique() || !keys.unique() || flag;
     }
 
-    void copy_kvfifo() {
-        if (!shouldCopy()) return;
+    void copy_kvfifo(bool copy) {
+        if (!copy) return;
 
         kvfifo<K, V> newFifo;
         for (auto &pair: *fifo) {
             newFifo.push(pair.first, pair.second);
         }
-        // newFifo has flag set to false, so it won't copy itself again
-        *this = newFifo;
+        *this = std::move(newFifo);
     }
 
 public:
     kvfifo() : fifo(std::make_shared<queue_t>()), keys(std::make_shared<map_t>()), flag(false) {}
 
     kvfifo(const kvfifo &other) : fifo(other.fifo), keys(other.keys), flag(other.flag) {
-        copy_kvfifo();
+        copy_kvfifo(flag);
     }
 
     kvfifo(kvfifo &&other) noexcept: fifo(std::move(other.fifo)), keys(std::move(other.keys)), flag(other.flag) {}
@@ -76,7 +80,7 @@ public:
     }
 
     void push(K const &k, V const &v) {
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         pushFifoGuard guard(fifo, k, v);
         queue_it_t last = std::prev(fifo->end());
@@ -94,7 +98,7 @@ public:
     void pop() {
         throwIfEmpty();
 
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         queue_it_t it = fifo->begin();
         keys->find(it->first)->second.pop_front();
@@ -104,7 +108,7 @@ public:
     void pop(K const &key) {
         throwIfEmpty();
 
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         queue_it_t it = keys->find(key)->second.front();
         keys->find(key)->second.pop_front();
@@ -112,11 +116,9 @@ public:
     }
 
     void move_to_back(K const &k) {
-        if (keys->find(k) == keys->end()) {
-            throw std::invalid_argument("move_to_back() called on non-existing key");
-        }
+        throwIfNotExists(k);
 
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         // Changing fifo order - keys map will remain the same.
         for (queue_it_t it: keys->find(k)->second) {
@@ -127,7 +129,7 @@ public:
     std::pair<const K &, V &> front() {
         throwIfEmpty();
 
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         flag = true;
         return std::make_pair(std::cref(fifo->front().first), std::ref(fifo->front().second));
@@ -142,16 +144,47 @@ public:
     std::pair<K const &, V &> back() {
         throwIfEmpty();
 
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
 
         flag = true;
-        return std::make_pair(std::cref(fifo->front().first), std::ref(fifo->front().second));
+        return std::make_pair(std::cref(fifo->front().first), std::ref(fifo->back().second));
     }
 
     std::pair<K const &, V const &> back() const {
         throwIfEmpty();
 
-        return std::make_pair(std::cref(fifo->front().first), std::cref(fifo->front().second));
+        return std::make_pair(std::cref(fifo->front().first), std::cref(fifo->back().second));
+    }
+
+    std::pair<K const &, V &> first(K const &key) {
+        throwIfNotExists(key);
+
+        copy_kvfifo(shouldCopy());
+
+        flag = true;
+        // TODO: Nie wiem, czy cref(key) jest poprawne albo czy nie powinno być po prostu key.
+        return std::make_pair(std::cref(key), std::ref(keys->find(key)->second.front()->second));
+    }
+
+    std::pair<K const &, V const &> first(K const &key) const {
+        throwIfNotExists(key);
+
+        return std::make_pair(std::cref(key), std::cref(keys->find(key)->second.front()->second));
+    }
+
+    std::pair<K const &, V &> last(K const &key) {
+        throwIfNotExists(key);
+
+        copy_kvfifo(shouldCopy());
+
+        flag = true;
+        return std::make_pair(std::cref(key), std::ref(keys->find(key)->second.back()->second));
+    }
+
+    std::pair<K const &, V const &> last(K const &key) const {
+        throwIfNotExists(key);
+
+        return std::make_pair(std::cref(key), std::cref(keys->find(key)->second.back()->second));
     }
 
     [[nodiscard]] size_t size() const {
@@ -171,9 +204,17 @@ public:
     }
 
     void clear() {
-        copy_kvfifo();
+        copy_kvfifo(shouldCopy());
         fifo->clear();
         keys->clear();
+    }
+
+    // TODO: usunąć
+    void print() {
+        for (auto &pair: *fifo) {
+            std::cout << pair.first << " " << pair.second << std::endl;
+        }
+        std::cout << std::endl;
     }
 
 };
