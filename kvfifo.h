@@ -7,7 +7,10 @@ template<typename K, typename V>
 class kvfifo {
     using queue_t = std::list<std::pair<K, V>>;
     using queue_it_t = typename queue_t::iterator;
-    using map_t = std::map<K, std::list<queue_it_t>>;
+    using list_t = std::list<queue_it_t>;
+    using list_it_t = typename list_t::iterator;
+    using map_t = std::map<K, list_t>;
+    using map_it_t = typename map_t::iterator;
 private:
     std::shared_ptr<queue_t> fifo;
     std::shared_ptr<map_t> keys;
@@ -64,6 +67,68 @@ private:
     }
 
 public:
+    class k_iterator {
+    public:
+        k_iterator(std::weak_ptr<map_t> m, map_it_t m_it, list_it_t l_it) : map(m), map_it(m_it), list_it(l_it) {};
+
+        k_iterator& operator++() {
+            ++list_it;
+            if(list_it == map_it->second.end()) {
+                ++map_it;
+                if(map_it != map->end()) {
+                    list_it = map_it->second.begin();
+                }
+            }
+
+            return *this;
+        }
+
+        k_iterator operator++(int) {
+            k_iterator temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        k_iterator& operator--() {
+            if(map_it == map->end()) {
+                map_it = std::prev(map->end());
+                list_it = std::prev(map_it->second.end());
+            } else {
+                if(list_it == map_it->second.begin() && map_it != map->begin()) {
+                    --map_it;
+                    list_it = std::prev(map_it->second.end());
+                } else {
+                    --list_it;
+                }
+            }
+
+            return *this;
+        }
+
+        k_iterator operator--(int) {
+            k_iterator temp = *this;
+            --(*this);
+            return temp;
+        }
+
+        bool operator==(const k_iterator& other) const {
+            return map == other.map && map_it == other.map_it && list_it == other.list_it;
+        }
+
+        bool operator!=(const k_iterator& other) const {
+            return !(*this==other);
+        }
+
+        V const & operator*() const {
+            return (*list_it)->first;
+        }
+
+    private:
+        std::shared_ptr<map_t> map;
+        map_it_t map_it;
+        list_it_t list_it;
+    };
+
     kvfifo() : fifo(std::make_shared<queue_t>()), keys(std::make_shared<map_t>()), flag(false) {}
 
     kvfifo(const kvfifo &other) : fifo(other.fifo), keys(other.keys), flag(other.flag) {
@@ -207,6 +272,16 @@ public:
         copy_kvfifo(shouldCopy());
         fifo->clear();
         keys->clear();
+    }
+
+    k_iterator k_begin() {
+        auto beginning = keys->begin();
+        return k_iterator(keys, beginning, beginning->second.begin());
+    }
+
+    k_iterator k_end() {
+        auto last = std::prev(keys->end());
+        return k_iterator(keys, keys->end(), last->second.end());
     }
 
     // TODO: usunąć
