@@ -1,7 +1,12 @@
 #ifndef KVFIFO_H
 #define KVFIFO_H
 
-#include <bits/stdc++.h> // TODO: zmienić na konkretniejsze nagłówki.
+#include <list>
+#include <map>
+#include <stdexcept>
+#include <functional>
+#include <memory>
+#include <iostream>
 
 template<typename K, typename V>
 class kvfifo {
@@ -45,30 +50,28 @@ private:
 
         void throw_if_empty() const {
             if (fifo.empty()) {
-                throw std::out_of_range("kvfifo is empty");
+                throw std::invalid_argument("kvfifo is empty");
             }
         }
 
         void throw_if_not_exists(const K &key) const {
             if (it_map.find(key) == it_map.end()) {
-                throw std::out_of_range("key not found");
+                throw std::invalid_argument("key not found");
             }
         }
 
         const list_t &get_list(const K &key) const {
-            throw_if_not_exists(key);
-            return it_map.find(key)->second;
+            return std::cref(it_map.find(key)->second);
         }
 
     public:
         kvfifo_implementation() = default;
 
         kvfifo_implementation(const kvfifo_implementation &other) {
-            kvfifo_implementation new_fifo;
-            for (auto &pair: other.fifo) {
-                new_fifo.push(pair.first, pair.second);
+            // FIXME: What if there is an exception?
+            for (auto it = other.fifo.begin(), end = other.fifo.end(); it != end; ++it) {
+                push(it->first, it->second);
             }
-            *this = std::move(new_fifo);
         }
 
         kvfifo_implementation(kvfifo_implementation &&other)
@@ -108,7 +111,7 @@ private:
         void pop(K const &key) {
             throw_if_not_exists(key);
 
-            auto it_list = get_list(key);
+            list_t const &it_list = get_list(key);
             queue_it_t it = it_list.front();
             it_list.pop_front();
             fifo.erase(it);
@@ -118,8 +121,8 @@ private:
             throw_if_not_exists(key);
 
             // Changing fifo order - keys map will remain the same.
-            auto it_list = get_list(key);
-            for (queue_it_t it: it_list) {
+            list_t const &it_list = get_list(key);
+            for (auto it: it_list) {
                 fifo.splice(fifo.end(), fifo, it);
             }
         }
@@ -146,22 +149,22 @@ private:
 
         std::pair<K const &, V &> first(K const &key) {
             throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::ref(get_list(key).front()->second));
+            return std::make_pair(std::cref(key), std::ref(it_map[key].front()->second));
         }
 
         std::pair<K const &, V const &> first(K const &key) const {
             throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::cref(get_list(key).front()->second));
+            return std::make_pair(std::cref(key), std::cref(it_map[key].front()->second));
         }
 
         std::pair<K const &, V &> last(K const &key) {
             throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::ref(get_list(key).back()->second));
+            return std::make_pair(std::cref(key), std::ref(it_map[key].back()->second));
         }
 
         std::pair<K const &, V const &> last(K const &key) const {
             throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::cref(get_list(key).back()->second));
+            return std::make_pair(std::cref(key), std::cref(it_map[key].back()->second));
         }
 
         [[nodiscard]] size_t size() const {
@@ -180,6 +183,14 @@ private:
             fifo.clear();
             it_map.clear();
         }
+
+        // TODO: remove.
+        void print() {
+            for (auto &pair: fifo) {
+                std::cout << pair.first << " " << pair.second << std::endl;
+            }
+            std::cout << std::endl;
+        }
     };
 
     bool should_copy() {
@@ -189,27 +200,25 @@ private:
     class copy_guard {
     public:
         explicit copy_guard(kvfifo *ptr_kvfifo) : ptr_kvfifo(ptr_kvfifo) {
-            // FIXME: copy constructor should execute here.
-            kvfifo_implementation new_kvfifo(*(ptr_kvfifo->pimpl));
             old_pimpl = ptr_kvfifo->pimpl;
             old_flag = ptr_kvfifo->flag;
 
-            try {
-                auto new_pimpl = std::make_shared<kvfifo_implementation>(new_kvfifo);
-                ptr_kvfifo->pimpl = new_pimpl;
-                ptr_kvfifo->flag = false;
-            } catch (...) {
-                new_kvfifo.clear();
-                throw;
-            }
+            auto new_pimpl = std::make_shared<kvfifo_implementation>(*(ptr_kvfifo->pimpl));
+            ptr_kvfifo->pimpl = new_pimpl;
+            ptr_kvfifo->flag = false;
 
             rollback = true;
         }
 
+        copy_guard(copy_guard const &) = delete;
+
+        copy_guard &operator=(copy_guard const &) = delete;
+
+        copy_guard() = delete;
+
         ~copy_guard() {
             if (rollback) {
-                ptr_kvfifo->pimpl->clear();
-
+                ptr_kvfifo->pimpl.reset();
                 ptr_kvfifo->pimpl = old_pimpl;
                 ptr_kvfifo->flag = old_flag;
             }
@@ -298,7 +307,7 @@ public:
     }
 
     std::pair<K const &, V const &> front() const {
-        return pimpl->front(); // FIXME: right implementation will be executed?
+        return pimpl->front(); // FIXME: right implementation will be executed? I can already tell - no.
     }
 
     std::pair<K const &, V &> back() {
@@ -360,6 +369,11 @@ public:
         } else {
             pimpl->clear();
         }
+    }
+
+    // TODO: remove.
+    void print() {
+        pimpl->print();
     }
 
     // TODO: iterator
