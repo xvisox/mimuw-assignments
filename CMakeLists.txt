@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Laby/Kapitan.cpp)
+add_executable(ASD Playground/Egzamin2012/Mrowki.cpp)
