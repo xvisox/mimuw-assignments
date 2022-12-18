@@ -33,6 +33,8 @@ int main() {
                 res[el] = 1;
             }
         }
+
+        col[i - 1].clear();
     }
 
     for (auto el: res) {

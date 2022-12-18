@@ -1,38 +1,40 @@
 #include <bits/stdc++.h>
 
-#define ll long long
-
+#define FASTIO ios_base::sync_with_stdio(false); cin.tie(0), cout.tie(0)
+#define ull unsigned long long
+#define endl '\n'
 using namespace std;
-int n;
-vector<pair<ll, int>> inpt;
-bitset<100'020> taken;
-bool used;
-ll result;
+
+constexpr int MAX_N = 1000001;
+ull tab[MAX_N];
+ull zero_pod_rzad[MAX_N], jeden_pod_rzad[MAX_N], dwa_pod_rzad[MAX_N];
+ull zero_pod_rzad2[MAX_N], jeden_pod_rzad2[MAX_N], dwa_pod_rzad2[MAX_N];
+
+ull max(ull a, ull b, ull c) {
+    return max(max(a, b), c);
+}
 
 int main() {
+    FASTIO;
+    int n;
     cin >> n;
-    ll temp;
-    for (int i = 10; i < n + 10; i++) {
-        scanf("%lld", &temp);
-        inpt.emplace_back(temp, i);
+    for (int i = 1; i <= n; i++) {
+        cin >> tab[i];
     }
-    sort(inpt.begin(), inpt.end(), greater<>());
-    for (auto el: inpt) {
-        auto [num, idx] = el;
-        int onLeft, onRight;
-        onLeft = taken[idx - 1];
-        onRight = taken[idx + 1];
-        if (onLeft && taken[idx - 2]) onLeft++;
-        if (onRight && taken[idx + 2]) onRight++;
 
-        if (onLeft + onRight <= 1) {
-            taken[idx] = true;
-        } else if (onLeft + onRight <= 2 && !used) {
-            taken[idx] = true;
-            used = true;
-        }
-        if (taken[idx]) result += num;
+    for (int i = 1; i <= n; i++) {
+        zero_pod_rzad[i] = max(jeden_pod_rzad[i - 1], dwa_pod_rzad[i - 1], zero_pod_rzad[i - 1]);
+        jeden_pod_rzad[i] = zero_pod_rzad[i - 1] + tab[i];
+        dwa_pod_rzad[i] = jeden_pod_rzad[i - 1] + tab[i];
+
+        zero_pod_rzad2[i] = max(jeden_pod_rzad2[i - 1], dwa_pod_rzad2[i - 1], zero_pod_rzad2[i - 1]);
+        jeden_pod_rzad2[i] = zero_pod_rzad2[i - 1] + tab[i];
+        dwa_pod_rzad2[i] = max(jeden_pod_rzad2[i - 1], dwa_pod_rzad[i - 1]) + tab[i];
     }
-    cout << result << endl;
+
+    ull res = max(zero_pod_rzad[n], max(jeden_pod_rzad[n], dwa_pod_rzad[n]));
+    ull res1 = max(zero_pod_rzad2[n], max(jeden_pod_rzad2[n], dwa_pod_rzad2[n]));
+    cout << max(res, res1) << endl;
+
     return 0;
 }
