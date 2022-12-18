@@ -132,7 +132,9 @@ private:
             return std::make_pair(std::cref(fifo.front().first), std::ref(fifo.front().second));
         }
 
-        std::pair<K const &, V const &> front() const {
+        // FIXME: It should be possible to avoid different names, just overloading constness of functions
+        // But not sure if we need it
+        std::pair<K const &, V const &> front_const() const {
             throw_if_empty();
             return std::make_pair(std::cref(fifo.front().first), std::cref(fifo.front().second));
         }
@@ -142,7 +144,7 @@ private:
             return std::make_pair(std::cref(fifo.back().first), std::ref(fifo.back().second));
         }
 
-        std::pair<K const &, V const &> back() const {
+        std::pair<K const &, V const &> back_const() const {
             throw_if_empty();
             return std::make_pair(std::cref(fifo.back().first), std::cref(fifo.back().second));
         }
@@ -152,7 +154,7 @@ private:
             return std::make_pair(std::cref(key), std::ref(list.front()->second));
         }
 
-        std::pair<K const &, V const &> first(K const &key) const {
+        std::pair<K const &, V const &> first_const(K const &key) const {
             auto list = get_list(key);
             return std::make_pair(std::cref(key), std::cref(list.front()->second));
         }
@@ -162,7 +164,7 @@ private:
             return std::make_pair(std::cref(key), std::ref(list.back()->second));
         }
 
-        std::pair<K const &, V const &> last(K const &key) const {
+        std::pair<K const &, V const &> last_const(K const &key) const {
             auto list = get_list(key);
             return std::make_pair(std::cref(key), std::cref(list.back()->second));
         }
@@ -322,6 +324,7 @@ public:
         }
     }
 
+    // TODO: Repeated code in guards
     std::pair<K const &, V &> front() {
          if(should_copy()) {
             copy_guard guard(this);
@@ -337,7 +340,7 @@ public:
     }
 
     std::pair<K const &, V const &> front() const {
-        return pimpl->front(); // FIXME: right implementation will be executed? I can already tell - no.
+        return pimpl->front_const(); // FIXME: right implementation will be executed? I can already tell - no.
     }
 
     std::pair<K const &, V &> back() {
@@ -355,7 +358,7 @@ public:
     }
 
     std::pair<K const &, V const &> back() const {
-        return pimpl->back();
+        return pimpl->back_const();
     }
 
     std::pair<K const &, V &> first(K const &key) {
@@ -373,7 +376,7 @@ public:
     }
 
     std::pair<K const &, V const &> first(K const &key) const {
-        return pimpl->first(key);
+        return pimpl->first_const(key);
     }
 
     std::pair<K const &, V &> last(K const &key) {
@@ -391,7 +394,7 @@ public:
     }
 
     std::pair<K const &, V const &> last(K const &key) const {
-        return pimpl->last(key);
+        return pimpl->last_const(key);
     }
 
     [[nodiscard]] size_t size() const noexcept {
