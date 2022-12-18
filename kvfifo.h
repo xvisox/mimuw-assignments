@@ -34,7 +34,7 @@ private:
                 }
             }
 
-            void drop_rollback() {
+            void drop_rollback() noexcept {
                 rollback = false;
             }
 
@@ -166,11 +166,11 @@ private:
             return std::make_pair(std::cref(key), std::cref(it_map[key].back()->second));
         }
 
-        [[nodiscard]] size_t size() const {
+        [[nodiscard]] size_t size() const noexcept {
             return fifo.size();
         }
 
-        [[nodiscard]] bool empty() const {
+        [[nodiscard]] bool empty() const noexcept {
             return fifo.empty();
         }
 
@@ -178,7 +178,7 @@ private:
             return it_map.find(key) == it_map.end() ? 0 : get_list(key).size();
         }
 
-        void clear() {
+        void clear() noexcept {
             fifo.clear();
             it_map.clear();
         }
@@ -208,16 +208,16 @@ private:
 
         // FIXME: Does it copy it_map?
         // Possible to do it without copying?
-        k_iterator k_begin() const {
+        k_iterator k_begin() const noexcept {
             return k_iterator(it_map.begin());
         }
 
-        k_iterator k_end() const {
+        k_iterator k_end() const noexcept {
             return k_iterator(it_map.end());
         }
     };
 
-    bool should_copy() {
+    bool should_copy() noexcept {
         return !pimpl.unique() || flag;
     }
 
@@ -248,7 +248,7 @@ private:
             }
         }
 
-        void drop_rollback() {
+        void drop_rollback() noexcept {
             rollback = false;
         }
 
@@ -393,11 +393,11 @@ public:
         return pimpl->last(key);
     }
 
-    [[nodiscard]] size_t size() const {
+    [[nodiscard]] size_t size() const noexcept {
         return pimpl->size();
     }
 
-    [[nodiscard]] bool empty() const {
+    [[nodiscard]] bool empty() const noexcept {
         return pimpl->empty();
     }
 
@@ -422,11 +422,11 @@ public:
 
     using k_iterator = typename kvfifo_implementation::k_iterator;
 
-    k_iterator k_begin() const {
+    k_iterator k_begin() const noexcept {
         return pimpl->k_begin();
     }
 
-    k_iterator k_end() const {
+    k_iterator k_end() const noexcept {
         return pimpl->k_end();
     }
 };
