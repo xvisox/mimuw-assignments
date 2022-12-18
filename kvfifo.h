@@ -53,14 +53,19 @@ private:
             }
         }
 
+        const list_t &get_list(const K &key) const {
+            auto result = it_map.find(key);
+            if(result == it_map.end()) {
+                throw std::invalid_argument("key not found");
+            }
+
+            return std::cref(result->second);
+        }
+
         void throw_if_not_exists(const K &key) const {
             if (it_map.find(key) == it_map.end()) {
                 throw std::invalid_argument("key not found");
             }
-        }
-
-        const list_t &get_list(const K &key) const {
-            return std::cref(it_map.find(key)->second);
         }
 
     public:
@@ -108,8 +113,6 @@ private:
         }
 
         void pop(K const &key) {
-            throw_if_not_exists(key);
-
             list_t const &it_list = get_list(key);
             queue_it_t it = it_list.front();
             it_list.pop_front();
@@ -117,8 +120,6 @@ private:
         }
 
         void move_to_back(K const &key) {
-            throw_if_not_exists(key);
-
             // Changing fifo order - keys map will remain the same.
             list_t const &it_list = get_list(key);
             for (auto it: it_list) {
@@ -147,23 +148,23 @@ private:
         }
 
         std::pair<K const &, V &> first(K const &key) {
-            throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::ref(it_map[key].front()->second));
+            auto list = get_list(key);
+            return std::make_pair(std::cref(key), std::ref(list.front()->second));
         }
 
         std::pair<K const &, V const &> first(K const &key) const {
-            throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::cref(it_map[key].front()->second));
+            auto list = get_list(key);
+            return std::make_pair(std::cref(key), std::cref(list.front()->second));
         }
 
         std::pair<K const &, V &> last(K const &key) {
-            throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::ref(it_map[key].back()->second));
+            auto list = get_list(key);
+            return std::make_pair(std::cref(key), std::ref(list.back()->second));
         }
 
         std::pair<K const &, V const &> last(K const &key) const {
-            throw_if_not_exists(key);
-            return std::make_pair(std::cref(key), std::cref(it_map[key].back()->second));
+            auto list = get_list(key);
+            return std::make_pair(std::cref(key), std::cref(list.back()->second));
         }
 
         [[nodiscard]] size_t size() const noexcept {
