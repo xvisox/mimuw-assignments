@@ -206,6 +206,8 @@ private:
                 }
         };
 
+        // FIXME: Does it copy it_map?
+        // Possible to do it without copying?
         k_iterator k_begin() const {
             return k_iterator(it_map.begin());
         }
@@ -320,12 +322,17 @@ public:
     }
 
     std::pair<K const &, V &> front() {
-        if (should_copy()) {
+         if(should_copy()) {
             copy_guard guard(this);
+            auto result = pimpl->front();
+            flag = true;
             guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->front();
+            flag = true;
+            return result;
         }
-        flag = true;
-        return pimpl->front();
     }
 
     std::pair<K const &, V const &> front() const {
@@ -333,12 +340,17 @@ public:
     }
 
     std::pair<K const &, V &> back() {
-        if (should_copy()) {
+        if(should_copy()) {
             copy_guard guard(this);
+            auto result = pimpl->back();
+            flag = true;
             guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->back();
+            flag = true;
+            return result;
         }
-        flag = true;
-        return pimpl->back();
     }
 
     std::pair<K const &, V const &> back() const {
@@ -346,12 +358,17 @@ public:
     }
 
     std::pair<K const &, V &> first(K const &key) {
-        if (should_copy()) {
+        if(should_copy()) {
             copy_guard guard(this);
+            auto result = pimpl->first(key);
+            flag = true;
             guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->first(key);
+            flag = true;
+            return result;
         }
-        flag = true;
-        return pimpl->first(key);
     }
 
     std::pair<K const &, V const &> first(K const &key) const {
@@ -359,12 +376,17 @@ public:
     }
 
     std::pair<K const &, V &> last(K const &key) {
-        if (should_copy()) {
+        if(should_copy()) {
             copy_guard guard(this);
+            auto result = pimpl->last(key);
+            flag = true;
             guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->last(key);
+            flag = true;
+            return result;
         }
-        flag = true;
-        return pimpl->last(key);
     }
 
     std::pair<K const &, V const &> last(K const &key) const {
