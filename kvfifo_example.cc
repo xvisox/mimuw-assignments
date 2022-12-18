@@ -54,8 +54,8 @@ int main() {
            kvf4.back().second == 3);
 
     int i = 1;
-//    for (auto k_it = kvf1.k_begin(), k_end = kvf1.k_end(); k_it != k_end; ++k_it, ++i)
-//        assert(i <= 3 && *k_it == i);
+   for (auto k_it = kvf1.k_begin(), k_end = kvf1.k_end(); k_it != k_end; ++k_it, ++i)
+       assert(i <= 3 && *k_it == i);
 
     auto kvf5 = std::make_unique<kvfifo<int, int>>();
     kvf5->push(4, 0);

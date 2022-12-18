@@ -15,9 +15,8 @@ private:
         using queue_t = std::list<std::pair<K, V>>;
         using queue_it_t = typename queue_t::iterator;
         using list_t = std::list<queue_it_t>;
-        using list_it_t = typename list_t::iterator;
         using map_t = std::map<K, list_t>;
-        using map_it_t = typename map_t::iterator;
+        using map_it_t = typename map_t::const_iterator;
     private:
         queue_t fifo;
         map_t it_map;
@@ -190,6 +189,29 @@ private:
                 std::cout << pair.first << " " << pair.second << std::endl;
             }
             std::cout << std::endl;
+        }
+
+        class k_iterator : public map_it_t {
+            public:
+                k_iterator() : map_it_t() {};
+
+                k_iterator(map_it_t it) : map_it_t(it) {};
+
+                K* operator->() { 
+                    return (K* const)&(map_it_t::operator->()->first);
+                }
+
+                K operator*() {
+                    return map_it_t::operator*().first;
+                }
+        };
+
+        k_iterator k_begin() const {
+            return k_iterator(it_map.begin());
+        }
+
+        k_iterator k_end() const {
+            return k_iterator(it_map.end());
         }
     };
 
@@ -376,8 +398,15 @@ public:
         pimpl->print();
     }
 
-    // TODO: iterator
+    using k_iterator = typename kvfifo_implementation::k_iterator;
 
+    k_iterator k_begin() const {
+        return pimpl->k_begin();
+    }
+
+    k_iterator k_end() const {
+        return pimpl->k_end();
+    }
 };
 
 #endif // KVFIFO_H
