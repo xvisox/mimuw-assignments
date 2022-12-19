@@ -8,6 +8,8 @@ auto f(kvfifo<int, int> q) {
 }
 
 int main() {
+    static_assert(std::bidirectional_iterator<kvfifo<int, int>::k_iterator>);
+
     int keys[] = {3, 1, 2};
 
     kvfifo<int, int> kvf1 = f({});
