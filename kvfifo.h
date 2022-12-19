@@ -6,13 +6,13 @@
 #include <stdexcept>
 #include <functional>
 #include <memory>
-#include <iostream>
+#include <iostream> // usunac
 
 template<typename K, typename V>
 class kvfifo {
 private:
     class kvfifo_implementation {
-        using queue_t = std::list<std::pair<K, V>>;
+        using queue_t = std::list<std::pair<K, V>>; // TODO: tylko wartosci
         using queue_it_t = typename queue_t::iterator;
         using list_t = std::list<queue_it_t>;
         using map_t = std::map<K, list_t>;
@@ -20,6 +20,7 @@ private:
         queue_t fifo;
         map_t it_map;
 
+        //TODO: wywalic :(
         class push_fifo_guard {
         public:
             push_fifo_guard(queue_t *ptr_fifo, const K &key, const V &value) : ptr_fifo(ptr_fifo) {
@@ -86,6 +87,7 @@ private:
             return *this;
         }
 
+        //TODO: push ze splice
         void push(K const &k, V const &v) {
             push_fifo_guard guard(&fifo, k, v);
             queue_it_t last = std::prev(fifo.end());
@@ -138,6 +140,7 @@ private:
             return std::make_pair(std::cref(fifo.front().first), std::cref(fifo.front().second));
         }
 
+//TODO make_pair
         std::pair<const K &, V &> back() {
             throw_if_empty();
             return std::make_pair(std::cref(fifo.back().first), std::ref(fifo.back().second));
@@ -205,6 +208,7 @@ private:
                     return it->first;
                 }
 
+//TODO
                 const K &operator->() { 
                     return (K* const)&(map_it_t::operator->()->first);
                 }
@@ -240,7 +244,7 @@ private:
                 }
 
             private:
-            map_it_t it;
+                map_it_t it;
         };
 
         // FIXME: Does it copy it_map?
