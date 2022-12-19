@@ -301,11 +301,14 @@ private:
 public:
     kvfifo() : pimpl(std::make_shared<kvfifo_implementation>()), flag(false) {}
 
-    kvfifo(kvfifo const &kvfifo) : pimpl(kvfifo.pimpl), flag(kvfifo.flag) {
-        if (!flag) return;
-
-        copy_guard guard(this);
-        guard.drop_rollback();
+    kvfifo(kvfifo const &other) {
+        if(other.flag) {
+            copy_guard guard(other);
+            guard.drop_rollback();
+        } else {
+            pimpl = other.pimpl;
+            flag = other.flag;
+        }
     }
 
     kvfifo(kvfifo &&kvfifo) noexcept: pimpl(std::move(kvfifo.pimpl)), flag(kvfifo.flag) {
