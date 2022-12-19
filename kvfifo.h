@@ -16,7 +16,6 @@ private:
         using queue_it_t = typename queue_t::iterator;
         using list_t = std::list<queue_it_t>;
         using map_t = std::map<K, list_t>;
-        using map_it_t = typename map_t::const_iterator;
     private:
         queue_t fifo;
         map_t it_map;
@@ -194,19 +193,54 @@ private:
             std::cout << std::endl;
         }
 
-        class k_iterator : public map_it_t {
+        class k_iterator : public std::iterator<std::bidirectional_iterator_tag, K> {
             public:
-                k_iterator() : map_it_t() {};
+                using map_it_t = typename map_t::const_iterator;
 
-                k_iterator(map_it_t it) : map_it_t(it) {};
+                k_iterator() : it() {};
 
-                K* operator->() { 
+                k_iterator(map_it_t other) : it(other) {};
+
+                const K &operator*() const {
+                    return it->first;
+                }
+
+                const K &operator->() { 
                     return (K* const)&(map_it_t::operator->()->first);
                 }
 
-                K operator*() {
-                    return map_it_t::operator*().first;
+                k_iterator &operator++() noexcept {
+                    ++it;
+                    return *this; 
                 }
+
+                k_iterator operator++(int) noexcept {
+                    k_iterator temp(*this);
+                    ++(*this);
+                    return temp;
+                }
+                
+                k_iterator &operator--() noexcept {
+                    --it;
+                    return *this; 
+                }
+
+                k_iterator operator--(int) noexcept {
+                    k_iterator temp(*this);
+                    --(*this);
+                    return temp;
+                }
+
+                bool operator==(const k_iterator &other) const noexcept {
+                    return it == other.it;
+                }
+
+                bool operator!=(const k_iterator &other) const noexcept {
+                    return it != other.it;
+                }
+
+            private:
+            map_it_t it;
         };
 
         // FIXME: Does it copy it_map?
