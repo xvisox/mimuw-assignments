@@ -20,33 +20,6 @@ private:
         queue_t fifo;
         map_t it_map;
 
-        //TODO: wywalic :(
-        class push_fifo_guard {
-        public:
-            push_fifo_guard(queue_t *ptr_fifo, const K &key, const V &value) : ptr_fifo(ptr_fifo) {
-                ptr_fifo->push_back(std::make_pair(key, value));
-                rollback = true;
-            }
-
-            ~push_fifo_guard() {
-                if (rollback) {
-                    ptr_fifo->pop_back();
-                }
-            }
-
-            void drop_rollback() noexcept {
-                rollback = false;
-            }
-
-            push_fifo_guard(push_fifo_guard const &) = delete;
-
-            push_fifo_guard &operator=(push_fifo_guard const &) = delete;
-
-        private:
-            queue_t *ptr_fifo;
-            bool rollback = false;
-        };
-
         void throw_if_empty() const {
             if (fifo.empty()) {
                 throw std::invalid_argument("kvfifo is empty");
@@ -87,22 +60,31 @@ private:
             return *this;
         }
 
-        //TODO: push ze splice
         void push(K const &k, V const &v) {
-            push_fifo_guard guard(&fifo, k, v);
-            queue_it_t last = std::prev(fifo.end());
+#include <iostream> // usunac
 
+template<typename K, typename V>
+class kvfifo {
+private:
+    class kvfifo_implementation {
+        using queue_t = std::list<std::pair<K, V>>; // TODO: tylko wartosci
+        using queue_it_t = typename queue_t::iterator;
+        using list_t = std::list<queue_it_t>;
             auto it_list = it_map.find(k);
 
             if (it_list != it_map.end()) {
-                it_list->second.push_back(last);
+                queue_t queue_addition{std::make_pair(k, v)};
+                queue_it_t list_record = queue_addition.begin();
+                it_list->second.push_back(list_record);
+                fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             } else {
-                list_t list{last};
-                std::pair<K, list_t> it_map_record(k, list);
-                it_map.insert(it_map_record);
+                queue_t queue_addition{std::make_pair(k, v)};
+                queue_it_t list_record = queue_addition.begin();
+                list_t list{list_record};
+                auto map_record = std::make_pair(k, list);
+                it_map.insert(map_record);
+                fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             }
-
-            guard.drop_rollback();
         }
 
         void pop() {
@@ -307,8 +289,8 @@ public:
 
     kvfifo(kvfifo const &other) {
         if(other.flag) {
-            copy_guard guard(other);
-            guard.drop_rollback();
+            auto new_pimpl = std::make_shared<kvfifo_implementation>(*(other.pimpl));
+            pimpl = new_pimpl;
         } else {
             pimpl = other.pimpl;
             flag = other.flag;
