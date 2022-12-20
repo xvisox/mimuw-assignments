@@ -2,6 +2,7 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include "kwasow.h"
 
 auto f(kvfifo<int, int> q) {
     return q;
@@ -72,4 +73,6 @@ int main() {
         kvf1.push(i, i);
     for (int i = 0; i < 1000000; i++)
         vec.push_back(kvf1);  // Wszystkie obiekty w vec współdzielą dane.
+
+    kwasow::kwasowMain();
 }

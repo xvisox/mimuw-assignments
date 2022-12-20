@@ -61,15 +61,6 @@ private:
         }
 
         void push(K const &k, V const &v) {
-#include <iostream> // usunac
-
-template<typename K, typename V>
-class kvfifo {
-private:
-    class kvfifo_implementation {
-        using queue_t = std::list<std::pair<K, V>>; // TODO: tylko wartosci
-        using queue_it_t = typename queue_t::iterator;
-        using list_t = std::list<queue_it_t>;
             auto it_list = it_map.find(k);
 
             if (it_list != it_map.end()) {
