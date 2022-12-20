@@ -41,6 +41,16 @@ private:
             }
         }
 
+        std::pair<const K&, V&> make_ref_pair(const K &k, V &v) {
+            throw_if_empty();
+            return std::make_pair(std::cref(k), std::ref(v));
+        }
+
+        std::pair<const K&, const V&> make_ref_pair(const K &k, const V &v) const {
+            throw_if_empty();
+            return std::make_pair(std::cref(k), std::cref(v));
+        }
+
     public:
         kvfifo_implementation() = default;
 
@@ -102,46 +112,41 @@ private:
         }
 
         std::pair<const K &, V &> front() {
-            throw_if_empty();
-            return std::make_pair(std::cref(fifo.front().first), std::ref(fifo.front().second));
+            return make_ref_pair(fifo.front().first, fifo.front().second);
         }
 
         // FIXME: It should be possible to avoid different names, just overloading constness of functions
         // But not sure if we need it
-        std::pair<K const &, V const &> front_const() const {
-            throw_if_empty();
-            return std::make_pair(std::cref(fifo.front().first), std::cref(fifo.front().second));
+        std::pair<K const &, V const &> front() const {
+            return make_ref_pair(fifo.front().first, fifo.front().second);
         }
 
-//TODO make_pair
         std::pair<const K &, V &> back() {
-            throw_if_empty();
-            return std::make_pair(std::cref(fifo.back().first), std::ref(fifo.back().second));
+            return make_ref_pair(fifo.back().first, fifo.back().second);
         }
 
-        std::pair<K const &, V const &> back_const() const {
-            throw_if_empty();
-            return std::make_pair(std::cref(fifo.back().first), std::cref(fifo.back().second));
+        std::pair<K const &, V const &> back() const {
+            return make_ref_pair(fifo.back().first, fifo.back().second);
         }
 
         std::pair<K const &, V &> first(K const &key) {
             auto list = get_list(key);
-            return std::make_pair(std::cref(key), std::ref(list.front()->second));
+            return make_ref_pair(key, list.front()->second);
         }
 
-        std::pair<K const &, V const &> first_const(K const &key) const {
+        std::pair<K const &, V const &> first(K const &key) const {
             auto list = get_list(key);
-            return std::make_pair(std::cref(key), std::cref(list.front()->second));
+            return make_ref_pair(key, list.front()->second);
         }
 
         std::pair<K const &, V &> last(K const &key) {
             auto list = get_list(key);
-            return std::make_pair(std::cref(key), std::ref(list.back()->second));
+            return make_ref_pair(key, list.back()->second);
         }
 
-        std::pair<K const &, V const &> last_const(K const &key) const {
+        std::pair<K const &, V const &> last(K const &key) const {
             auto list = get_list(key);
-            return std::make_pair(std::cref(key), std::cref(list.back()->second));
+            return make_ref_pair(key, list.back()->second);
         }
 
         [[nodiscard]] size_t size() const noexcept {
@@ -354,7 +359,7 @@ public:
     }
 
     std::pair<K const &, V const &> front() const {
-        return pimpl->front_const(); // FIXME: right implementation will be executed? I can already tell - no.
+        return pimpl->front(); // FIXME: right implementation will be executed? I can already tell - no.
     }
 
     std::pair<K const &, V &> back() {
@@ -372,7 +377,7 @@ public:
     }
 
     std::pair<K const &, V const &> back() const {
-        return pimpl->back_const();
+        return pimpl->back();
     }
 
     std::pair<K const &, V &> first(K const &key) {
@@ -390,7 +395,7 @@ public:
     }
 
     std::pair<K const &, V const &> first(K const &key) const {
-        return pimpl->first_const(key);
+        return pimpl->first(key);
     }
 
     std::pair<K const &, V &> last(K const &key) {
@@ -408,7 +413,7 @@ public:
     }
 
     std::pair<K const &, V const &> last(K const &key) const {
-        return pimpl->last_const(key);
+        return pimpl->last(key);
     }
 
     [[nodiscard]] size_t size() const noexcept {
