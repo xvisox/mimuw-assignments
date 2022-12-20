@@ -19,12 +19,27 @@ private:
     private:
         queue_t fifo;
         map_t it_map;
-        bool copy_flag = false; // True if non-const reference was taken - need to copy on every modification from now on
+        bool copy_flag = false; // True if non-const reference was taken - need to copy on every modification from now on.
 
         void throw_if_empty() const {
             if (fifo.empty()) {
                 throw std::invalid_argument("kvfifo is empty");
             }
+        }
+
+        void throw_if_not_exists(const K &key) const {
+            if (it_map.find(key) == it_map.end()) {
+                throw std::invalid_argument("key not found");
+            }
+        }
+
+        list_t &get_list(const K &key) {
+            auto result = it_map.find(key);
+            if(result == it_map.end()) {
+                throw std::invalid_argument("key not found");
+            }
+
+            return std::ref(result->second);
         }
 
         const list_t &get_list(const K &key) const {
@@ -34,12 +49,6 @@ private:
             }
 
             return std::cref(result->second);
-        }
-
-        void throw_if_not_exists(const K &key) const {
-            if (it_map.find(key) == it_map.end()) {
-                throw std::invalid_argument("key not found");
-            }
         }
 
         std::pair<const K&, V&> make_ref_pair(const K &k, V &v) {
@@ -68,6 +77,7 @@ private:
         kvfifo_implementation &operator=(kvfifo_implementation other) {
             fifo = other.fifo;
             it_map = other.it_map;
+            // TODO: I think we should NOT copy copy_flag, this is a whole new implemtantion, right?
             return *this;
         }
 
@@ -77,6 +87,7 @@ private:
             if (it_list != it_map.end()) {
                 queue_t queue_addition{std::make_pair(k, v)};
                 queue_it_t list_record = queue_addition.begin();
+
                 it_list->second.push_back(list_record);
                 fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             } else {
@@ -84,6 +95,7 @@ private:
                 queue_it_t list_record = queue_addition.begin();
                 list_t list{list_record};
                 auto map_record = std::make_pair(k, list);
+
                 it_map.insert(map_record);
                 fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             }
@@ -98,7 +110,7 @@ private:
         }
 
         void pop(K const &key) {
-            list_t const &it_list = get_list(key);
+            list_t &it_list = get_list(key);
             queue_it_t it = it_list.front();
             it_list.pop_front();
             fifo.erase(it);
@@ -163,6 +175,8 @@ private:
         void clear() noexcept {
             fifo.clear();
             it_map.clear();
+            // TODO: Should we set flag to false?
+            copy_flag = false;
         }
 
         bool flag() const noexcept {
@@ -354,7 +368,9 @@ public:
     }
 
     std::pair<K const &, V const &> front() const {
-        return pimpl->front(); // FIXME: right implementation will be executed? I can already tell - no.
+        return pimpl->front(); 
+        // FIXME: right implementation will be executed? I can already tell - no.
+        // It's probably ok
     }
 
     std::pair<K const &, V &> back() {
