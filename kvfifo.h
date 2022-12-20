@@ -19,6 +19,7 @@ private:
     private:
         queue_t fifo;
         map_t it_map;
+        bool copy_flag = false; // True if non-const reference was taken - need to copy on every modification from now on
 
         void throw_if_empty() const {
             if (fifo.empty()) {
@@ -61,8 +62,8 @@ private:
             }
         }
 
-        kvfifo_implementation(kvfifo_implementation &&other)
-        noexcept: fifo(std::move(other.fifo)), it_map(std::move(other.it_map)) {}
+        kvfifo_implementation(kvfifo_implementation &&other) noexcept : 
+            fifo(std::move(other.fifo)), it_map(std::move(other.it_map)) {}
 
         kvfifo_implementation &operator=(kvfifo_implementation other) {
             fifo = other.fifo;
@@ -115,8 +116,6 @@ private:
             return make_ref_pair(fifo.front().first, fifo.front().second);
         }
 
-        // FIXME: It should be possible to avoid different names, just overloading constness of functions
-        // But not sure if we need it
         std::pair<K const &, V const &> front() const {
             return make_ref_pair(fifo.front().first, fifo.front().second);
         }
@@ -166,6 +165,14 @@ private:
             it_map.clear();
         }
 
+        bool flag() const noexcept {
+            return copy_flag;
+        }
+
+        void set_flag() noexcept {
+            copy_flag = true;
+        }
+
         // TODO: remove.
         void print() {
             for (auto &pair: fifo) {
@@ -184,11 +191,6 @@ private:
 
                 const K &operator*() const {
                     return it->first;
-                }
-
-//TODO
-                const K &operator->() { 
-                    return (K* const)&(map_it_t::operator->()->first);
                 }
 
                 k_iterator &operator++() noexcept {
@@ -237,18 +239,16 @@ private:
     };
 
     bool should_copy() noexcept {
-        return !pimpl.unique() || flag;
+        return !pimpl.unique() || pimpl->flag();
     }
 
     class copy_guard {
     public:
         explicit copy_guard(kvfifo *ptr_kvfifo) : ptr_kvfifo(ptr_kvfifo) {
             old_pimpl = ptr_kvfifo->pimpl;
-            old_flag = ptr_kvfifo->flag;
 
             auto new_pimpl = std::make_shared<kvfifo_implementation>(*(ptr_kvfifo->pimpl));
             ptr_kvfifo->pimpl = new_pimpl;
-            ptr_kvfifo->flag = false;
 
             rollback = true;
         }
@@ -263,7 +263,6 @@ private:
             if (rollback) {
                 ptr_kvfifo->pimpl.reset();
                 ptr_kvfifo->pimpl = old_pimpl;
-                ptr_kvfifo->flag = old_flag;
             }
         }
 
@@ -274,32 +273,28 @@ private:
     private:
         kvfifo *ptr_kvfifo;
         std::shared_ptr<kvfifo_implementation> old_pimpl;
-        bool old_flag;
         bool rollback = false;
     };
 
     std::shared_ptr<kvfifo_implementation> pimpl;
-    bool flag;
 public:
-    kvfifo() : pimpl(std::make_shared<kvfifo_implementation>()), flag(false) {}
+    kvfifo() : pimpl(std::make_shared<kvfifo_implementation>()) {}
 
     kvfifo(kvfifo const &other) {
-        if(other.flag) {
+        if(other.pimpl->flag()) {
             auto new_pimpl = std::make_shared<kvfifo_implementation>(*(other.pimpl));
             pimpl = new_pimpl;
         } else {
             pimpl = other.pimpl;
-            flag = other.flag;
         }
     }
 
-    kvfifo(kvfifo &&kvfifo) noexcept: pimpl(std::move(kvfifo.pimpl)), flag(kvfifo.flag) {
+    kvfifo(kvfifo &&other) noexcept: pimpl(std::move(other.pimpl)) {
         // FIXME: copy here?
     }
 
     kvfifo &operator=(kvfifo other) {
         pimpl = other.pimpl;
-        flag = other.flag;
         return *this;
     }
 
@@ -348,12 +343,12 @@ public:
          if(should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->front();
-            flag = true;
+            pimpl->set_flag();
             guard.drop_rollback();
             return result;
         } else {
             auto result = pimpl->front();
-            flag = true;
+            pimpl->set_flag();
             return result;
         }
     }
@@ -366,12 +361,12 @@ public:
         if(should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->back();
-            flag = true;
+            pimpl->set_flag();
             guard.drop_rollback();
             return result;
         } else {
             auto result = pimpl->back();
-            flag = true;
+            pimpl->set_flag();
             return result;
         }
     }
@@ -384,12 +379,12 @@ public:
         if(should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->first(key);
-            flag = true;
+            pimpl->set_flag();
             guard.drop_rollback();
             return result;
         } else {
             auto result = pimpl->first(key);
-            flag = true;
+            pimpl->set_flag();
             return result;
         }
     }
@@ -402,12 +397,12 @@ public:
         if(should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->last(key);
-            flag = true;
+            pimpl->set_flag();
             guard.drop_rollback();
             return result;
         } else {
             auto result = pimpl->last(key);
-            flag = true;
+            pimpl->set_flag();
             return result;
         }
     }
