@@ -68,28 +68,26 @@ private:
         kvfifo_implementation &operator=(kvfifo_implementation other) {
             fifo = other.fifo;
             it_map = other.it_map;
+            copy_flag = other.copy_flag;
             // TODO: I think we should NOT copy copy_flag, this is a whole new implemtantion, right?
+            // I think we should.
             return *this;
         }
 
         void push(K const &k, V const &v) {
             auto it_list = it_map.find(k);
+            queue_t queue_addition{std::make_pair(k, v)};
+            queue_it_t list_record = queue_addition.begin();
 
             if (it_list != it_map.end()) {
-                queue_t queue_addition{std::make_pair(k, v)};
-                queue_it_t list_record = queue_addition.begin();
-
                 it_list->second.push_back(list_record);
-                fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             } else {
-                queue_t queue_addition{std::make_pair(k, v)};
-                queue_it_t list_record = queue_addition.begin();
                 list_t list{list_record};
                 auto map_record = std::make_pair(k, list);
-
                 it_map.insert(map_record);
-                fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
             }
+
+            fifo.splice(fifo.end(), queue_addition, queue_addition.begin());
         }
 
         void pop() {
@@ -242,7 +240,6 @@ private:
     public:
         explicit copy_guard(kvfifo *ptr_kvfifo) : ptr_kvfifo(ptr_kvfifo) {
             old_pimpl = ptr_kvfifo->pimpl;
-
             auto new_pimpl = std::make_shared<kvfifo_implementation>(*(ptr_kvfifo->pimpl));
             ptr_kvfifo->pimpl = new_pimpl;
 
