@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "kwasow.h"
+#include "xvisox.h"
 
 auto f(kvfifo<int, int> q) {
     return q;
@@ -18,7 +19,7 @@ int main() {
     for (int i = 0; i < 3; ++i)
         kvf1.push(keys[i], i);
 
-    kvf1.print();
+//    kvf1.print();
 
     const kvfifo<int, int> kvfxd(kvf1);
     auto &ref = kvf1.front().second;
@@ -43,9 +44,9 @@ int main() {
     kvf2.push(1, 3);
 //    kvf2.print();
     kvf2.move_to_back(1);
-    kvf2.print();
+//    kvf2.print();
     assert(kvf2.size() == 3);
-    kvf2.print();
+//    kvf2.print();
     assert(kvf2.front().second == 2);
     assert(kvf2.first(1).second == 1);
     assert(kvf2.last(1).second == 3);
@@ -76,4 +77,5 @@ int main() {
         vec.push_back(kvf1);  // Wszystkie obiekty w vec współdzielą dane.
 
     kwasow::kwasowMain();
+    xvisox::xvisoxMain();
 }

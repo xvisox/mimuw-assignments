@@ -5,7 +5,6 @@
 #include <map>
 #include <stdexcept>
 #include <memory>
-#include <iostream> // TODO: remove.
 
 template<typename K, typename V>
 class kvfifo {
@@ -59,15 +58,12 @@ private:
         kvfifo_implementation() = default;
 
         kvfifo_implementation(const kvfifo_implementation &other) {
-            // FIXME: What if there is an exception?
             for (auto it = other.fifo.begin(), end = other.fifo.end(); it != end; ++it) {
                 push(it->first, it->second);
             }
         }
 
-        // TODO: remove constructors?
-        kvfifo_implementation(kvfifo_implementation &&other) noexcept:
-                fifo(std::move(other.fifo)), it_map(std::move(other.it_map)) {}
+        kvfifo_implementation(kvfifo_implementation &&other) noexcept = default;
 
         kvfifo_implementation &operator=(kvfifo_implementation other) {
             fifo = other.fifo;
@@ -182,14 +178,7 @@ private:
             copy_flag = true;
         }
 
-        // TODO: remove.
-        void print() {
-            for (auto &pair: fifo) {
-                std::cout << pair.first << " " << pair.second << std::endl;
-            }
-            std::cout << std::endl;
-        }
-
+        // TODO: flaga przy referencji.
         class k_iterator : public std::iterator<std::bidirectional_iterator_tag, K> {
         public:
             using map_it_t = typename map_t::const_iterator;
@@ -301,6 +290,10 @@ public:
     kvfifo &operator=(kvfifo other) {
         pimpl = other.pimpl;
         return *this;
+    }
+
+    bool operator==(kvfifo const &other) const noexcept {
+        return pimpl == other.pimpl;
     }
 
     void push(K const &k, V const &v) {
@@ -435,11 +428,6 @@ public:
         } else {
             pimpl->clear();
         }
-    }
-
-    // TODO: remove.
-    void print() {
-        pimpl->print();
     }
 
     using k_iterator = typename kvfifo_implementation::k_iterator;
