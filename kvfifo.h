@@ -65,15 +65,6 @@ private:
 
         kvfifo_implementation(kvfifo_implementation &&other) noexcept = default;
 
-        kvfifo_implementation &operator=(kvfifo_implementation other) {
-            fifo = other.fifo;
-            it_map = other.it_map;
-            copy_flag = other.copy_flag;
-            // TODO: I think we should NOT copy copy_flag, this is a whole new implemtantion, right?
-            // I think we should.
-            return *this;
-        }
-
         void push(K const &k, V const &v) {
             auto it_list = it_map.find(k);
             queue_t queue_addition{std::make_pair(k, v)};
@@ -168,7 +159,6 @@ private:
         void clear() noexcept {
             fifo.clear();
             it_map.clear();
-            // TODO: Should we set flag to false?
             copy_flag = false;
         }
 
@@ -176,7 +166,6 @@ private:
             copy_flag = true;
         }
 
-        // TODO: flaga przy referencji.
         class k_iterator : public std::iterator<std::bidirectional_iterator_tag, K> {
         public:
             using map_it_t = typename map_t::const_iterator;
@@ -282,7 +271,7 @@ public:
         }
     }
 
-    kvfifo(kvfifo &&other) noexcept: pimpl(std::move(other.pimpl)) {}
+    kvfifo(kvfifo &&other) noexcept = default;
 
     kvfifo &operator=(kvfifo other) {
         pimpl = other.pimpl;

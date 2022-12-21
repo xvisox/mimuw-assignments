@@ -18,12 +18,15 @@ namespace xvisox {
 
     void testMoveToBack();
 
+    void testFailedCopy();
+
     void xvisoxMain() {
         std::cout << "Starting xvisox tests" << std::endl;
         testPush();
         testFront();
         testCopy();
         testMoveToBack();
+        testFailedCopy();
     }
 
     int throwCounter;
@@ -222,6 +225,37 @@ namespace xvisox {
                 std::cout << "testMoveToBack: " << nextThrowCount << " throws" << std::endl;
             }
         }
+    }
+
+    void testFailedCopy() {
+        std::cout << "Starting test failed copy" << std::endl;
+        kvfifo<TestClass, TestClass> kvf;
+        kvfifo<TestClass, TestClass> empty_kvf;
+        bool success = false;
+        throwCounter = INF;
+        int elements = ELEMENTS;
+        for (int i = 0; i < ELEMENTS; ++i) {
+            auto t1 = TestClass(i);
+            kvf.push(t1, t1);
+        }
+
+        auto &ref = kvf.front().first;
+        for (int nextThrowCount = 1; !success; ++nextThrowCount) {
+            kvfifo<TestClass, TestClass> dup = empty_kvf;
+
+            try {
+                throwCounter = nextThrowCount;
+                empty_kvf = kvf;
+
+                throwCounter = INF * 69;
+                assert(empty_kvf.size() == elements);
+                success = true;
+            } catch (...) {
+                assert(empty_kvf == dup);
+                std::cout << "testFailedCopy: " << nextThrowCount << " throws" << std::endl;
+            }
+        }
+
     }
 }
 
