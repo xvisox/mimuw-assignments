@@ -4,22 +4,22 @@
 #include <list>
 #include <map>
 #include <stdexcept>
-#include <functional>
 #include <memory>
-#include <iostream> // usunac
+#include <iostream> // TODO: remove.
 
 template<typename K, typename V>
 class kvfifo {
 private:
     class kvfifo_implementation {
-        using queue_t = std::list<std::pair<K, V>>; // TODO: tylko wartosci
+        using queue_t = std::list<std::pair<K, V>>;
         using queue_it_t = typename queue_t::iterator;
         using list_t = std::list<queue_it_t>;
         using map_t = std::map<K, list_t>;
     private:
         queue_t fifo;
         map_t it_map;
-        bool copy_flag = false; // True if non-const reference was taken - need to copy on every modification from now on.
+        // True if non-const reference was taken - need to copy on every modification from now on.
+        bool copy_flag = false;
 
         void throw_if_empty() const {
             if (fifo.empty()) {
@@ -27,15 +27,9 @@ private:
             }
         }
 
-        void throw_if_not_exists(const K &key) const {
-            if (it_map.find(key) == it_map.end()) {
-                throw std::invalid_argument("key not found");
-            }
-        }
-
         list_t &get_list(const K &key) {
             auto result = it_map.find(key);
-            if(result == it_map.end()) {
+            if (result == it_map.end()) {
                 throw std::invalid_argument("key not found");
             }
 
@@ -44,19 +38,19 @@ private:
 
         const list_t &get_list(const K &key) const {
             auto result = it_map.find(key);
-            if(result == it_map.end()) {
+            if (result == it_map.end()) {
                 throw std::invalid_argument("key not found");
             }
 
             return std::cref(result->second);
         }
 
-        std::pair<const K&, V&> make_ref_pair(const K &k, V &v) {
+        std::pair<const K &, V &> make_ref_pair(const K &k, V &v) {
             throw_if_empty();
             return std::make_pair(std::cref(k), std::ref(v));
         }
 
-        std::pair<const K&, const V&> make_ref_pair(const K &k, const V &v) const {
+        std::pair<const K &, const V &> make_cref_pair(const K &k, const V &v) const {
             throw_if_empty();
             return std::make_pair(std::cref(k), std::cref(v));
         }
@@ -71,8 +65,9 @@ private:
             }
         }
 
-        kvfifo_implementation(kvfifo_implementation &&other) noexcept : 
-            fifo(std::move(other.fifo)), it_map(std::move(other.it_map)) {}
+        // TODO: remove constructors?
+        kvfifo_implementation(kvfifo_implementation &&other) noexcept:
+                fifo(std::move(other.fifo)), it_map(std::move(other.it_map)) {}
 
         kvfifo_implementation &operator=(kvfifo_implementation other) {
             fifo = other.fifo;
@@ -103,7 +98,6 @@ private:
 
         void pop() {
             throw_if_empty();
-
             queue_it_t it = fifo.begin();
             it_map.find(it->first)->second.pop_front();
             fifo.pop_front();
@@ -128,16 +122,16 @@ private:
             return make_ref_pair(fifo.front().first, fifo.front().second);
         }
 
-        std::pair<K const &, V const &> front() const {
-            return make_ref_pair(fifo.front().first, fifo.front().second);
+        std::pair<K const &, V const &> const_front() const {
+            return make_cref_pair(fifo.front().first, fifo.front().second);
         }
 
         std::pair<const K &, V &> back() {
             return make_ref_pair(fifo.back().first, fifo.back().second);
         }
 
-        std::pair<K const &, V const &> back() const {
-            return make_ref_pair(fifo.back().first, fifo.back().second);
+        std::pair<K const &, V const &> const_back() const {
+            return make_cref_pair(fifo.back().first, fifo.back().second);
         }
 
         std::pair<K const &, V &> first(K const &key) {
@@ -145,9 +139,9 @@ private:
             return make_ref_pair(key, list.front()->second);
         }
 
-        std::pair<K const &, V const &> first(K const &key) const {
+        std::pair<K const &, V const &> const_first(K const &key) const {
             auto list = get_list(key);
-            return make_ref_pair(key, list.front()->second);
+            return make_cref_pair(key, list.front()->second);
         }
 
         std::pair<K const &, V &> last(K const &key) {
@@ -155,9 +149,9 @@ private:
             return make_ref_pair(key, list.back()->second);
         }
 
-        std::pair<K const &, V const &> last(K const &key) const {
+        std::pair<K const &, V const &> const_last(K const &key) const {
             auto list = get_list(key);
-            return make_ref_pair(key, list.back()->second);
+            return make_cref_pair(key, list.back()->second);
         }
 
         [[nodiscard]] size_t size() const noexcept {
@@ -168,8 +162,13 @@ private:
             return fifo.empty();
         }
 
+        [[nodiscard]] bool flag() const noexcept {
+            return copy_flag;
+        }
+
         size_t count(K const &key) const {
-            return it_map.find(key) == it_map.end() ? 0 : get_list(key).size();
+            auto it_list = it_map.find(key);
+            return it_list == it_map.end() ? 0 : it_list->second.size();
         }
 
         void clear() noexcept {
@@ -177,10 +176,6 @@ private:
             it_map.clear();
             // TODO: Should we set flag to false?
             copy_flag = false;
-        }
-
-        bool flag() const noexcept {
-            return copy_flag;
         }
 
         void set_flag() noexcept {
@@ -196,53 +191,51 @@ private:
         }
 
         class k_iterator : public std::iterator<std::bidirectional_iterator_tag, K> {
-            public:
-                using map_it_t = typename map_t::const_iterator;
+        public:
+            using map_it_t = typename map_t::const_iterator;
 
-                k_iterator() : it() {};
+            k_iterator() : it() {};
 
-                k_iterator(map_it_t other) : it(other) {};
+            k_iterator(map_it_t other) : it(other) {};
 
-                const K &operator*() const {
-                    return it->first;
-                }
+            const K &operator*() const {
+                return it->first;
+            }
 
-                k_iterator &operator++() noexcept {
-                    ++it;
-                    return *this; 
-                }
+            k_iterator &operator++() noexcept {
+                ++it;
+                return *this;
+            }
 
-                k_iterator operator++(int) noexcept {
-                    k_iterator temp(*this);
-                    ++(*this);
-                    return temp;
-                }
-                
-                k_iterator &operator--() noexcept {
-                    --it;
-                    return *this; 
-                }
+            k_iterator operator++(int) noexcept {
+                k_iterator temp(*this);
+                ++(*this);
+                return temp;
+            }
 
-                k_iterator operator--(int) noexcept {
-                    k_iterator temp(*this);
-                    --(*this);
-                    return temp;
-                }
+            k_iterator &operator--() noexcept {
+                --it;
+                return *this;
+            }
 
-                bool operator==(const k_iterator &other) const noexcept {
-                    return it == other.it;
-                }
+            k_iterator operator--(int) noexcept {
+                k_iterator temp(*this);
+                --(*this);
+                return temp;
+            }
 
-                bool operator!=(const k_iterator &other) const noexcept {
-                    return it != other.it;
-                }
+            bool operator==(const k_iterator &other) const noexcept {
+                return it == other.it;
+            }
 
-            private:
-                map_it_t it;
+            bool operator!=(const k_iterator &other) const noexcept {
+                return it != other.it;
+            }
+
+        private:
+            map_it_t it;
         };
 
-        // FIXME: Does it copy it_map?
-        // Possible to do it without copying?
         k_iterator k_begin() const noexcept {
             return k_iterator(it_map.begin());
         }
@@ -295,7 +288,7 @@ public:
     kvfifo() : pimpl(std::make_shared<kvfifo_implementation>()) {}
 
     kvfifo(kvfifo const &other) {
-        if(other.pimpl->flag()) {
+        if (other.pimpl->flag()) {
             auto new_pimpl = std::make_shared<kvfifo_implementation>(*(other.pimpl));
             pimpl = new_pimpl;
         } else {
@@ -303,9 +296,7 @@ public:
         }
     }
 
-    kvfifo(kvfifo &&other) noexcept: pimpl(std::move(other.pimpl)) {
-        // FIXME: copy here?
-    }
+    kvfifo(kvfifo &&other) noexcept: pimpl(std::move(other.pimpl)) {}
 
     kvfifo &operator=(kvfifo other) {
         pimpl = other.pimpl;
@@ -352,9 +343,8 @@ public:
         }
     }
 
-    // TODO: Repeated code in guards
     std::pair<K const &, V &> front() {
-         if(should_copy()) {
+        if (should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->front();
             pimpl->set_flag();
@@ -368,13 +358,11 @@ public:
     }
 
     std::pair<K const &, V const &> front() const {
-        return pimpl->front(); 
-        // FIXME: right implementation will be executed? I can already tell - no.
-        // It's probably ok
+        return pimpl->const_front();
     }
 
     std::pair<K const &, V &> back() {
-        if(should_copy()) {
+        if (should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->back();
             pimpl->set_flag();
@@ -388,11 +376,11 @@ public:
     }
 
     std::pair<K const &, V const &> back() const {
-        return pimpl->back();
+        return pimpl->const_back();
     }
 
     std::pair<K const &, V &> first(K const &key) {
-        if(should_copy()) {
+        if (should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->first(key);
             pimpl->set_flag();
@@ -406,11 +394,11 @@ public:
     }
 
     std::pair<K const &, V const &> first(K const &key) const {
-        return pimpl->first(key);
+        return pimpl->const_first(key);
     }
 
     std::pair<K const &, V &> last(K const &key) {
-        if(should_copy()) {
+        if (should_copy()) {
             copy_guard guard(this);
             auto result = pimpl->last(key);
             pimpl->set_flag();
@@ -424,7 +412,7 @@ public:
     }
 
     std::pair<K const &, V const &> last(K const &key) const {
-        return pimpl->last(key);
+        return pimpl->const_last(key);
     }
 
     [[nodiscard]] size_t size() const noexcept {
