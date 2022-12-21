@@ -12,6 +12,12 @@ auto f(kvfifo<int, int> q) {
 int main() {
     static_assert(std::bidirectional_iterator<kvfifo<int, int>::k_iterator>);
 
+    xvisox::xvisoxMain();
+    kwasow::kwasowMain();
+
+    bool test = true;
+    if (!test) return 0;
+
     int keys[] = {3, 1, 2};
 
     kvfifo<int, int> kvf1 = f({});
@@ -76,6 +82,4 @@ int main() {
     for (int i = 0; i < 1000000; i++)
         vec.push_back(kvf1);  // Wszystkie obiekty w vec współdzielą dane.
 
-    kwasow::kwasowMain();
-    xvisox::xvisoxMain();
 }

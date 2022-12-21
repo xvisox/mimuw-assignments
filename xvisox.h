@@ -20,6 +20,8 @@ namespace xvisox {
 
     void testFailedCopy();
 
+    void testConstructor();
+
     void xvisoxMain() {
         std::cout << "Starting xvisox tests" << std::endl;
         testPush();
@@ -27,6 +29,9 @@ namespace xvisox {
         testCopy();
         testMoveToBack();
         testFailedCopy();
+        testConstructor();
+        std::cout << "All tests passed" << std::endl;
+
     }
 
     int throwCounter;
@@ -255,7 +260,12 @@ namespace xvisox {
                 std::cout << "testFailedCopy: " << nextThrowCount << " throws" << std::endl;
             }
         }
+    }
 
+    void testConstructor() {
+        kvfifo<TestClass, TestClass> kvf;
+        kvfifo<TestClass, TestClass> kvf2;
+        kvf = kvf2;
     }
 }
 
