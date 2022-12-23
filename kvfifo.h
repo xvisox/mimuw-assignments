@@ -184,9 +184,9 @@ private:
             }
 
             k_iterator operator++(int) noexcept {
-                k_iterator temp(*this);
+                k_iterator old(*this);
                 ++(*this);
-                return temp;
+                return old;
             }
 
             k_iterator &operator--() noexcept {
@@ -195,9 +195,9 @@ private:
             }
 
             k_iterator operator--(int) noexcept {
-                k_iterator temp(*this);
+                k_iterator old(*this);
                 --(*this);
-                return temp;
+                return old;
             }
 
             bool operator==(const k_iterator &other) const noexcept {
@@ -258,56 +258,9 @@ private:
         return !pimpl.unique() || pimpl->flag();
     }
 
-    std::pair<K const &, V &> execute(std::pair<K const &, V &> (kvfifo_implementation::*func)()) {
-        if (should_copy()) {
-            copy_guard guard(this);
-            auto result = (pimpl.get()->*func)();
-            pimpl->set_flag();
-            guard.drop_rollback();
-            return result;
-        } else {
-            auto result = (pimpl.get()->*func)();
-            pimpl->set_flag();
-            return result;
-        }
-    }
-
-    std::pair<K const &, V &> execute(std::pair<K const &, V &> (kvfifo_implementation::*func)(K const &), K const &key) {
-        if (should_copy()) {
-            copy_guard guard(this);
-            auto result = (pimpl.get()->*func)(key);
-            pimpl->set_flag();
-            guard.drop_rollback();
-            return result;
-        } else {
-            auto result = (pimpl.get()->*func)(key);
-            pimpl->set_flag();
-            return result;
-        }
-    }
-
-    void execute(void (kvfifo_implementation::*func)()) {
-        if (should_copy()) {
-            copy_guard guard(this);
-            (pimpl.get()->*func)();
-            guard.drop_rollback();
-        } else {
-            (pimpl.get()->*func)();
-        }
-    }
-
-    void execute(void (kvfifo_implementation::*func)(K const &), K const &key) {
-        if (should_copy()) {
-            copy_guard guard(this);
-            (pimpl.get()->*func)(key);
-            guard.drop_rollback();
-        } else {
-            (pimpl.get()->*func)(key);
-        }
-    }
-
     // Shared implementation of kvfifo.
     std::shared_ptr<kvfifo_implementation> pimpl;
+    using k_iterator = typename kvfifo_implementation::k_iterator;
 public:
     kvfifo() : pimpl(std::make_shared<kvfifo_implementation>()) {}
 
@@ -342,19 +295,47 @@ public:
     }
 
     void pop() {
-        execute(&kvfifo_implementation::pop);
+        if (should_copy()) {
+            copy_guard guard(this);
+            pimpl->pop();
+            guard.drop_rollback();
+        } else {
+            pimpl->pop();
+        }
     }
 
     void pop(K const &key) {
-        execute(&kvfifo_implementation::pop, key);
+        if (should_copy()) {
+            copy_guard guard(this);
+            pimpl->pop(key);
+            guard.drop_rollback();
+        } else {
+            pimpl->pop(key);
+        }
     }
 
     void move_to_back(K const &key) {
-        execute(&kvfifo_implementation::move_to_back, key);
+        if (should_copy()) {
+            copy_guard guard(this);
+            pimpl->move_to_back(key);
+            guard.drop_rollback();
+        } else {
+            pimpl->move_to_back(key);
+        }
     }
 
     std::pair<K const &, V &> front() {
-        return execute(&kvfifo_implementation::front);
+        if (should_copy()) {
+            copy_guard guard(this);
+            auto result = pimpl->front();
+            pimpl->set_flag();
+            guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->front();
+            pimpl->set_flag();
+            return result;
+        }
     }
 
     std::pair<K const &, V const &> front() const {
@@ -362,7 +343,17 @@ public:
     }
 
     std::pair<K const &, V &> back() {
-        return execute(&kvfifo_implementation::back);
+        if (should_copy()) {
+            copy_guard guard(this);
+            auto result = pimpl->back();
+            pimpl->set_flag();
+            guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->back();
+            pimpl->set_flag();
+            return result;
+        }
     }
 
     std::pair<K const &, V const &> back() const {
@@ -370,7 +361,17 @@ public:
     }
 
     std::pair<K const &, V &> first(K const &key) {
-        return execute(&kvfifo_implementation::first, key);
+        if (should_copy()) {
+            copy_guard guard(this);
+            auto result = pimpl->first(key);
+            pimpl->set_flag();
+            guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->first(key);
+            pimpl->set_flag();
+            return result;
+        }
     }
 
     std::pair<K const &, V const &> first(K const &key) const {
@@ -378,7 +379,17 @@ public:
     }
 
     std::pair<K const &, V &> last(K const &key) {
-        return execute(&kvfifo_implementation::last, key);
+        if (should_copy()) {
+            copy_guard guard(this);
+            auto result = pimpl->last(key);
+            pimpl->set_flag();
+            guard.drop_rollback();
+            return result;
+        } else {
+            auto result = pimpl->last(key);
+            pimpl->set_flag();
+            return result;
+        }
     }
 
     std::pair<K const &, V const &> last(K const &key) const {
@@ -398,10 +409,16 @@ public:
     }
 
     void clear() {
-        execute(&kvfifo_implementation::clear);
+        if (should_copy()) {
+            copy_guard guard(this);
+            pimpl->clear();
+            guard.drop_rollback();
+        } else {
+            pimpl->clear();
+        }
     }
 
-    using k_iterator = typename kvfifo_implementation::k_iterator;
+    static_assert(std::bidirectional_iterator<k_iterator>);
 
     k_iterator k_begin() const noexcept {
         return pimpl->k_begin();
