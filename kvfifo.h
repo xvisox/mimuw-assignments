@@ -121,22 +121,22 @@ private:
 
         std::pair<K const &, V &> first(K const &key) {
             auto list = get_list(key);
-            return make_ref_pair(key, list.front()->second);
+            return make_ref_pair(list.front()->first, list.front()->second);
         }
 
         std::pair<K const &, V const &> const_first(K const &key) const {
             auto list = get_list(key);
-            return make_cref_pair(key, list.front()->second);
+            return make_cref_pair(list.front()->first, list.front()->second);
         }
 
         std::pair<K const &, V &> last(K const &key) {
             auto list = get_list(key);
-            return make_ref_pair(key, list.back()->second);
+            return make_ref_pair(list.back()->first, list.back()->second);
         }
 
         std::pair<K const &, V const &> const_last(K const &key) const {
             auto list = get_list(key);
-            return make_cref_pair(key, list.back()->second);
+            return make_cref_pair(list.back()->first, list.back()->second);
         }
 
         [[nodiscard]] size_t size() const noexcept {
