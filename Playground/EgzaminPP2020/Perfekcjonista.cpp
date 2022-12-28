@@ -1,19 +1,22 @@
 #include <bits/stdc++.h>
 
+#define FASTIO ios_base::sync_with_stdio(false); cin.tie(0), cout.tie(0)
 #define MAX_N 100001
 
 using namespace std;
 
 int n, m;
 vector<pair<int, int>> adj[MAX_N];
-int dst[MAX_N], previous[MAX_N];
+int dst[MAX_N];
+vector<int> previous[MAX_N];
 bool processed[MAX_N];
 
 void read() {
+    FASTIO;
     cin >> n >> m;
     int ai, bi, wi;
     for (int i = 0; i < m; i++) {
-        scanf("%d %d %d", &ai, &bi, &wi);
+        cin >> ai >> bi >> wi;
         adj[ai].emplace_back(bi, wi);
         adj[bi].emplace_back(ai, wi);
     }
@@ -25,37 +28,50 @@ void read() {
 
 void solve() {
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> q;
-    dst[1] = 0;
-    q.push({0, 1});
+    dst[n] = 0;
+    previous[n].push_back(-1);
+    q.emplace(0, n);
 
     while (!q.empty()) {
         auto [distance, v] = q.top();
         q.pop();
+        if (processed[v]) continue;
+        processed[v] = true;
 
         for (auto [u, weight]: adj[v]) {
             if (dst[v] + weight < dst[u]) {
                 dst[u] = dst[v] + weight;
-                q.push({dst[u], u});
-                previous[u] = v;
-            } else if (previous[u] > v) {
-                previous[u] = v;
+                q.emplace(dst[u], u);
+                previous[u].clear();
+                previous[u].push_back(v);
+            } else if (dst[v] + weight == dst[u]) {
+                previous[u].push_back(v);
             }
         }
     }
+}
 
-    vector<int> odp;
-    int x = n;
-    while (x != 0) {
-        odp.push_back(x);
-        x = previous[x];
+int get_min(vector<int> &v) {
+    int min = INT_MAX;
+    for (auto &i: v) {
+        if (i < min) {
+            min = i;
+        }
     }
-    for (int i = odp.size() - 1; i >= 0; i--) {
-        cout << odp[i] << ' ';
+    return min;
+}
+
+void print() {
+    int x = 1;
+    while (x != -1) {
+        cout << x << " ";
+        x = get_min(previous[x]);
     }
 }
 
 int main() {
     read();
     solve();
+    print();
     return 0;
 }

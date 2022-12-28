@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(ASD Playground/Egzamin2017/Perly.cpp)
+add_executable(ASD Playground/Egzamin2014/Parking2.cpp)
