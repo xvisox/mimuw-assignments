@@ -4,7 +4,6 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
-#include <pthread.h>
 #include <semaphore.h>
 #include "utils.h"
 #include "err.h"
@@ -21,7 +20,8 @@ struct Task {
     char last_err[MAX_LINE_LENGTH];
     char last_out[MAX_LINE_LENGTH];
     pid_t pid;
-    sem_t mutex; // FIXME: Maybe two semaphores?
+    sem_t mutex_err;
+    sem_t mutex_out;
 };
 
 struct SharedStorage {
@@ -31,7 +31,7 @@ struct SharedStorage {
 
 const unsigned int NAP_MICROSECS = 1000000;
 bool debug = false;
-bool command = true;
+bool command = false;
 
 pid_t run(char **args, struct SharedStorage *storage) {
     pid_t wrapper = fork();
@@ -41,32 +41,29 @@ pid_t run(char **args, struct SharedStorage *storage) {
     int child_stderr[2];
     pid_t pid;
 
-    // Create a pipe for the child process's stdout
     ASSERT_SYS_OK(pipe(child_stdout));
-
-    // Create a pipe for the child process's stderr
     ASSERT_SYS_OK(pipe(child_stderr));
 
     pid = fork();
     ASSERT_SYS_OK(pid);
 
     if (pid == 0) {
-        // Close the read end of the stdout pipe
-        close(child_stdout[READ]);
-        // Connect the write end of the stdout pipe to stdout
-        dup2(child_stdout[WRITE], STDOUT_FILENO);
+        // Close the read end of the stdout pipe and
+        // connect the write end of the stdout pipe to stdout.
+        ASSERT_SYS_OK(close(child_stdout[READ]));
+        ASSERT_SYS_OK(dup2(child_stdout[WRITE], STDOUT_FILENO));
 
-        // Close the read end of the stderr pipe
-        close(child_stderr[READ]);
-        // Connect the write end of the stderr pipe to stderr
-        dup2(child_stderr[WRITE], STDERR_FILENO);
+        // Close the read end of the stderr pipe and
+        // connect the write end of the stderr pipe to stderr.
+        ASSERT_SYS_OK(close(child_stderr[READ]));
+        ASSERT_SYS_OK(dup2(child_stderr[WRITE], STDERR_FILENO));
 
         // Close the write ends of the pipes
-        close(child_stdout[WRITE]);
-        close(child_stderr[WRITE]);
+        ASSERT_SYS_OK(close(child_stdout[WRITE]));
+        ASSERT_SYS_OK(close(child_stderr[WRITE]));
 
         // Execute the program
-        execv(args[0], args);
+        ASSERT_SYS_OK(execv(args[0], args));
         fprintf(stderr, "execv failed");
         exit(EXIT_FAILURE);
     } else {
@@ -79,7 +76,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
         printf("Task %d started: pid %d.\n", my_task_id, my_pid);
 
         // Close the write end of the stdout pipe
-        close(child_stdout[WRITE]);
+        ASSERT_SYS_OK(close(child_stdout[WRITE]));
         // Create a helper process to read from the stdout pipe
         if (fork() == 0) {
             // This is the helper process for stdout
@@ -87,54 +84,50 @@ pid_t run(char **args, struct SharedStorage *storage) {
             ssize_t n_read;
             while ((n_read = read(child_stdout[READ], buffer, sizeof(buffer) - 1)) > 0) {
                 // Wait for the semaphore, someone is reading the output
-                sem_wait(&storage->tasks[my_task_id].mutex);
+                sem_wait(&storage->tasks[my_task_id].mutex_out);
                 // Copy the data to shared memory
                 strncpy(storage->tasks[my_task_id].last_out, buffer, n_read);
                 storage->tasks[my_task_id].last_out[n_read] = '\0';
                 // Post the semaphore
-                sem_post(&storage->tasks[my_task_id].mutex);
+                sem_post(&storage->tasks[my_task_id].mutex_out);
+
                 DEBUG printf("stdout: %.*s", (int) n_read, buffer);
             }
             // Close the read end of the stdout pipe
-            close(child_stdout[READ]);
+            ASSERT_SYS_OK(close(child_stdout[READ]));
             exit(EXIT_SUCCESS);
         }
 
-        // Close the write end of the stderr pipe
-        close(child_stderr[WRITE]);
-        // Create a helper process to read from the stderr pipe
+        // Same for stderr, so I won't comment it
+        ASSERT_SYS_OK(close(child_stderr[WRITE]));
         if (fork() == 0) {
-            // This is the helper process for stderr
             char buffer[MAX_LINE_LENGTH];
             ssize_t n_read;
             while ((n_read = read(child_stderr[READ], buffer, sizeof(buffer) - 1)) > 0) {
-                // Wait for the semaphore, someone is reading the output
-                sem_wait(&storage->tasks[my_task_id].mutex);
-                // Copy the data to shared memory
+                sem_wait(&storage->tasks[my_task_id].mutex_err);
                 strncpy(storage->tasks[my_task_id].last_err, buffer, n_read);
                 storage->tasks[my_task_id].last_err[n_read] = '\0';
-                // Post the semaphore
-                sem_post(&storage->tasks[my_task_id].mutex);
+                sem_post(&storage->tasks[my_task_id].mutex_err);
+
                 DEBUG printf("stderr: %.*s", (int) n_read, buffer);
             }
-            // Close the read end of the stderr pipe
-            close(child_stderr[READ]);
+            ASSERT_SYS_OK(close(child_stderr[READ]));
             exit(EXIT_SUCCESS);
         }
 
         // Wait for the child process to finish
         int status;
-        waitpid(pid, &status, 0);
+        ASSERT_SYS_OK(waitpid(pid, &status, 0));
 
         if (WIFEXITED(status)) {
-            printf("Task %d ended: status %d.\n", my_task_id, status);
+            printf("Task %d ended: status %d.\n", my_task_id, WEXITSTATUS(status));
         } else if (WIFSIGNALED(status)) {
             printf("Task %d ended: signalled.\n", my_task_id);
         }
 
         // Close the read ends of the pipes
-        close(child_stdout[READ]);
-        close(child_stderr[READ]);
+        ASSERT_SYS_OK(close(child_stdout[READ]));
+        ASSERT_SYS_OK(close(child_stderr[READ]));
     }
 
     // Wrapper process exits
@@ -143,20 +136,16 @@ pid_t run(char **args, struct SharedStorage *storage) {
 
 void out(struct SharedStorage *storage, int task_id) {
     // Wait for the semaphore, someone is writing to the last_out
-    sem_wait(&storage->tasks[task_id].mutex);
-    // Print the output
+    sem_wait(&storage->tasks[task_id].mutex_out);
     printf("%s", storage->tasks[task_id].last_out);
-    // Post the semaphore
-    sem_post(&storage->tasks[task_id].mutex);
+    sem_post(&storage->tasks[task_id].mutex_out);
 }
 
 void err(struct SharedStorage *storage, int task_id) {
     // Wait for the semaphore, someone is writing to the last_err
-    sem_wait(&storage->tasks[task_id].mutex);
-    // Print the output
+    sem_wait(&storage->tasks[task_id].mutex_err);
     printf("%s", storage->tasks[task_id].last_err);
-    // Post the semaphore
-    sem_post(&storage->tasks[task_id].mutex);
+    sem_post(&storage->tasks[task_id].mutex_err);
 }
 
 void kill_task(struct SharedStorage *storage, int task_id) {
@@ -171,13 +160,15 @@ void sleep_seconds(int seconds) {
 void init_shared_storage(struct SharedStorage *storage) {
     storage->next_task_id = 0;
     for (int i = 0; i < MAX_N_TASKS; i++) {
-        sem_init(&storage->tasks[i].mutex, 1, 1);
+        sem_init(&storage->tasks[i].mutex_out, 1, 1);
+        sem_init(&storage->tasks[i].mutex_err, 1, 1);
     }
 }
 
 void clear_shared_storage(struct SharedStorage *storage) {
     for (int i = 0; i < MAX_N_TASKS; i++) {
-        sem_destroy(&storage->tasks[i].mutex);
+        sem_destroy(&storage->tasks[i].mutex_out);
+        sem_destroy(&storage->tasks[i].mutex_err);
     }
 }
 
@@ -211,7 +202,7 @@ int main() {
         // Command navigation.
         if (strcmp(parts[0], "run") == 0) {
             PRINT_COMMAND("run")
-            run(parts + 1, shared_storage);
+            run(&parts[1], shared_storage);
             programs++;
         } else if (strcmp(parts[0], "out") == 0) {
             PRINT_COMMAND("out")
@@ -231,7 +222,6 @@ int main() {
             break;
         }
 
-        // Clearing split buffer parts.
         free_split_string(parts);
         line++;
     }
@@ -239,8 +229,6 @@ int main() {
     for (int i = 0; i < programs; i++) {
         ASSERT_SYS_OK(wait(NULL));
     }
-
-    // Clear the shared storage.
     clear_shared_storage(shared_storage);
 
     return 0;
