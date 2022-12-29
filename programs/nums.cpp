@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#define NAP_MICROSECS 100000
+#define NAP_MICROSECS 1000000
 
 int main() {
     for (int i = 1; i <= 20; i++) {
@@ -10,7 +10,7 @@ int main() {
         } else {
             std::cout << i << std::endl;
         }
-//        usleep(NAP_MICROSECS);  // Sleep for 1 second
+        usleep(NAP_MICROSECS);  // Sleep for 1 second
     }
     return 0;
 }

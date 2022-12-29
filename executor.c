@@ -16,7 +16,6 @@
 #define MAX_N_TASKS 4096
 #define MAX_LINE_LENGTH 1024
 #define MAX_COMMAND_LENGTH 512
-#define NAP_MICROSECS 100000
 
 struct Task {
     char last_err[MAX_LINE_LENGTH];
@@ -30,10 +29,14 @@ struct SharedStorage {
     int next_task_id;
 };
 
+const unsigned int NAP_MICROSECS = 1000000;
 bool debug = false;
 bool command = true;
 
-void run(char **args, struct SharedStorage *storage) {
+pid_t run(char **args, struct SharedStorage *storage) {
+    pid_t wrapper = fork();
+    if (wrapper != 0) return wrapper;
+
     int child_stdout[2];
     int child_stderr[2];
     pid_t pid;
@@ -82,12 +85,12 @@ void run(char **args, struct SharedStorage *storage) {
             // This is the helper process for stdout
             char buffer[MAX_LINE_LENGTH];
             ssize_t n_read;
-            while ((n_read = read(child_stdout[READ], buffer, MAX_LINE_LENGTH - 1)) > 0) {
+            while ((n_read = read(child_stdout[READ], buffer, sizeof(buffer) - 1)) > 0) {
                 // Wait for the semaphore, someone is reading the output
                 sem_wait(&storage->tasks[my_task_id].mutex);
                 // Copy the data to shared memory
                 strncpy(storage->tasks[my_task_id].last_out, buffer, n_read);
-                storage->tasks[my_task_id].last_out[n_read - 1] = '\0';
+                storage->tasks[my_task_id].last_out[n_read] = '\0';
                 // Post the semaphore
                 sem_post(&storage->tasks[my_task_id].mutex);
                 DEBUG printf("stdout: %.*s", (int) n_read, buffer);
@@ -104,12 +107,12 @@ void run(char **args, struct SharedStorage *storage) {
             // This is the helper process for stderr
             char buffer[MAX_LINE_LENGTH];
             ssize_t n_read;
-            while ((n_read = read(child_stderr[READ], buffer, MAX_LINE_LENGTH - 1)) > 0) {
+            while ((n_read = read(child_stderr[READ], buffer, sizeof(buffer) - 1)) > 0) {
                 // Wait for the semaphore, someone is reading the output
                 sem_wait(&storage->tasks[my_task_id].mutex);
                 // Copy the data to shared memory
                 strncpy(storage->tasks[my_task_id].last_err, buffer, n_read);
-                storage->tasks[my_task_id].last_err[n_read - 1] = '\0';
+                storage->tasks[my_task_id].last_err[n_read] = '\0';
                 // Post the semaphore
                 sem_post(&storage->tasks[my_task_id].mutex);
                 DEBUG printf("stderr: %.*s", (int) n_read, buffer);
@@ -133,6 +136,9 @@ void run(char **args, struct SharedStorage *storage) {
         close(child_stdout[READ]);
         close(child_stderr[READ]);
     }
+
+    // Wrapper process exits
+    exit(EXIT_SUCCESS);
 }
 
 void out(struct SharedStorage *storage, int task_id) {
@@ -151,6 +157,11 @@ void err(struct SharedStorage *storage, int task_id) {
     printf("%s", storage->tasks[task_id].last_err);
     // Post the semaphore
     sem_post(&storage->tasks[task_id].mutex);
+}
+
+void kill_task(struct SharedStorage *storage, int task_id) {
+    // Kill the process
+    kill(storage->tasks[task_id].pid, SIGKILL);
 }
 
 void sleep_seconds(int seconds) {
@@ -186,7 +197,7 @@ int main() {
     }
     init_shared_storage(shared_storage);
 
-    int line = 0;
+    int line = 0, programs = 0;
     while (read_line(buffer, MAX_COMMAND_LENGTH, stdin)) {
         char **parts = split_string(buffer);
 
@@ -201,6 +212,7 @@ int main() {
         if (strcmp(parts[0], "run") == 0) {
             PRINT_COMMAND("run")
             run(parts + 1, shared_storage);
+            programs++;
         } else if (strcmp(parts[0], "out") == 0) {
             PRINT_COMMAND("out")
             out(shared_storage, atoi(parts[1]));
@@ -210,6 +222,9 @@ int main() {
         } else if (strcmp(parts[0], "sleep") == 0) {
             PRINT_COMMAND("sleep")
             sleep_seconds(atoi(parts[1]));
+        } else if (strcmp(parts[0], "kill") == 0) {
+            PRINT_COMMAND("kill")
+            kill_task(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "quit") == 0) {
             PRINT_COMMAND("quit")
             free_split_string(parts);
@@ -219,6 +234,10 @@ int main() {
         // Clearing split buffer parts.
         free_split_string(parts);
         line++;
+    }
+
+    for (int i = 0; i < programs; i++) {
+        ASSERT_SYS_OK(wait(NULL));
     }
 
     // Clear the shared storage.

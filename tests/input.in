@@ -1,0 +1,6 @@
+run nums 2115
+sleep 5
+out 0
+sleep 5
+out 0
+kill 0
