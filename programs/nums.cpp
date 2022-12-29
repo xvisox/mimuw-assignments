@@ -1,11 +1,16 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <unistd.h>
 
-constexpr int NUMS = 1e1;
-using namespace std;
+#define NAP_MICROSECS 100000
 
 int main() {
-    cout << "---- NUMS ----" << endl;
-    for (int i = 0; i < NUMS; i++) {
-        cout << i << '\n';
+    for (int i = 1; i <= 20; i++) {
+        if (i % 2 == 0) {
+            std::cerr << i << std::endl;
+        } else {
+            std::cout << i << std::endl;
+        }
+//        usleep(NAP_MICROSECS);  // Sleep for 1 second
     }
+    return 0;
 }
