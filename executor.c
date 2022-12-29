@@ -11,7 +11,7 @@
 #define READ 0
 #define WRITE 1
 #define DEBUG if (debug)
-#define PRINT_COMMAND(text) if (command) {printf("%s\n", text); }
+#define PRINT_COMMAND(text, pid) if (command) {printf("Pid: %d executed: %s\n", pid ,text); }
 #define MAX_N_TASKS 4096
 #define MAX_LINE_LENGTH 1024
 #define MAX_COMMAND_LENGTH 512
@@ -26,10 +26,11 @@ struct Task {
 
 struct SharedStorage {
     struct Task tasks[MAX_N_TASKS];
+    sem_t mutex;
     int next_task_id;
 };
 
-const unsigned int NAP_MICROSECS = 1000000;
+const unsigned int NAP_MILISECS = 1000;
 bool debug = false;
 bool command = false;
 
@@ -87,7 +88,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
                 sem_wait(&storage->tasks[my_task_id].mutex_out);
                 // Copy the data to shared memory
                 strncpy(storage->tasks[my_task_id].last_out, buffer, n_read);
-                storage->tasks[my_task_id].last_out[n_read] = '\0';
+                storage->tasks[my_task_id].last_out[n_read - 1] = '\0';
                 // Post the semaphore
                 sem_post(&storage->tasks[my_task_id].mutex_out);
 
@@ -106,7 +107,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
             while ((n_read = read(child_stderr[READ], buffer, sizeof(buffer) - 1)) > 0) {
                 sem_wait(&storage->tasks[my_task_id].mutex_err);
                 strncpy(storage->tasks[my_task_id].last_err, buffer, n_read);
-                storage->tasks[my_task_id].last_err[n_read] = '\0';
+                storage->tasks[my_task_id].last_err[n_read - 1] = '\0';
                 sem_post(&storage->tasks[my_task_id].mutex_err);
 
                 DEBUG printf("stderr: %.*s", (int) n_read, buffer);
@@ -137,14 +138,14 @@ pid_t run(char **args, struct SharedStorage *storage) {
 void out(struct SharedStorage *storage, int task_id) {
     // Wait for the semaphore, someone is writing to the last_out
     sem_wait(&storage->tasks[task_id].mutex_out);
-    printf("%s", storage->tasks[task_id].last_out);
+    printf("Task %d stdout: '%s'.\n", task_id, storage->tasks[task_id].last_out);
     sem_post(&storage->tasks[task_id].mutex_out);
 }
 
 void err(struct SharedStorage *storage, int task_id) {
     // Wait for the semaphore, someone is writing to the last_err
     sem_wait(&storage->tasks[task_id].mutex_err);
-    printf("%s", storage->tasks[task_id].last_err);
+    printf("Task %d stderr: '%s'.\n", task_id, storage->tasks[task_id].last_err);
     sem_post(&storage->tasks[task_id].mutex_err);
 }
 
@@ -154,11 +155,12 @@ void kill_task(struct SharedStorage *storage, int task_id) {
 }
 
 void sleep_seconds(int seconds) {
-    usleep(NAP_MICROSECS * seconds);
+    usleep(NAP_MILISECS * seconds);
 }
 
 void init_shared_storage(struct SharedStorage *storage) {
     storage->next_task_id = 0;
+    sem_init(&storage->mutex, 1, 1);
     for (int i = 0; i < MAX_N_TASKS; i++) {
         sem_init(&storage->tasks[i].mutex_out, 1, 1);
         sem_init(&storage->tasks[i].mutex_err, 1, 1);
@@ -166,6 +168,7 @@ void init_shared_storage(struct SharedStorage *storage) {
 }
 
 void clear_shared_storage(struct SharedStorage *storage) {
+    sem_destroy(&storage->mutex);
     for (int i = 0; i < MAX_N_TASKS; i++) {
         sem_destroy(&storage->tasks[i].mutex_out);
         sem_destroy(&storage->tasks[i].mutex_err);
@@ -201,23 +204,23 @@ int main() {
 
         // Command navigation.
         if (strcmp(parts[0], "run") == 0) {
-            PRINT_COMMAND("run")
+            PRINT_COMMAND("run", getpid())
             run(&parts[1], shared_storage);
             programs++;
         } else if (strcmp(parts[0], "out") == 0) {
-            PRINT_COMMAND("out")
+            PRINT_COMMAND("out", getpid())
             out(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "err") == 0) {
-            PRINT_COMMAND("err")
+            PRINT_COMMAND("err", getpid())
             err(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "sleep") == 0) {
-            PRINT_COMMAND("sleep")
+            PRINT_COMMAND("sleep", getpid())
             sleep_seconds(atoi(parts[1]));
         } else if (strcmp(parts[0], "kill") == 0) {
-            PRINT_COMMAND("kill")
+            PRINT_COMMAND("kill", getpid())
             kill_task(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "quit") == 0) {
-            PRINT_COMMAND("quit")
+            PRINT_COMMAND("quit", getpid())
             free_split_string(parts);
             break;
         }
