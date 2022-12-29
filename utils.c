@@ -13,11 +13,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "err.h"
 
-void set_close_on_exec(int file_descriptor, bool value)
-{
+void set_close_on_exec(int file_descriptor, bool value) {
     int flags = fcntl(file_descriptor, F_GETFD);
     ASSERT_SYS_OK(flags);
     if (value)
@@ -27,14 +27,13 @@ void set_close_on_exec(int file_descriptor, bool value)
     ASSERT_SYS_OK(fcntl(file_descriptor, F_SETFD, flags));
 }
 
-char** split_string(const char* s)
-{
+char **split_string(const char *s) {
     size_t len = strlen(s);
     int spaces = 0;
     for (int i = 0; i < len; ++i)
         if (s[i] == ' ')
             spaces++;
-    char** parts = calloc(spaces + 2, sizeof(char*));
+    char **parts = calloc(spaces + 2, sizeof(char *));
     parts[spaces + 1] = NULL;
     int p = 0;
     int b = 0;
@@ -49,19 +48,17 @@ char** split_string(const char* s)
     return parts;
 }
 
-void free_split_string(char** parts)
-{
+void free_split_string(char **parts) {
     for (int i = 0; parts[i] != NULL; ++i)
         free(parts[i]);
     free(parts);
 }
 
-bool read_line(char* buffer, size_t size_of_buffer, FILE* file)
-{
+bool read_line(char *buffer, size_t size_of_buffer, FILE *file) {
     if (size_of_buffer < 2)
         fatal("Buffer too small: %d\n", size_of_buffer);
 
-    char* line = NULL;
+    char *line = NULL;
     size_t n_bytes;
     ssize_t n_chars = getline(&line, &n_bytes, file);
 
@@ -92,4 +89,20 @@ bool read_line(char* buffer, size_t size_of_buffer, FILE* file)
     free(line);
 
     return true;
+}
+
+void print_buffer(char **buffer) {
+    int i = 0;
+    while (buffer[i] != NULL) {
+        int j = 0;
+        while (buffer[i][j] != '\0') {
+            fprintf(stderr, "%c", buffer[i][j]);
+            j++;
+        }
+        i++;
+    }
+}
+
+bool is_empty(char **parts) {
+    return isspace(*parts[0]) && parts[1] == NULL;
 }

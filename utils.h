@@ -24,9 +24,9 @@ void set_close_on_exec(int file_descriptor, bool value);
  * In particular, for an empty string, the result is {"", NULL}.
  * An initial or final space, or two consecutive spaces, result in an empty-string part.
  */
-char** split_string(const char* s);
+char **split_string(const char *s);
 
-void free_split_string(char** parts);
+void free_split_string(char **parts);
 
 /*
  * Read a line from `file`.
@@ -42,7 +42,11 @@ void free_split_string(char** parts);
  *
  * size_of_buffer must be at least 2.
  */
-bool read_line(char* buffer, size_t size_of_buffer, FILE* file);
+bool read_line(char *buffer, size_t size_of_buffer, FILE *file);
+
+void print_buffer(char **buffer);
+
+bool is_empty(char **parts);
 
 #endif
 
