@@ -58,6 +58,9 @@ bool read_line(char *buffer, size_t size_of_buffer, FILE *file) {
     if (size_of_buffer < 2)
         fatal("Buffer too small: %d\n", size_of_buffer);
 
+    // static int time = 0;
+    // printf("READING LINE %d\n", time++);
+
     char *line = NULL;
     size_t n_bytes;
     ssize_t n_chars = getline(&line, &n_bytes, file);

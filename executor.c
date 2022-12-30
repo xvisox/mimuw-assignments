@@ -66,7 +66,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
         // Execute the program
         ASSERT_SYS_OK(execv(args[0], args));
         fprintf(stderr, "execv failed");
-        exit(EXIT_FAILURE);
+        _exit(EXIT_FAILURE);
     } else {
         // This is the parent process
         pid_t my_pid = pid;
@@ -91,15 +91,13 @@ pid_t run(char **args, struct SharedStorage *storage) {
                 storage->tasks[my_task_id].last_out[n_read - 1] = '\0';
                 // Post the semaphore
                 sem_post(&storage->tasks[my_task_id].mutex_out);
-
-                DEBUG printf("stdout: %.*s", (int) n_read, buffer);
             }
             // Close the read end of the stdout pipe
             ASSERT_SYS_OK(close(child_stdout[READ]));
-            exit(EXIT_SUCCESS);
+            _exit(EXIT_SUCCESS);
         }
 
-        // Same for stderr, so I won't comment it
+        // Same for stderr...
         ASSERT_SYS_OK(close(child_stderr[WRITE]));
         if (fork() == 0) {
             char buffer[MAX_LINE_LENGTH];
@@ -109,22 +107,25 @@ pid_t run(char **args, struct SharedStorage *storage) {
                 strncpy(storage->tasks[my_task_id].last_err, buffer, n_read);
                 storage->tasks[my_task_id].last_err[n_read - 1] = '\0';
                 sem_post(&storage->tasks[my_task_id].mutex_err);
-
-                DEBUG printf("stderr: %.*s", (int) n_read, buffer);
             }
             ASSERT_SYS_OK(close(child_stderr[READ]));
-            exit(EXIT_SUCCESS);
+            _exit(EXIT_SUCCESS);
         }
 
+        // Post the mutex before waiting for the child process
+        sem_post(&storage->mutex);
         // Wait for the child process to finish
         int status;
         ASSERT_SYS_OK(waitpid(pid, &status, 0));
 
+        // Print task exit status under mutex
+        sem_wait(&storage->mutex);
         if (WIFEXITED(status)) {
             printf("Task %d ended: status %d.\n", my_task_id, WEXITSTATUS(status));
         } else if (WIFSIGNALED(status)) {
             printf("Task %d ended: signalled.\n", my_task_id);
         }
+        sem_post(&storage->mutex);
 
         // Close the read ends of the pipes
         ASSERT_SYS_OK(close(child_stdout[READ]));
@@ -132,7 +133,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
     }
 
     // Wrapper process exits
-    exit(EXIT_SUCCESS);
+    _exit(EXIT_SUCCESS);
 }
 
 void out(struct SharedStorage *storage, int task_id) {
@@ -200,29 +201,29 @@ int main() {
             free_split_string(parts);
             continue;
         }
-        DEBUG print_buffer(parts);
 
         // Command navigation.
+        PRINT_COMMAND(parts[0], getpid())
+        sem_wait(&shared_storage->mutex);
         if (strcmp(parts[0], "run") == 0) {
-            PRINT_COMMAND("run", getpid())
             run(&parts[1], shared_storage);
             programs++;
         } else if (strcmp(parts[0], "out") == 0) {
-            PRINT_COMMAND("out", getpid())
             out(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "err") == 0) {
-            PRINT_COMMAND("err", getpid())
             err(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "sleep") == 0) {
-            PRINT_COMMAND("sleep", getpid())
             sleep_seconds(atoi(parts[1]));
         } else if (strcmp(parts[0], "kill") == 0) {
-            PRINT_COMMAND("kill", getpid())
             kill_task(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "quit") == 0) {
-            PRINT_COMMAND("quit", getpid())
             free_split_string(parts);
             break;
+        }
+
+        // Only 'run' function releases the mutex itself
+        if (strcmp(parts[0], "run") != 0) {
+            sem_post(&shared_storage->mutex);
         }
 
         free_split_string(parts);
