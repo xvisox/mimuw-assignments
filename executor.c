@@ -65,8 +65,6 @@ pid_t run(char **args, struct SharedStorage *storage) {
 
         // Execute the program
         ASSERT_SYS_OK(execv(args[0], args));
-        fprintf(stderr, "execv failed");
-        _exit(EXIT_FAILURE);
     } else {
         // This is the parent process
         pid_t my_pid = pid;
@@ -76,19 +74,22 @@ pid_t run(char **args, struct SharedStorage *storage) {
         storage->tasks[my_task_id].pid = my_pid;
         printf("Task %d started: pid %d.\n", my_task_id, my_pid);
 
-        // Close the write end of the stdout pipe
+        // Close the write ends of the pipes
         ASSERT_SYS_OK(close(child_stdout[WRITE]));
+        ASSERT_SYS_OK(close(child_stderr[WRITE]));
+
         // Create a helper process to read from the stdout pipe
         if (fork() == 0) {
             // This is the helper process for stdout
+            // Close the read end of the stdout pipe
+            ASSERT_SYS_OK(close(child_stderr[READ]));
             char buffer[MAX_LINE_LENGTH];
-            ssize_t n_read;
-            while ((n_read = read(child_stdout[READ], buffer, sizeof(buffer) - 1)) > 0) {
+            FILE *file = fdopen(child_stdout[READ], "r");
+            while (read_line(buffer, sizeof(buffer) - 1, file)) {
                 // Wait for the semaphore, someone is reading the output
                 sem_wait(&storage->tasks[my_task_id].mutex_out);
                 // Copy the data to shared memory
-                strncpy(storage->tasks[my_task_id].last_out, buffer, n_read);
-                storage->tasks[my_task_id].last_out[n_read - 1] = '\0';
+                strcpy(storage->tasks[my_task_id].last_out, buffer);
                 // Post the semaphore
                 sem_post(&storage->tasks[my_task_id].mutex_out);
             }
@@ -98,14 +99,13 @@ pid_t run(char **args, struct SharedStorage *storage) {
         }
 
         // Same for stderr...
-        ASSERT_SYS_OK(close(child_stderr[WRITE]));
         if (fork() == 0) {
+            ASSERT_SYS_OK(close(child_stdout[READ]));
             char buffer[MAX_LINE_LENGTH];
-            ssize_t n_read;
-            while ((n_read = read(child_stderr[READ], buffer, sizeof(buffer) - 1)) > 0) {
+            FILE *file = fdopen(child_stderr[READ], "r");
+            while (read_line(buffer, sizeof(buffer) - 1, file)) {
                 sem_wait(&storage->tasks[my_task_id].mutex_err);
-                strncpy(storage->tasks[my_task_id].last_err, buffer, n_read);
-                storage->tasks[my_task_id].last_err[n_read - 1] = '\0';
+                strcpy(storage->tasks[my_task_id].last_err, buffer);
                 sem_post(&storage->tasks[my_task_id].mutex_err);
             }
             ASSERT_SYS_OK(close(child_stderr[READ]));
@@ -151,11 +151,10 @@ void err(struct SharedStorage *storage, int task_id) {
 }
 
 void kill_task(struct SharedStorage *storage, int task_id) {
-    // Kill the process
     kill(storage->tasks[task_id].pid, SIGKILL);
 }
 
-void sleep_seconds(int seconds) {
+void sleep_executor(int seconds) {
     usleep(NAP_MILISECS * seconds);
 }
 
@@ -213,10 +212,13 @@ int main() {
         } else if (strcmp(parts[0], "err") == 0) {
             err(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "sleep") == 0) {
-            sleep_seconds(atoi(parts[1]));
+            sleep_executor(atoi(parts[1]));
         } else if (strcmp(parts[0], "kill") == 0) {
             kill_task(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "quit") == 0) {
+            for (int i = 0; i < programs; i++) {
+                kill_task(shared_storage, i);
+            }
             free_split_string(parts);
             break;
         }

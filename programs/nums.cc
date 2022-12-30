@@ -4,13 +4,14 @@
 #define NAP_MICROSECS 1000000
 
 int main() {
-    for (int i = 1; i <= 20; i++) {
+    for (int i = 1; i <= 10; i++) {
         if (i % 2 == 0) {
-            std::cerr << i << std::endl;
+            std::cerr << i;
         } else {
-            std::cout << i << std::endl;
+            std::cout << i;
         }
         usleep(NAP_MICROSECS);  // Sleep for 1 second
     }
+    std::cout << std::endl;
     return 0;
 }
