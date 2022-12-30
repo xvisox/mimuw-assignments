@@ -10,7 +10,6 @@
 
 #define READ 0
 #define WRITE 1
-#define DEBUG if (debug)
 #define PRINT_COMMAND(text, pid) if (command) {printf("Pid: %d executed: %s\n", pid ,text); }
 #define MAX_N_TASKS 4096
 #define MAX_LINE_LENGTH 1024
@@ -191,12 +190,13 @@ int main() {
     }
     init_shared_storage(shared_storage);
 
-    int line = 0, programs = 0;
-    while (read_line(buffer, MAX_COMMAND_LENGTH, stdin)) {
+    int programs = 0;
+    bool quit = false;
+
+    while (read_line(buffer, MAX_COMMAND_LENGTH, stdin) && !quit) {
         char **parts = split_string(buffer);
 
         if (is_empty(parts)) {
-            DEBUG fprintf(stderr, "Omitting empty command: %d\n", line++);
             free_split_string(parts);
             continue;
         }
@@ -219,8 +219,7 @@ int main() {
             for (int i = 0; i < programs; i++) {
                 kill_task(shared_storage, i);
             }
-            free_split_string(parts);
-            break;
+            quit = true;
         }
 
         // Only 'run' function releases the mutex itself
@@ -229,7 +228,6 @@ int main() {
         }
 
         free_split_string(parts);
-        line++;
     }
 
     for (int i = 0; i < programs; i++) {

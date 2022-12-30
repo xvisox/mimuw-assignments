@@ -13,7 +13,7 @@ for f in ./programs/*.cc; do
   name=$(basename -- $f)
   g++ $f -o ${name%.cc}
 done
-#
+
 #for t in ./tests/*.in; do
 #  name=$(basename -- $t)
 #  echo $name
