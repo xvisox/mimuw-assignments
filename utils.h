@@ -50,9 +50,9 @@ bool is_empty(char **parts);
 
 void push(int stack[], int *top, int value);
 
-int pop(int stack[], int *top);
+int pop(int stack[], int index);
 
-bool is_empty_stack(int *top);
+int stack_size(int *top);
 
 #endif
 

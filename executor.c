@@ -76,7 +76,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
         ASSERT_SYS_OK(close(child_stderr[WRITE]));
 
         // Execute the program
-        execv(args[0], args);
+        execvp(args[0], args);
         fprintf(stderr, "execv failed\n");
         _exit(EXIT_FAILURE);
     } else {
@@ -252,8 +252,9 @@ int main() {
         // Printing the exit statuses of the tasks that finished
         // during the execution of the last command.
         sem_wait(&shared_storage->mutex);
-        while (!is_empty_stack(&shared_storage->stack_top)) {
-            int task_id = pop(shared_storage->task_id_stack, &shared_storage->stack_top);
+        int size = stack_size(&shared_storage->stack_top);
+        for (int i = 0; i < size; i++) {
+            int task_id = pop(shared_storage->task_id_stack, i);
             print_exit_status(shared_storage->tasks[task_id].status, task_id);
         }
 

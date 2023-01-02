@@ -121,12 +121,14 @@ void push(int stack[], int *top, int value) {
     stack[*top] = value;
 }
 
-int pop(int stack[], int *top) {
-    int value = stack[*top];
-    (*top)--;
+int pop(int stack[], int index) {
+    int value = stack[index];
+    stack[index] = -1;
     return value;
 }
 
-bool is_empty_stack(int *top) {
-    return *top == -1;
+int stack_size(int *top) {
+    int value = (*top) + 1;
+    (*top) = -1;
+    return value;
 }
