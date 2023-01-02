@@ -48,5 +48,11 @@ void print_buffer(char **buffer);
 
 bool is_empty(char **parts);
 
+void push(int stack[], int *top, int value);
+
+int pop(int stack[], int *top);
+
+bool is_empty_stack(int *top);
+
 #endif
 

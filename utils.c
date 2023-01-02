@@ -114,3 +114,18 @@ void print_buffer(char **buffer) {
 bool is_empty(char **parts) {
     return isspace(*parts[0]) && parts[1] == NULL;
 }
+
+void push(int stack[], int *top, int value) {
+    (*top)++;
+    stack[*top] = value;
+}
+
+int pop(int stack[], int *top) {
+    int value = stack[*top];
+    (*top)--;
+    return value;
+}
+
+bool is_empty_stack(int *top) {
+    return *top == -1;
+}

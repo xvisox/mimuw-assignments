@@ -10,7 +10,7 @@
 
 #define READ 0
 #define WRITE 1
-#define PRINT_COMMAND(text, pid) if (command) {printf("Pid: %d executed: %s\n", pid ,text); }
+#define PRINT_COMMAND(text, pid) if (debug) {printf("Pid: %d executed: %s\n", pid ,text); }
 #define MAX_N_TASKS 4096
 #define MAX_LINE_LENGTH 1024
 #define MAX_COMMAND_LENGTH 512
@@ -18,6 +18,7 @@
 struct Task {
     char last_err[MAX_LINE_LENGTH];
     char last_out[MAX_LINE_LENGTH];
+    int status;
     pid_t pid;
     sem_t mutex_err;
     sem_t mutex_out;
@@ -25,13 +26,24 @@ struct Task {
 
 struct SharedStorage {
     struct Task tasks[MAX_N_TASKS];
-    sem_t mutex;
+    int task_id_stack[MAX_N_TASKS];
+    int stack_top;
     int next_task_id;
+    bool command;
+    sem_t mutex;
 };
 
 const unsigned int NAP_MILISECS = 1000;
 bool debug = false;
-bool command = false;
+
+// Auxiliary function to print exit status of a process.
+void print_exit_status(int status, int my_task_id) {
+    if (WIFEXITED(status)) {
+        printf("Task %d ended: status %d.\n", my_task_id, WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+        printf("Task %d ended: signalled.\n", my_task_id);
+    }
+}
 
 pid_t run(char **args, struct SharedStorage *storage) {
     pid_t wrapper = fork();
@@ -63,7 +75,9 @@ pid_t run(char **args, struct SharedStorage *storage) {
         ASSERT_SYS_OK(close(child_stderr[WRITE]));
 
         // Execute the program
-        ASSERT_SYS_OK(execv(args[0], args));
+        execv(args[0], args);
+        fprintf(stderr, "execv failed\n");
+        _exit(EXIT_FAILURE);
     } else {
         // This is the parent process
         pid_t my_pid = pid;
@@ -112,17 +126,18 @@ pid_t run(char **args, struct SharedStorage *storage) {
         }
 
         // Post the mutex before waiting for the child process
+        storage->command = false;
         sem_post(&storage->mutex);
         // Wait for the child process to finish
-        int status;
-        ASSERT_SYS_OK(waitpid(pid, &status, 0));
+        ASSERT_SYS_OK(waitpid(pid, &storage->tasks[my_task_id].status, 0));
 
-        // Print task exit status under mutex
         sem_wait(&storage->mutex);
-        if (WIFEXITED(status)) {
-            printf("Task %d ended: status %d.\n", my_task_id, WEXITSTATUS(status));
-        } else if (WIFSIGNALED(status)) {
-            printf("Task %d ended: signalled.\n", my_task_id);
+        if (!storage->command) {
+            // If the command was not executed, print the exit status
+            print_exit_status(storage->tasks[my_task_id].status, my_task_id);
+        } else {
+            // If the command was executed, save the exit status for later
+            push(storage->task_id_stack, &storage->stack_top, my_task_id);
         }
         sem_post(&storage->mutex);
 
@@ -159,6 +174,8 @@ void sleep_executor(int seconds) {
 
 void init_shared_storage(struct SharedStorage *storage) {
     storage->next_task_id = 0;
+    storage->stack_top = -1;
+    storage->command = false;
     sem_init(&storage->mutex, 1, 1);
     for (int i = 0; i < MAX_N_TASKS; i++) {
         sem_init(&storage->tasks[i].mutex_out, 1, 1);
@@ -201,9 +218,10 @@ int main() {
             continue;
         }
 
-        // Command navigation.
         PRINT_COMMAND(parts[0], getpid())
         sem_wait(&shared_storage->mutex);
+        shared_storage->command = true;
+        // Command navigation.
         if (strcmp(parts[0], "run") == 0) {
             run(&parts[1], shared_storage);
             programs++;
@@ -222,9 +240,17 @@ int main() {
             quit = true;
         }
 
-        // Only 'run' function releases the mutex itself
+        // Only 'run' function releases the mutex itself.
         if (strcmp(parts[0], "run") != 0) {
+            shared_storage->command = false;
             sem_post(&shared_storage->mutex);
+        }
+
+        // Printing the exit statuses of the tasks that finished
+        // during the execution of the last command.
+        while (!is_empty_stack(&shared_storage->stack_top)) {
+            int task_id = pop(shared_storage->task_id_stack, &shared_storage->stack_top);
+            print_exit_status(shared_storage->tasks[task_id].status, task_id);
         }
 
         free_split_string(parts);
