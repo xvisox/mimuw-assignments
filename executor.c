@@ -249,16 +249,18 @@ int main() {
             quit = true;
         }
 
-        // Inform processes that the command has finished.
-        change_command_status(shared_storage, false);
-        sem_post(&shared_storage->block);
-
         // Printing the exit statuses of the tasks that finished
         // during the execution of the last command.
+        sem_wait(&shared_storage->mutex);
         while (!is_empty_stack(&shared_storage->stack_top)) {
             int task_id = pop(shared_storage->task_id_stack, &shared_storage->stack_top);
             print_exit_status(shared_storage->tasks[task_id].status, task_id);
         }
+
+        // Inform processes that the command has finished.
+        shared_storage->command = false;
+        sem_post(&shared_storage->mutex);
+        sem_post(&shared_storage->block);
 
         free_split_string(parts);
     }
