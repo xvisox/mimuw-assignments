@@ -31,6 +31,7 @@ struct SharedStorage {
     int next_task_id;
     bool command;
     sem_t mutex;
+    sem_t block;
 };
 
 const unsigned int NAP_MILISECS = 1000;
@@ -79,13 +80,10 @@ pid_t run(char **args, struct SharedStorage *storage) {
         fprintf(stderr, "execv failed\n");
         _exit(EXIT_FAILURE);
     } else {
-        // This is the parent process
+        // Initialize the task
         pid_t my_pid = pid;
         int my_task_id = storage->next_task_id++;
-
-        // Initialize the task
         storage->tasks[my_task_id].pid = my_pid;
-        printf("Task %d started: pid %d.\n", my_task_id, my_pid);
 
         // Close the write ends of the pipes
         ASSERT_SYS_OK(close(child_stdout[WRITE]));
@@ -125,9 +123,8 @@ pid_t run(char **args, struct SharedStorage *storage) {
             _exit(EXIT_SUCCESS);
         }
 
-        // Post the mutex before waiting for the child process
-        storage->command = false;
-        sem_post(&storage->mutex);
+        // Releasing the block for the main process
+        sem_post(&storage->block);
         // Wait for the child process to finish
         ASSERT_SYS_OK(waitpid(pid, &storage->tasks[my_task_id].status, 0));
 
@@ -177,6 +174,7 @@ void init_shared_storage(struct SharedStorage *storage) {
     storage->stack_top = -1;
     storage->command = false;
     sem_init(&storage->mutex, 1, 1);
+    sem_init(&storage->block, 1, 1);
     for (int i = 0; i < MAX_N_TASKS; i++) {
         sem_init(&storage->tasks[i].mutex_out, 1, 1);
         sem_init(&storage->tasks[i].mutex_err, 1, 1);
@@ -185,10 +183,17 @@ void init_shared_storage(struct SharedStorage *storage) {
 
 void clear_shared_storage(struct SharedStorage *storage) {
     sem_destroy(&storage->mutex);
+    sem_destroy(&storage->block);
     for (int i = 0; i < MAX_N_TASKS; i++) {
         sem_destroy(&storage->tasks[i].mutex_out);
         sem_destroy(&storage->tasks[i].mutex_err);
     }
+}
+
+void change_command_status(struct SharedStorage *storage, bool command) {
+    sem_wait(&storage->mutex);
+    storage->command = command;
+    sem_post(&storage->mutex);
 }
 
 int main() {
@@ -219,11 +224,15 @@ int main() {
         }
 
         PRINT_COMMAND(parts[0], getpid())
-        sem_wait(&shared_storage->mutex);
-        shared_storage->command = true;
+        change_command_status(shared_storage, true);
+        sem_wait(&shared_storage->block);
         // Command navigation.
         if (strcmp(parts[0], "run") == 0) {
+            int my_task_id = shared_storage->next_task_id;
+
             run(&parts[1], shared_storage);
+            sem_wait(&shared_storage->block);
+            printf("Task %d started: pid %d.\n", my_task_id, shared_storage->tasks[my_task_id].pid);
             programs++;
         } else if (strcmp(parts[0], "out") == 0) {
             out(shared_storage, atoi(parts[1]));
@@ -240,11 +249,9 @@ int main() {
             quit = true;
         }
 
-        // Only 'run' function releases the mutex itself.
-        if (strcmp(parts[0], "run") != 0) {
-            shared_storage->command = false;
-            sem_post(&shared_storage->mutex);
-        }
+        // Inform processes that the command has finished.
+        change_command_status(shared_storage, false);
+        sem_post(&shared_storage->block);
 
         // Printing the exit statuses of the tasks that finished
         // during the execution of the last command.

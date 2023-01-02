@@ -68,6 +68,7 @@ bool read_line(char *buffer, size_t size_of_buffer, FILE *file) {
     if (n_chars == -1) {
         if (ferror(file))
             syserr("Getline failed.");
+        free(line);
         assert(feof(file));
         buffer[0] = '\0';
         return false;
