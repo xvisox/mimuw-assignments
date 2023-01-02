@@ -78,6 +78,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
         // Execute the program
         execvp(args[0], args);
         fprintf(stderr, "execv failed\n");
+        fflush(stderr);
         _exit(EXIT_FAILURE);
     } else {
         // Initialize the task
@@ -144,6 +145,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
     }
 
     // Wrapper process exits
+    fflush(stdout);
     _exit(EXIT_SUCCESS);
 }
 
