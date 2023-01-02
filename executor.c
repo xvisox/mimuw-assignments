@@ -161,8 +161,8 @@ void err(struct SharedStorage *storage, int task_id) {
     sem_post(&storage->tasks[task_id].mutex_err);
 }
 
-void kill_task(struct SharedStorage *storage, int task_id) {
-    kill(storage->tasks[task_id].pid, SIGKILL);
+void kill_task(struct SharedStorage *storage, int task_id, int signal) {
+    kill(storage->tasks[task_id].pid, signal);
 }
 
 void sleep_executor(int seconds) {
@@ -241,11 +241,8 @@ int main() {
         } else if (strcmp(parts[0], "sleep") == 0) {
             sleep_executor(atoi(parts[1]));
         } else if (strcmp(parts[0], "kill") == 0) {
-            kill_task(shared_storage, atoi(parts[1]));
+            kill_task(shared_storage, atoi(parts[1]), SIGINT);
         } else if (strcmp(parts[0], "quit") == 0) {
-            for (int i = 0; i < programs; i++) {
-                kill_task(shared_storage, i);
-            }
             quit = true;
         }
 
@@ -266,6 +263,13 @@ int main() {
         free_split_string(parts);
     }
 
+    // Kill all the processes that
+    // are still running.
+    for (int i = 0; i < programs; i++) {
+        kill_task(shared_storage, i, SIGTERM);
+    }
+    // Waiting for all the processes
+    // to print their exit statuses.
     for (int i = 0; i < programs; i++) {
         ASSERT_SYS_OK(wait(NULL));
     }
