@@ -126,8 +126,10 @@ pid_t run(char **args, struct SharedStorage *storage) {
 
         // Releasing the block for the main process
         sem_post(&storage->block);
-        // Wait for the child process to finish
+        // Wait for the executed program process to finish
         ASSERT_SYS_OK(waitpid(pid, &storage->tasks[my_task_id].status, 0));
+        ASSERT_SYS_OK(wait(NULL)); // Wait for stderr helper
+        ASSERT_SYS_OK(wait(NULL)); // Wait for stdout helper
 
         sem_wait(&storage->mutex);
         if (!storage->command) {
