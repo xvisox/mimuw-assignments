@@ -16,22 +16,22 @@
 #define MAX_COMMAND_LENGTH 512
 
 struct Task {
-    char last_err[MAX_LINE_LENGTH];
-    char last_out[MAX_LINE_LENGTH];
-    int status;
-    pid_t pid;
-    sem_t mutex_err;
-    sem_t mutex_out;
+    char last_err[MAX_LINE_LENGTH]; // Last error message.
+    char last_out[MAX_LINE_LENGTH]; // Last output message.
+    int status;                     // Exit status of the task.
+    pid_t pid;                      // Process id of the task.
+    sem_t mutex_err;                // Mutex for read/write last_err.
+    sem_t mutex_out;                // Mutex for read/write last_out.
 };
 
 struct SharedStorage {
-    struct Task tasks[MAX_N_TASKS];
-    int task_id_stack[MAX_N_TASKS];
-    int stack_top;
-    int next_task_id;
-    bool command;
-    sem_t mutex;
-    sem_t block;
+    struct Task tasks[MAX_N_TASKS]; // Array of tasks.
+    int task_id_stack[MAX_N_TASKS]; // Stack of finished tasks.
+    int stack_top;                  // Top of the stack. (-1 if empty)
+    int next_task_id;               // Next not used task id.
+    bool command;                   // Info if command is being executed.
+    sem_t mutex;                    // Mutex for read/write shared storage.
+    sem_t block;                    // Semaphore for blocking executor.
 };
 
 const unsigned int NAP_MILISECS = 1000;
@@ -97,7 +97,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
             ASSERT_SYS_OK(close(child_stderr[READ]));
             char buffer[MAX_LINE_LENGTH];
             FILE *file = fdopen(child_stdout[READ], "r");
-            while (read_line(buffer, sizeof(buffer) - 1, file)) {
+            while (read_line(buffer, sizeof(buffer), file)) {
                 // Wait for the semaphore, someone is reading the output
                 sem_wait(&storage->tasks[my_task_id].mutex_out);
                 // Copy the data to shared memory
@@ -115,7 +115,7 @@ pid_t run(char **args, struct SharedStorage *storage) {
             ASSERT_SYS_OK(close(child_stdout[READ]));
             char buffer[MAX_LINE_LENGTH];
             FILE *file = fdopen(child_stderr[READ], "r");
-            while (read_line(buffer, sizeof(buffer) - 1, file)) {
+            while (read_line(buffer, sizeof(buffer), file)) {
                 sem_wait(&storage->tasks[my_task_id].mutex_err);
                 strcpy(storage->tasks[my_task_id].last_err, buffer);
                 sem_post(&storage->tasks[my_task_id].mutex_err);
@@ -213,11 +213,9 @@ int main() {
         syserr("mmap");
     }
     init_shared_storage(shared_storage);
-
-    int programs = 0;
     bool quit = false;
 
-    while (read_line(buffer, MAX_COMMAND_LENGTH, stdin) && !quit) {
+    while (!quit && read_line(buffer, sizeof(buffer), stdin)) {
         char **parts = split_string(buffer);
 
         if (is_empty(parts)) {
@@ -225,17 +223,18 @@ int main() {
             continue;
         }
 
-        PRINT_COMMAND(parts[0], getpid())
+        // Information that main process is in
+        // the middle of the command execution.
         change_command_status(shared_storage, true);
         sem_wait(&shared_storage->block);
         // Command navigation.
         if (strcmp(parts[0], "run") == 0) {
             int my_task_id = shared_storage->next_task_id;
-
+            // Execution of the given program with its arguments
+            // and waiting for its newly assigned process id.
             run(&parts[1], shared_storage);
             sem_wait(&shared_storage->block);
             printf("Task %d started: pid %d.\n", my_task_id, shared_storage->tasks[my_task_id].pid);
-            programs++;
         } else if (strcmp(parts[0], "out") == 0) {
             out(shared_storage, atoi(parts[1]));
         } else if (strcmp(parts[0], "err") == 0) {
@@ -265,8 +264,9 @@ int main() {
         free_split_string(parts);
     }
 
-    // Kill all the processes that
-    // are still running.
+    int programs = shared_storage->next_task_id;
+    // Kill all the processes
+    // that are still running.
     for (int i = 0; i < programs; i++) {
         kill_task(shared_storage, i, SIGTERM);
     }

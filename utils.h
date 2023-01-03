@@ -44,14 +44,30 @@ void free_split_string(char **parts);
  */
 bool read_line(char *buffer, size_t size_of_buffer, FILE *file);
 
-void print_buffer(char **buffer);
-
+/*
+ * Checks if given line was blank.
+ */
 bool is_empty(char **parts);
 
+/*
+ * Normal stack push operation.
+ */
 void push(int stack[], int *top, int value);
 
+/*
+ * Non-standard stack pop operation,
+ * since pop is called only when
+ * the whole stack is going to be
+ * cleared, we can call it with index
+ * of the element.
+ */
 int pop(int stack[], int index);
 
+/*
+ * Returns stack size and sets
+ * pointer to the beginning
+ * of the stack.
+ */
 int stack_size(int *top);
 
 #endif
