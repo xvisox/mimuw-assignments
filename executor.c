@@ -201,6 +201,8 @@ void change_command_status(struct SharedStorage *storage, bool command) {
 }
 
 int main() {
+    setbuf(stdin, 0);
+    setbuf(stdout, 0);
     char buffer[MAX_COMMAND_LENGTH];
 
     // Initialize the shared storage.
