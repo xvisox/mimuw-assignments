@@ -272,7 +272,7 @@ int main() {
     // Kill all the processes
     // that are still running.
     for (int i = 0; i < programs; i++) {
-        kill_task(shared_storage, i, SIGTERM);
+        kill_task(shared_storage, i, SIGKILL);
     }
     // Waiting for all the processes
     // to print their exit statuses.
