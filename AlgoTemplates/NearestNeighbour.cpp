@@ -52,14 +52,14 @@ void print(int A[], int n) {
 }
 
 int main() {
-    int A[] = {-1, 3, 4, 2, 1, 6, 7, 5};
+    int A[] = {-1, 4, 2, 6, 1, 3, 7, 5};
     int n = sizeof(A) / sizeof(int);
+    print(A, n);
     int preimageA[n + 1];
     // LPred[i] = max{x:x belongs A[1...(i-1)] and x < A[i]}
     // LSucc[i] = min{x:x belongs A[1...(i-1)] and x > A[i]}
     int LPred[n + 1], LSucc[n + 1];
     getPreimage(A, preimageA, n);
-    print(preimageA, n);
     getLPred(A, preimageA, LPred, n);
     print(LPred, n);
     getLSucc(A, preimageA, LSucc, n);

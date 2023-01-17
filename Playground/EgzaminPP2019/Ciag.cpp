@@ -2,42 +2,37 @@
 
 using namespace std;
 
-int n, m;
-constexpr int MAX_N = 500'001;
+#define endl '\n'
 
-int ile[MAX_N];
-vector<int> secik;
-unordered_set<int> inset;
+int n, m;
+multiset<int, greater<>> dst;
+set<int> s;
 
 int main() {
     cin >> n >> m;
 
-    secik.push_back(0);
-    secik.push_back(n);
-    int temp, rightVal, leftVal;
-    int max = n;
-    ile[n]++;
-    for (int i = 0; i < m; i++) {
-        scanf("%d", &temp);
-        if (inset.find(temp) != inset.end()) {
-            cout << max << '\n';
+    s.insert(0);
+    s.insert(n);
+    dst.insert(n);
+
+    int x, lower, upper;
+    while (m--) {
+        cin >> x;
+        if (s.find(x) != s.end()) {
+            cout << *dst.begin() << endl;
             continue;
         }
 
-        auto it = lower_bound(secik.begin(), secik.end(), temp);
-        rightVal = *it;
-        it--;
-        leftVal = *it;
-        it++;
-        secik.insert(it, temp);
-        inset.insert(temp);
-        ile[rightVal - temp]++;
-        ile[temp - leftVal]++;
-        ile[rightVal - leftVal]--;
-        if (rightVal - leftVal == max && !ile[max]) {
-            while (!ile[max]) max--;
-        }
-        cout << max << '\n';
+        s.insert(x);
+        auto it = s.lower_bound(x);
+        lower = *(prev(it));
+        upper = *(next(it));
+
+        dst.erase(dst.find(upper - lower));
+        dst.insert(upper - x);
+        dst.insert(x - lower);
+
+        cout << *dst.begin() << endl;
     }
 
     return 0;
