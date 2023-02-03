@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ASD Playground/EgzaminPP2011/Koncentracja.cpp)
+add_executable(ASD Templates/strongly.cpp)
