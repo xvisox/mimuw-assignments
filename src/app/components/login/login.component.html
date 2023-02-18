@@ -1,10 +1,10 @@
-<div class="col-md-12">
-  <div class="card card-container">
-    <img
-      id="profile-img"
-      src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-      class="profile-img-card"
-      alt="img"/>
+<div class="mask" style="background-color: rgba(0,0,0,0.7); padding: 30px 30px 10px; border-radius: 1rem;">
+  <div class="text-center" style="padding: 0; margin-bottom: 20px">
+    <img src="assets/images/logo.png"
+         style="width: 185px;" alt="logo">
+  </div>
+  <div>
+    <h5 style="color: white; margin-bottom: 20px">Please login to your account</h5>
     <form
       *ngIf="!isLoggedIn"
       name="form"
@@ -13,7 +13,6 @@
       novalidate
     >
       <div class="form-group">
-        <label for="username">Username</label>
         <input
           type="text"
           class="form-control"
@@ -31,7 +30,6 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
         <input
           type="password"
           class="form-control"
@@ -53,7 +51,7 @@
         </div>
       </div>
       <div class="form-group">
-        <button class="btn btn-primary btn-block">
+        <button class="btn btn-outline-light btn-lg m-2">
           Login
         </button>
       </div>
@@ -71,5 +69,10 @@
     <div class="alert alert-success" *ngIf="isLoggedIn">
       Logged in as {{ roles }}.
     </div>
+  </div>
+  <div>
+    <p class="mb-0 mt-0" style="color: white">Don't have an account? <a href="/register" class="text-white-50 fw-bold"
+                                                                        routerLink="register">Sign Up</a>
+    </p>
   </div>
 </div>
