@@ -2,14 +2,11 @@ package pl.mimuw.carrentalback;
 
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import pl.mimuw.carrentalback.data.UserRepository;
-import pl.mimuw.carrentalback.entity.User;
+import pl.mimuw.carrentalback.data.RoleRepository;
+import pl.mimuw.carrentalback.models.ERole;
+import pl.mimuw.carrentalback.models.Role;
 
 @SpringBootApplication
 public class CarRentalBackApplication {
@@ -19,12 +16,11 @@ public class CarRentalBackApplication {
     }
 
     @Bean
-    public ApplicationRunner dataLoader(UserRepository repo, PasswordEncoder encoder) {
+    public ApplicationRunner dataLoader(RoleRepository repo) {
         return args -> {
-            repo.save(
-                    new User("habuma", encoder.encode("password"), "ROLE_ADMIN"));
-            repo.save(
-                    new User("tacochef", encoder.encode("password"), "ROLE_ADMIN"));
+            repo.save(new Role(ERole.ROLE_USER));
+            repo.save(new Role(ERole.ROLE_MODERATOR));
+            repo.save(new Role(ERole.ROLE_ADMIN));
         };
     }
 }
