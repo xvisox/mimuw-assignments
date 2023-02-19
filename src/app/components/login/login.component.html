@@ -1,10 +1,13 @@
-<div class="mask" style="background-color: rgba(0,0,0,0.7); padding: 30px 30px 10px; border-radius: 1rem;">
+<div class="mask background-mask">
   <div class="text-center" style="padding: 0; margin-bottom: 20px">
     <img src="assets/images/logo.png"
          style="width: 185px;" alt="logo">
   </div>
   <div>
-    <h5 style="color: white; margin-bottom: 20px">Please login to your account</h5>
+    <div style="color: white; margin-bottom: 20px">
+      <h5 *ngIf="!isLoggedIn">Please login to your account</h5>
+      <h5 *ngIf="isLoggedIn">Welcome back, {{username}}!</h5>
+    </div>
     <form
       *ngIf="!isLoggedIn"
       name="form"
@@ -17,6 +20,7 @@
           type="text"
           class="form-control"
           name="username"
+          placeholder="Username"
           [(ngModel)]="form.username"
           required
           #username="ngModel"
@@ -29,11 +33,12 @@
           Username is required!
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom: 10px">
         <input
           type="password"
           class="form-control"
           name="password"
+          placeholder="Password"
           [(ngModel)]="form.password"
           required
           minlength="6"
@@ -71,8 +76,10 @@
     </div>
   </div>
   <div>
-    <p class="mb-0 mt-0" style="color: white">Don't have an account? <a href="/register" class="text-white-50 fw-bold"
-                                                                        routerLink="register">Sign Up</a>
+    <p class="mb-0" style="color: white;" *ngIf="!isLoggedIn">Don't have an account? <a href="../register"
+                                                                                        class="text-white-50 fw-bold"
+                                                                                        routerLink="../register">Sign
+      Up</a>
     </p>
   </div>
 </div>

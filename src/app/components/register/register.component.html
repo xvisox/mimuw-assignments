@@ -1,10 +1,12 @@
-<div class="col-md-12">
-  <div class="card card-container">
-    <img
-      id="profile-img"
-      src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-      class="profile-img-card"
-      alt="img"/>
+<div class="mask background-mask">
+  <div class="text-center" style="padding: 0; margin-bottom: 20px">
+    <img src="assets/images/logo.png"
+         style="width: 185px;" alt="logo">
+  </div>
+  <div style="color: white; margin-bottom: 20px">
+    <h5>Registration Info</h5>
+  </div>
+  <div>
     <form
       *ngIf="!isSuccessful"
       name="form"
@@ -13,11 +15,11 @@
       novalidate
     >
       <div class="form-group">
-        <label for="username">Username</label>
         <input
           type="text"
           class="form-control"
           name="username"
+          placeholder="Username"
           [(ngModel)]="form.username"
           required
           minlength="3"
@@ -36,11 +38,11 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="email">Email</label>
         <input
           type="email"
           class="form-control"
           name="email"
+          placeholder="abc123@gmail.com"
           [(ngModel)]="form.email"
           required
           email
@@ -55,11 +57,11 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
         <input
           type="password"
           class="form-control"
           name="password"
+          placeholder="Password"
           [(ngModel)]="form.password"
           required
           minlength="6"
@@ -73,8 +75,10 @@
           </div>
         </div>
       </div>
-      <div class="form-group">
-        <button class="btn btn-primary btn-block">Sign Up</button>
+      <div class="form-group mb-1">
+        <button class="btn btn-outline-light btn-lg m-2">
+          Sign Up
+        </button>
       </div>
 
       <div class="alert alert-warning" *ngIf="f.submitted && isSignUpFailed">
