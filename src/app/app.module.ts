@@ -14,6 +14,7 @@ import {BoardModeratorComponent} from './components/board-moderator/board-modera
 import {BoardUserComponent} from './components/board-user/board-user.component';
 
 import {httpInterceptorProviders} from './helpers/http.interceptor';
+import { OfferComponent } from './components/offer/offer.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import {httpInterceptorProviders} from './helpers/http.interceptor';
     BoardAdminComponent,
     BoardModeratorComponent,
     BoardUserComponent,
+    OfferComponent,
   ],
   imports: [
     BrowserModule,

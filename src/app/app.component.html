@@ -3,7 +3,10 @@
     <a href="#" class="navbar-brand">TopG CarRental</a>
     <ul class="navbar-nav mr-auto" routerLinkActive="active">
       <li class="nav-item">
-        <a href="/home" class="nav-link" routerLink="home">Home </a>
+        <a href="/home" class="nav-link" routerLink="home">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="/offer" class="nav-link" routerLink="offer">Offer</a>
       </li>
       <li class="nav-item" *ngIf="showAdminBoard">
         <a href="/admin" class="nav-link" routerLink="admin">Admin Board</a>
@@ -34,10 +37,5 @@
       </li>
     </ul>
   </nav>
-
-  <div class="p-5 text-center bg-image"
-       style="background-image: url('/assets/images/background-2.jpg'); height: 100vh; background-size: cover;
-        display: flex; align-items: flex-start; justify-content: center">
-    <router-outlet></router-outlet>
-  </div>
+  <router-outlet></router-outlet>
 </div>

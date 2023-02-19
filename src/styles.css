@@ -6,3 +6,31 @@
   width: 350px;
   height: auto;
 }
+
+.home {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  height: 82vh;
+  width: 80vw;
+}
+
+.home-header {
+  font-family: "Sora", Sans-serif, serif;
+  color: white;
+  margin-right: 20px;
+  margin-left: 40px;
+  font-size: 35px;
+  font-weight: 700;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.main-div-enhanced {
+  background-image: url('/assets/images/background-2.jpg');
+  height: calc(100vh - 56px);
+  background-size: cover;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
