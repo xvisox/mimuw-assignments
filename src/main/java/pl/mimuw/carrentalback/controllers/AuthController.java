@@ -16,7 +16,7 @@ import pl.mimuw.carrentalback.data.UserRepository;
 import pl.mimuw.carrentalback.models.ERole;
 import pl.mimuw.carrentalback.models.Role;
 import pl.mimuw.carrentalback.models.User;
-import pl.mimuw.carrentalback.models.UserDetailsImpl;
+import pl.mimuw.carrentalback.security.services.UserDetailsImpl;
 import pl.mimuw.carrentalback.payload.request.LoginRequest;
 import pl.mimuw.carrentalback.payload.request.SignupRequest;
 import pl.mimuw.carrentalback.payload.response.MessageResponse;

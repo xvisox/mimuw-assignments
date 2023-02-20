@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
-import pl.mimuw.carrentalback.models.UserDetailsImpl;
+import pl.mimuw.carrentalback.security.services.UserDetailsImpl;
 
 import java.util.Date;
 

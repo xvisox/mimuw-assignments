@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.mimuw.carrentalback.security.jwt.AuthEntryPointJwt;
 import pl.mimuw.carrentalback.security.jwt.AuthTokenFilter;
-import pl.mimuw.carrentalback.services.UserDetailsServiceImpl;
+import pl.mimuw.carrentalback.security.services.UserDetailsServiceImpl;
 
 @Configuration
 @EnableMethodSecurity

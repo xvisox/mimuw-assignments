@@ -1,4 +1,4 @@
-package pl.mimuw.carrentalback.models;
+package pl.mimuw.carrentalback.security.services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import pl.mimuw.carrentalback.models.User;
 
 import java.util.Collection;
 import java.util.List;

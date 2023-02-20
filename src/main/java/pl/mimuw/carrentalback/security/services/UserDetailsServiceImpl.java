@@ -1,4 +1,4 @@
-package pl.mimuw.carrentalback.services;
+package pl.mimuw.carrentalback.security.services;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.mimuw.carrentalback.data.UserRepository;
 import pl.mimuw.carrentalback.models.User;
-import pl.mimuw.carrentalback.models.UserDetailsImpl;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
