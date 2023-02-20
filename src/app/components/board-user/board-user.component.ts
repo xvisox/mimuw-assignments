@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {UserService} from "../../services/data/data.service";
 
 @Component({
@@ -6,8 +6,9 @@ import {UserService} from "../../services/data/data.service";
   templateUrl: './board-user.component.html',
   styleUrls: ['./board-user.component.css']
 })
-export class BoardUserComponent {
+export class BoardUserComponent implements OnInit {
   content?: string;
+  error?: boolean;
 
   constructor(private userService: UserService) {
   }
@@ -16,9 +17,11 @@ export class BoardUserComponent {
     this.userService.getUserBoard().subscribe({
       next: data => {
         this.content = data;
+        this.error = false;
       },
       error: err => {
         console.log(err)
+        this.error = true;
         if (err.error) {
           this.content = JSON.parse(err.error).message;
         } else {

@@ -34,3 +34,14 @@
   align-items: flex-start;
   justify-content: center;
 }
+
+.error-section {
+  width: 400px;
+  font-size: 30px;
+  padding: 20px;
+  border-radius: 1rem;
+}
+.plain-background {
+  background-color: #282525;
+  height: calc(100vh - 56px);
+}

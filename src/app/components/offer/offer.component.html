@@ -1,10 +1,60 @@
-<div class="offer">
-  <div *ngFor="let car of cars">
-    {{car.brand}}
+<div class="plain-background p-4" style="height: auto">
+  <div class="row flexible">
+    <div class="card m-3 car-card" *ngFor="let car of cars">
+      <img class="card-img-top" src="assets/cars/{{car.id}}.jpg" alt="Card image cap">
+      <div class="card-body">
+        <div class="car-header">
+          <h5 class="car-name"><strong>{{car.brand}} {{car.model}} </strong>| {{car.year}}</h5>
+        </div>
+        <hr style="border-top: 2px solid white; opacity: 1; margin-top: 0">
+        <div class="car-components mt-2">
+          <div class="car-component">
+            <i class="fa component-icon">&#xf0e7;</i>
+            <p>{{car.horsepower}} HP</p>
+          </div>
+          <div class="car-component">
+            <i class="fa component-icon">&#xf085;</i>
+            <p>{{car.gearbox}}</p>
+          </div>
+          <div class="car-component">
+            <i class="fa component-icon">&#xf005;</i>
+            <p>{{car.category}}</p>
+          </div>
+          <div class="car-component">
+            <i class="fa component-icon">&#xf02c;</i>
+            <p>{{car.price}}$/<small>day</small></p>
+          </div>
+        </div>
+
+        <div class="button-container">
+          <button type="button" class="btn btn-outline-light btn-lg btn-block" data-toggle="modal"
+                  attr.data-target="#modal{{car.id}}" [disabled]="!logged" style="font-size: 20px">
+            Rent this car
+          </button>
+          <div class="modal fade" id="modal{{car.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+               aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <div class="car-header">
+                    <h5 class="car-name mb-0" style="color: black; font-size: 25px">Currently renting:<br>
+                      <strong>{{car.brand}} {{car.model}}</strong></h5>
+                  </div>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-outline-dark">Save changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
-<div class="container">
-  <header class="jumbotron">
-    <p>{{ content }}</p>
-  </header>
 </div>

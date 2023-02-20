@@ -8,6 +8,7 @@ import {UserService} from '../../services/data/data.service';
 })
 export class BoardAdminComponent implements OnInit {
   content?: string;
+  error?: boolean;
 
   constructor(private userService: UserService) {
   }
@@ -16,9 +17,11 @@ export class BoardAdminComponent implements OnInit {
     this.userService.getAdminBoard().subscribe({
       next: data => {
         this.content = data;
+        this.error = false;
       },
       error: err => {
         console.log(err)
+        this.error = true;
         if (err.error) {
           this.content = JSON.parse(err.error).message;
         } else {
