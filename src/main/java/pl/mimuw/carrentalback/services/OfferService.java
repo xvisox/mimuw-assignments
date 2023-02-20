@@ -16,7 +16,7 @@ public class OfferService {
         this.carRepository = carRepository;
     }
 
-    public List<Car> getOffer() {
+    public List<Car> getOffers() {
         return carRepository.findAll();
     }
 }

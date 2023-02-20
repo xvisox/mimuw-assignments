@@ -3,27 +3,49 @@ package pl.mimuw.carrentalback.data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import pl.mimuw.carrentalback.models.Car;
 import pl.mimuw.carrentalback.models.ERole;
 import pl.mimuw.carrentalback.models.Role;
+import pl.mimuw.carrentalback.models.User;
 
 @Component
 public class DataLoader implements ApplicationRunner {
     private final CarRepository repo;
     private final RoleRepository roleRepo;
+    private final UserRepository userRepo;
+    private final CustomUserRepository customRepo;
+    private final PasswordEncoder encoder;
 
     @Autowired
-    public DataLoader(CarRepository repo, RoleRepository roleRepo) {
+    public DataLoader(CarRepository repo, RoleRepository roleRepo, UserRepository userRepo,
+                      CustomUserRepository customRepo, PasswordEncoder encoder) {
         this.repo = repo;
         this.roleRepo = roleRepo;
+        this.userRepo = userRepo;
+        this.customRepo = customRepo;
+        this.encoder = encoder;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+        // ROLES.
         roleRepo.save(new Role(ERole.ROLE_USER));
         roleRepo.save(new Role(ERole.ROLE_MODERATOR));
         roleRepo.save(new Role(ERole.ROLE_ADMIN));
+
+        // USERS.
+        User admin = new User("user", "user@gmail.com", encoder.encode("du@8aXPRiUPM"));
+        admin.getRoles().add(roleRepo.findByName(ERole.ROLE_USER).orElse(null));
+        userRepo.save(admin);
+
+        // UPDATE USER example.
+        // User user = customRepo.findById(1L);
+        // Role adminRole = roleRepo.findByName(ERole.ROLE_ADMIN).orElse(null);
+        // user.getRoles().add(adminRole);
+        // customRepo.update(user);
+
         // CARS.
         repo.save(new Car("Audi", "Q3", 419, 2019, "Semi-Auto", "Standard", 200));
         repo.save(new Car("Audi", "Q5", 454, 2019, "Semi-Auto", "Standard", 220));
