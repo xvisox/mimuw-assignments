@@ -17,7 +17,7 @@ export class OfferComponent implements OnInit {
   public error?: boolean;
   public logged?: boolean;
   public form: FormGroup = new FormGroup({
-    carId: new FormControl('2115'),
+    carId: new FormControl(-1),
     startDate: new FormControl('', [Validators.required]),
     endDate: new FormControl('', [Validators.required])
   }, {validators: DateValidator});
@@ -67,14 +67,16 @@ export class OfferComponent implements OnInit {
     const startDate = this.form.get('startDate');
     const endDate = this.form.get('endDate');
     console.log(carId, startDate, endDate);
-    // this.rentService.rentCar(this.storageService.getUser().username, carId, startDate, endDate).subscribe({
-    //   next: data => {
-    //     console.log(data);
-    //   },
-    //   error: err => {
-    //     console.log(err);
-    //   }
-    // });
+    this.rentService.rentCar(this.storageService.getUser().username, carId?.value, startDate?.value, endDate?.value)
+      .subscribe({
+        next: data => {
+          console.log(data);
+        },
+        error: err => {
+          console.log(err);
+        }
+      });
+    this.reloadPage();
   }
 
   initForm(id: number): void {
@@ -83,5 +85,18 @@ export class OfferComponent implements OnInit {
       startDate: new FormControl('', [Validators.required]),
       endDate: new FormControl('', [Validators.required])
     }, {validators: DateValidator});
+  }
+
+  reloadPage(): void {
+    window.location.reload();
+  }
+
+  calculatePrice(price: number) {
+    const startDate = this.form.get('startDate');
+    const endDate = this.form.get('endDate');
+    let date = new Date(startDate?.value);
+    let currentDate = new Date(endDate?.value);
+
+    return Math.floor((currentDate.getTime() - date.getTime()) / 1000 / 60 / 60 / 24) * price;
   }
 }

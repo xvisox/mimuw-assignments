@@ -28,7 +28,8 @@
 
         <div class="button-container">
           <button type="button" class="btn btn-outline-light btn-lg btn-block" data-toggle="modal"
-                  attr.data-target="#modal{{car.id}}" [disabled]="!logged" style="font-size: 20px" (click)="initForm(car.id)">
+                  attr.data-target="#modal{{car.id}}" [disabled]="!logged" style="font-size: 20px"
+                  (click)="initForm(car.id)">
             Rent this car
           </button>
           <div class="modal fade" id="modal{{car.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -74,9 +75,13 @@
                         date</small>
                     </div>
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-outline-dark">Save changes</button>
+                  <div class="modal-footer" style="justify-content: space-between">
+                    <p class="total-price">Total cost for your rental: <strong>{{calculatePrice(car.price)}}</strong>$
+                    </p>
+                    <div class="modal-footer-buttons">
+                      <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-outline-dark ml-3" [disabled]="!form.valid">Buy</button>
+                    </div>
                   </div>
                 </form>
               </div>

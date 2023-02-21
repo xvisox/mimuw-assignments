@@ -46,3 +46,8 @@
   justify-content: flex-end;
   color: red;
 }
+
+.total-price {
+  font-family: "Sora", Sans-serif, serif;
+  color: black;
+}
