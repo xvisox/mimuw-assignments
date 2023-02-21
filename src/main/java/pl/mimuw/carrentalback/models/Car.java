@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
-@Table(name = "cars")
 @Data
 @NoArgsConstructor
 public class Car {
@@ -20,6 +22,9 @@ public class Car {
     private String gearbox;
     private String category;
     private Integer price;
+
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    private Set<UserCar> users = new HashSet<>();
 
     public Car(String brand, String model, Integer horsepower, Integer year, String gearbox, String category, Integer price) {
         this.brand = brand;
