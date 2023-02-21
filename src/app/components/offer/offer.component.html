@@ -28,28 +28,57 @@
 
         <div class="button-container">
           <button type="button" class="btn btn-outline-light btn-lg btn-block" data-toggle="modal"
-                  attr.data-target="#modal{{car.id}}" [disabled]="!logged" style="font-size: 20px">
+                  attr.data-target="#modal{{car.id}}" [disabled]="!logged" style="font-size: 20px" (click)="initForm(car.id)">
             Rent this car
           </button>
           <div class="modal fade" id="modal{{car.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                aria-hidden="true">
             <div class="modal-dialog" role="document">
               <div class="modal-content">
-                <div class="modal-header">
-                  <div class="car-header">
-                    <h5 class="car-name mb-0" style="color: black; font-size: 25px">Currently renting:<br>
-                      <strong>{{car.brand}} {{car.model}}</strong></h5>
+                <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                  <div class="modal-header">
+                    <div class="car-header">
+                      <h5 class="car-name mb-0" style="color: black; font-size: 25px">Currently renting:<br>
+                        <strong>{{car.brand}} {{car.model}}</strong></h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
                   </div>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-outline-dark">Save changes</button>
-                </div>
+                  <!-- Date picker -->
+                  <div class="modal-body" style="color: black">
+                    <!-- Start date -->
+                    <div class="date-input-container">
+                      <label for="startDate-string" class="mb-0">Select the rental date:</label>
+                      <input formControlName="startDate" type="date"
+                             id="startDate-string"/>
+                    </div>
+                    <!-- Error message -->
+                    <div *ngIf="f.startDate.touched" class="error-container">
+                      <small *ngIf="f.startDate.errors?.required"
+                      >Required</small>
+                      <small *ngIf="form.errors?.invalidFrom">
+                        Select a date over today</small>
+                    </div>
+                    <!-- End date -->
+                    <div class="date-input-container mt-2">
+                      <label for="endDate-string" class="mb-0">Select the return date:</label>
+                      <input formControlName="endDate" type="date"
+                             id="endDate-string"/>
+                    </div>
+                    <!-- Error message -->
+                    <div *ngIf="f.endDate.touched" class="error-container">
+                      <small *ngIf="endDate?.errors?.required && endDate?.touched ">Required.&nbsp;</small>
+                      <small *ngIf="form.errors?.invalidTo" class="text-danger">Choose a date over today.</small>
+                      <small *ngIf="form.errors?.dates" class="text-danger">End date should be grater than start
+                        date</small>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-dark">Save changes</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

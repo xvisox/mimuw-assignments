@@ -1,9 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {Car} from "./car";
 import {OfferService} from "../../services/offer/offer.service";
-import {HttpErrorResponse} from "@angular/common/http";
 import {StorageService} from "../../services/storage/storage.service";
 import {RentService} from "../../services/rent/rent.service";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {DateValidator} from "./date-validator";
 
 @Component({
   selector: 'app-offer',
@@ -15,11 +16,11 @@ export class OfferComponent implements OnInit {
   public content?: any;
   public error?: boolean;
   public logged?: boolean;
-  form: any = {
-    carId: null,
-    startDate: null,
-    endDate: null,
-  };
+  public form: FormGroup = new FormGroup({
+    carId: new FormControl('2115'),
+    startDate: new FormControl('', [Validators.required]),
+    endDate: new FormControl('', [Validators.required])
+  }, {validators: DateValidator});
 
   constructor(private offerService: OfferService, private storageService: StorageService,
               private rentService: RentService) {
@@ -45,15 +46,42 @@ export class OfferComponent implements OnInit {
     });
   }
 
+  get f() {
+    return this.form.controls;
+  }
+
+  get endDate() {
+    return this.form.get('endDate');
+  }
+
+  get startDate() {
+    return this.form.get('startDate');
+  }
+
+  get carId() {
+    return this.form.get('carId');
+  }
+
   onSubmit(): void {
-    const {carId, startDate, endDate} = this.form;
-    this.rentService.rentCar(this.storageService.getUser().username, carId, startDate, endDate).subscribe({
-      next: data => {
-        console.log(data);
-      },
-      error: err => {
-        console.log(err);
-      }
-    });
+    const carId = this.form.get('carId');
+    const startDate = this.form.get('startDate');
+    const endDate = this.form.get('endDate');
+    console.log(carId, startDate, endDate);
+    // this.rentService.rentCar(this.storageService.getUser().username, carId, startDate, endDate).subscribe({
+    //   next: data => {
+    //     console.log(data);
+    //   },
+    //   error: err => {
+    //     console.log(err);
+    //   }
+    // });
+  }
+
+  initForm(id: number): void {
+    this.form = new FormGroup({
+      carId: new FormControl(id),
+      startDate: new FormControl('', [Validators.required]),
+      endDate: new FormControl('', [Validators.required])
+    }, {validators: DateValidator});
   }
 }

@@ -34,3 +34,15 @@
   font-size: 24px;
   margin-right: 5px;
 }
+
+.date-input-container {
+  font-family: "Sora", Sans-serif, serif;
+  display: flex;
+  justify-content: space-between;
+}
+
+.error-container {
+  display: flex;
+  justify-content: flex-end;
+  color: red;
+}
