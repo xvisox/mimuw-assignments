@@ -1,6 +1,6 @@
 package pl.mimuw.carrentalback.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Data;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +16,19 @@ import pl.mimuw.carrentalback.data.UserRepository;
 import pl.mimuw.carrentalback.models.ERole;
 import pl.mimuw.carrentalback.models.Role;
 import pl.mimuw.carrentalback.models.User;
-import pl.mimuw.carrentalback.security.services.UserDetailsImpl;
 import pl.mimuw.carrentalback.payload.request.LoginRequest;
 import pl.mimuw.carrentalback.payload.request.SignupRequest;
 import pl.mimuw.carrentalback.payload.response.MessageResponse;
 import pl.mimuw.carrentalback.payload.response.UserInfoResponse;
 import pl.mimuw.carrentalback.security.jwt.JwtUtils;
+import pl.mimuw.carrentalback.security.services.UserDetailsImpl;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Data
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
@@ -37,15 +38,6 @@ public class AuthController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
-
-    @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.encoder = encoder;
-        this.jwtUtils = jwtUtils;
-    }
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
