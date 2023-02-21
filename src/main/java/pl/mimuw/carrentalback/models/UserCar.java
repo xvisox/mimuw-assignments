@@ -28,9 +28,10 @@ public class UserCar {
     private Date startDate;
     private Date endDate;
 
-    public UserCar(User user, Car carToRent, Date date) {
+    public UserCar(User user, Car carToRent, Date sDate, Date eDate) {
         this.user = user;
         this.car = carToRent;
-        this.endDate = date;
+        this.startDate = sDate;
+        this.endDate = eDate;
     }
 }

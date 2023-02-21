@@ -22,6 +22,7 @@ public class User {
     private String username;
     private String email;
     private String password;
+    private Long moneySpent;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles",
@@ -36,5 +37,10 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.moneySpent = 0L;
+    }
+
+    public void addMoneySpent(Long money) {
+        this.moneySpent += money;
     }
 }
