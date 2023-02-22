@@ -6,7 +6,20 @@
     </button>
     <div class="collapse card-width mt-2" id="collapseExample">
       <div class="card search-field">
+        <!-- Search -->
         <input type="text" [(ngModel)]="searchText" placeholder="Search">
+        <!-- Sort by price -->
+        <select (change)="sortCarsByPrice($event.target)">
+          <option selected value="undefined" disabled>Sort by price</option>
+          <option value="l2h">Price: Low to High</option>
+          <option value="h2l">Price: High to Low</option>
+        </select>
+        <!-- Sort by horsepower -->
+        <select (change)="sortCarsByHorsepower($event.target)">
+          <option selected value="undefined" disabled>Sort by horsepower</option>
+          <option value="l2h">Horsepower: Low to High</option>
+          <option value="h2l">Horsepower: High to Low</option>
+        </select>
       </div>
     </div>
   </div>
@@ -68,9 +81,9 @@
                     <!-- Error message -->
                     <div *ngIf="f.startDate.touched" class="error-container">
                       <small *ngIf="f.startDate.errors?.required"
-                      >Required</small>
+                      >Required.</small>
                       <small *ngIf="form.errors?.invalidFrom">
-                        Select a date over today</small>
+                        Select a date over today.</small>
                     </div>
                     <!-- End date -->
                     <div class="date-input-container mt-2">
@@ -83,7 +96,7 @@
                       <small *ngIf="endDate?.errors?.required && endDate?.touched ">Required.&nbsp;</small>
                       <small *ngIf="form.errors?.invalidTo" class="text-danger">Choose a date over today.</small>
                       <small *ngIf="form.errors?.dates" class="text-danger">End date should be grater than start
-                        date</small>
+                        date.</small>
                     </div>
                   </div>
                   <div class="modal-footer" style="justify-content: space-between">

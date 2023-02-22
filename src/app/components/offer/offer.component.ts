@@ -100,4 +100,24 @@ export class OfferComponent implements OnInit {
 
     return Math.floor((currentDate.getTime() - date.getTime()) / 1000 / 60 / 60 / 24) * price;
   }
+
+  sortCarsByPrice(option: any) {
+    if (option.value == "l2h") {
+      this.cars.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (option.value == "h2l") {
+      this.cars.sort((a, b) => Number(b.price) - Number(a.price));
+    }
+    // Refreshing the filter.
+    this.searchText += ' ';
+  }
+
+  sortCarsByHorsepower(option: any) {
+    if (option.value == "l2h") {
+      this.cars.sort((a, b) => Number(a.horsepower) - Number(b.horsepower));
+    } else if (option.value == "h2l") {
+      this.cars.sort((a, b) => Number(b.horsepower) - Number(a.horsepower));
+    }
+    // Refreshing the filter.
+    this.searchText += ' ';
+  }
 }
