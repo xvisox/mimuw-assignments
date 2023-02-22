@@ -19,6 +19,7 @@ import {httpInterceptorProviders} from './helpers/http.interceptor';
 import {OfferComponent} from './components/offer/offer.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatInputModule} from "@angular/material/input";
+import {FilterPipe} from "./components/offer/filter.pipe";
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import {MatInputModule} from "@angular/material/input";
     BoardModeratorComponent,
     BoardUserComponent,
     OfferComponent,
+    FilterPipe
   ],
   imports: [
     BrowserModule,

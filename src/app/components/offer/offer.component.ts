@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {Car} from "./car";
 import {OfferService} from "../../services/offer/offer.service";
 import {StorageService} from "../../services/storage/storage.service";
@@ -16,6 +16,7 @@ export class OfferComponent implements OnInit {
   public content?: any;
   public error?: boolean;
   public logged?: boolean;
+  public searchText: string = '';
   public form: FormGroup = new FormGroup({
     carId: new FormControl(-1),
     startDate: new FormControl('', [Validators.required]),

@@ -45,4 +45,5 @@
 .plain-background {
   background-color: #282525;
   height: calc(100vh - 56px);
+  overflow: auto;
 }
