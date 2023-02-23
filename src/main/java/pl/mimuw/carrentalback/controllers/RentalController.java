@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.mimuw.carrentalback.payload.request.ExtendRequest;
 import pl.mimuw.carrentalback.payload.request.RentRequest;
 import pl.mimuw.carrentalback.payload.request.ReturnRequest;
+import pl.mimuw.carrentalback.payload.response.MessageResponse;
 import pl.mimuw.carrentalback.services.RentalService;
 
 import java.text.ParseException;
@@ -23,33 +24,29 @@ public class RentalController {
 
     @PostMapping("/rent")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> rentCar(@RequestBody RentRequest rentRequest) {
+    public ResponseEntity<?> rentCar(@RequestBody RentRequest rentRequest) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean success = rentRequest.getUsername().equals(auth.getName()) && rentalService.rentCar(rentRequest);
             if (!success) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+                return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
             } else {
                 return new ResponseEntity<>(null, HttpStatus.CREATED);
             }
         } catch (ParseException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(new MessageResponse("Passed id is incorrect!"));
         }
     }
 
     @PatchMapping("/extend/{id}/days/{days}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Object> extendRental(@PathVariable Long id, @PathVariable Long days) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            boolean success = rentalService.extendRental(new ExtendRequest(auth.getName(), id, days));
-            if (!success) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity<>(null, HttpStatus.OK);
-            }
-        } catch (ParseException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean success = rentalService.extendRental(new ExtendRequest(auth.getName(), id, days));
+        if (!success) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("Rental extended!"));
         }
     }
 
@@ -59,9 +56,9 @@ public class RentalController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean success = rentalService.returnCar(new ReturnRequest(auth.getName(), id));
         if (!success) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
         } else {
-            return new ResponseEntity<>(null, HttpStatus.OK);
+            return ResponseEntity.ok().body(new MessageResponse("Car returned!"));
         }
     }
 }

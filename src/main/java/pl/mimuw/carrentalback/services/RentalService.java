@@ -71,7 +71,7 @@ public class RentalService {
         return cars;
     }
 
-    public boolean extendRental(ExtendRequest request) throws ParseException {
+    public boolean extendRental(ExtendRequest request) {
         User user = userRepo.findByUsername(request.getUsername()).orElse(null);
         Car car = carRepo.findById(request.getCarId()).orElse(null);
         if (user == null || car == null) return false;
