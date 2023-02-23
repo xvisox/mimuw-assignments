@@ -4,8 +4,9 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import pl.mimuw.carrentalback.models.Car;
 import pl.mimuw.carrentalback.payload.request.ExtendRequest;
 import pl.mimuw.carrentalback.payload.request.RentRequest;
 import pl.mimuw.carrentalback.payload.request.ReturnRequest;
@@ -24,7 +25,8 @@ public class RentalController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Object> rentCar(@RequestBody RentRequest rentRequest) {
         try {
-            boolean success = rentalService.rentCar(rentRequest);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean success = rentRequest.getUsername().equals(auth.getName()) && rentalService.rentCar(rentRequest);
             if (!success) {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             } else {
@@ -35,11 +37,12 @@ public class RentalController {
         }
     }
 
-    @PatchMapping("/extend")
+    @PatchMapping("/extend/{id}/days/{days}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> extendRental(@RequestBody ExtendRequest request) {
+    public ResponseEntity<Object> extendRental(@PathVariable Long id, @PathVariable Long days) {
         try {
-            boolean success = rentalService.extendRental(request);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean success = rentalService.extendRental(new ExtendRequest(auth.getName(), id, days));
             if (!success) {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             } else {
@@ -50,10 +53,11 @@ public class RentalController {
         }
     }
 
-    @DeleteMapping("/return")
+    @DeleteMapping("/return/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> returnCar(@RequestBody ReturnRequest request) {
-        boolean success = rentalService.returnCar(request);
+    public ResponseEntity<Object> returnCar(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean success = rentalService.returnCar(new ReturnRequest(auth.getName(), id));
         if (!success) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } else {
