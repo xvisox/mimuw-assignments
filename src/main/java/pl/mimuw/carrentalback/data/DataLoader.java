@@ -41,7 +41,7 @@ public class DataLoader implements ApplicationRunner {
         repo.save(new Car("Audi", "A5", 580, 2020, "Semi-Auto", "Standard", 310));
         repo.save(new Car("Audi", "TT", 195, 2016, "Semi-Auto", "Standard", 100));
         repo.save(new Car("Audi", "TT", 405, 2019, "Manual", "Standard", 190));
-        if (false) {
+        if (true) {
             repo.save(new Car("Audi", "Q7", 462, 2019, "Automatic", "Standard", 220));
             repo.save(new Car("Audi", "Q3", 451, 2019, "Automatic", "Standard", 210));
             repo.save(new Car("Audi", "Q7", 567, 2020, "Semi-Auto", "Standard", 300));

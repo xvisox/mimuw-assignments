@@ -1,5 +1,6 @@
 package pl.mimuw.carrentalback.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class Car {
     private Integer price;
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Set<UserCar> users = new HashSet<>();
 
     public Car(String brand, String model, Integer horsepower, Integer year, String gearbox, String category, Integer price) {

@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.mimuw.carrentalback.models.Car;
+import pl.mimuw.carrentalback.models.RentedCar;
+import pl.mimuw.carrentalback.payload.request.MyCarsRequest;
 import pl.mimuw.carrentalback.payload.request.RentRequest;
 import pl.mimuw.carrentalback.services.RentalService;
 
@@ -20,23 +22,15 @@ public class OfferController {
     private final RentalService rentalService;
 
     @GetMapping
-    public ResponseEntity<List<Car>> getAllOffers() {
+    public ResponseEntity<List<Car>> getAllCars() {
         List<Car> cars = rentalService.getOffers();
         return ResponseEntity.ok(cars);
     }
 
-    @PostMapping("/rent")
+    @PostMapping("/my")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Car> rentCar(@RequestBody RentRequest rentRequest) {
-        try {
-            boolean success = rentalService.rentCar(rentRequest);
-            if (!success) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-            } else {
-                return new ResponseEntity<>(null, HttpStatus.CREATED);
-            }
-        } catch (ParseException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<RentedCar>> getMyCars(@RequestBody MyCarsRequest request) {
+        List<RentedCar> cars = rentalService.getMyOffers(request.getUsername());
+        return ResponseEntity.ok(cars);
     }
 }
