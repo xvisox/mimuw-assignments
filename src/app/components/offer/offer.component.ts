@@ -72,12 +72,12 @@ export class OfferComponent implements OnInit {
       .subscribe({
         next: data => {
           console.log(data);
+          this.reloadPage();
         },
         error: err => {
           console.log(err);
         }
       });
-    this.reloadPage();
   }
 
   initForm(id: number): void {

@@ -53,24 +53,24 @@ export class BoardUserComponent implements OnInit {
     this.rentalService.extendRental(this.storage.getUser().username, carId, this.days).subscribe({
       next: data => {
         console.log(data);
+        this.reloadPage();
       },
       error: err => {
         console.log(err);
       }
     });
-    this.reloadPage();
   }
 
   onReturn(carId: number) {
     this.rentalService.returnCar(this.storage.getUser().username, carId).subscribe({
       next: data => {
         console.log(data);
+        this.reloadPage();
       },
       error: err => {
         console.log(err);
       }
     });
-    this.reloadPage();
   }
 
   reloadPage(): void {

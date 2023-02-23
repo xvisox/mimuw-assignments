@@ -3,6 +3,10 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 const API_URL = 'http://localhost:8080/api/rental';
 
+const httpOptions = {
+  headers: new HttpHeaders({'Content-Type': 'application/json'})
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -21,17 +25,10 @@ export class RentService {
   }
 
   extendRental(username: string, carId: number, days: number) {
-    return this.http.patch(API_URL + '/extend', {
-      username,
-      carId,
-      days
-    });
+    return this.http.patch(API_URL + '/extend/' + carId + '/days/' + days, httpOptions);
   }
 
   returnCar(username: string, carId: number) {
-    return this.http.patch(API_URL + '/return', {
-      username,
-      carId
-    });
+    return this.http.delete(API_URL + '/return/' + carId, httpOptions);
   }
 }

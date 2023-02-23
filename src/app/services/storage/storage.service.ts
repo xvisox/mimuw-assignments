@@ -1,12 +1,15 @@
 import {Injectable} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
 
 const USER_KEY = 'auth-user';
+const API_URL = 'http://localhost:8080/api/profile';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
-  constructor() {
+  constructor(private http: HttpClient) {
   }
 
   clean(): void {
@@ -29,5 +32,9 @@ export class StorageService {
   public isLoggedIn(): boolean {
     const user = window.sessionStorage.getItem(USER_KEY);
     return !!user;
+  }
+
+  public getUserProfile(): Observable<any> {
+    return this.http.get(API_URL);
   }
 }
