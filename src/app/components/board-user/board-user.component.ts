@@ -1,5 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {UserService} from "../../services/data/data.service";
+import {OfferService} from "../../services/offer/offer.service";
+import {RentedCar} from "./rented-car";
+import {RentService} from "../../services/rent/rent.service";
+import {StorageService} from "../../services/storage/storage.service";
+
 
 @Component({
   selector: 'app-board-user',
@@ -7,16 +11,21 @@ import {UserService} from "../../services/data/data.service";
   styleUrls: ['./board-user.component.css']
 })
 export class BoardUserComponent implements OnInit {
-  content?: string;
-  error?: boolean;
+  public NAN = "NaN";
+  public content?: string;
+  public error?: boolean;
+  public extendPrice?: any;
+  public days?: any;
+  public cars: RentedCar[] = [];
 
-  constructor(private userService: UserService) {
+  constructor(private offerService: OfferService, private rentalService: RentService, private storage: StorageService) {
   }
 
   ngOnInit(): void {
-    this.userService.getUserBoard().subscribe({
+    this.offerService.getMyCars().subscribe({
       next: data => {
-        this.content = data;
+        this.content = "OK"
+        this.cars = data;
         this.error = false;
       },
       error: err => {
@@ -29,5 +38,42 @@ export class BoardUserComponent implements OnInit {
         }
       }
     });
+  }
+
+  setExtendPrice(days: any, price: number) {
+    this.days = Number(days.value) + 1;
+    this.extendPrice = this.days * price;
+  }
+
+  initExtendPrice() {
+    this.extendPrice = this.NAN;
+  }
+
+  onExtend(carId: number) {
+    this.rentalService.extendRental(this.storage.getUser().username, carId, this.days).subscribe({
+      next: data => {
+        console.log(data);
+      },
+      error: err => {
+        console.log(err);
+      }
+    });
+    this.reloadPage();
+  }
+
+  onReturn(carId: number) {
+    this.rentalService.returnCar(this.storage.getUser().username, carId).subscribe({
+      next: data => {
+        console.log(data);
+      },
+      error: err => {
+        console.log(err);
+      }
+    });
+    this.reloadPage();
+  }
+
+  reloadPage(): void {
+    window.location.reload();
   }
 }

@@ -1,40 +1,3 @@
-.flexible {
-  display: flex;
-  justify-content: space-evenly;
-}
-
-.car-card {
-  width: 35rem;
-  border: 0;
-  background-color: #1f1d1d;
-  color: white;
-}
-
-.car-name {
-  font-family: "Sora", Sans-serif, serif;
-}
-
-.car-header {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.car-components {
-  font-family: "Sora", Sans-serif, serif;
-  display: flex;
-  justify-content: flex-start;
-  gap: 20px;
-}
-
-.car-component {
-  display: flex;
-}
-
-.component-icon {
-  font-size: 24px;
-  margin-right: 5px;
-}
-
 .date-input-container {
   font-family: "Sora", Sans-serif, serif;
   display: flex;
@@ -45,11 +8,6 @@
   display: flex;
   justify-content: flex-end;
   color: red;
-}
-
-.total-price {
-  font-family: "Sora", Sans-serif, serif;
-  color: black;
 }
 
 .show-filters {
