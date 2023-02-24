@@ -28,11 +28,9 @@ public class RentalController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean success = rentRequest.getUsername().equals(auth.getName()) && rentalService.rentCar(rentRequest);
-            if (!success) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
-            } else {
-                return new ResponseEntity<>(null, HttpStatus.CREATED);
-            }
+            return success ?
+                    ResponseEntity.status(HttpStatus.CREATED).body(new MessageResponse("Car rented!")) :
+                    ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
         } catch (ParseException e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Passed id is incorrect!"));
         }
@@ -40,25 +38,21 @@ public class RentalController {
 
     @PatchMapping("/extend/{id}/days/{days}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> extendRental(@PathVariable Long id, @PathVariable Long days) {
+    public ResponseEntity<?> extendRental(@PathVariable Long id, @PathVariable Long days) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean success = rentalService.extendRental(new ExtendRequest(auth.getName(), id, days));
-        if (!success) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
-        } else {
-            return ResponseEntity.ok().body(new MessageResponse("Rental extended!"));
-        }
+        return success ?
+                ResponseEntity.ok().body(new MessageResponse("Rental extended!")) :
+                ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
     }
 
     @DeleteMapping("/return/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> returnCar(@PathVariable Long id) {
+    public ResponseEntity<?> returnCar(@PathVariable Long id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean success = rentalService.returnCar(new ReturnRequest(auth.getName(), id));
-        if (!success) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
-        } else {
-            return ResponseEntity.ok().body(new MessageResponse("Car returned!"));
-        }
+        return success ?
+                ResponseEntity.ok().body(new MessageResponse("Car returned!")) :
+                ResponseEntity.badRequest().body(new MessageResponse("Bad request!"));
     }
 }

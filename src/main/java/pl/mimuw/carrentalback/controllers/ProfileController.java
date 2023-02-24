@@ -26,9 +26,6 @@ public class ProfileController {
     public ResponseEntity<?> profileInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = profileService.getUserInfo(auth.getName());
-        if (user == null) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found!"));
-        }
         return ResponseEntity.ok(new ProfileResponse(user));
     }
 }
