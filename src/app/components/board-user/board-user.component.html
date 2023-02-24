@@ -1,8 +1,16 @@
-<div class="plain-background p-5">
+<div class="plain-background p-4">
   <!-- Authentication alert -->
   <div class="alert alert-danger container error-section" role="alert" *ngIf="error">
     <h1>Oops!</h1>
     {{content}}. Click <a href="../login" routerLink="../login" class="alert-link">here</a> to log in into your account.
+  </div>
+  <!-- Success alert -->
+  <div class="alert alert-success container alert-dismissible fade show" role="alert" style="width: 80%"
+       *ngIf="visible">
+    <strong>Success!</strong> {{message}} Check out your profile for more information.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
   <!-- Body of the page -->
   <div class="row flexible">

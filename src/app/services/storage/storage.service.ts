@@ -3,6 +3,7 @@ import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 
 const USER_KEY = 'auth-user';
+const ALERT_KEY = 'alert-message'
 const API_URL = 'http://localhost:8080/api/profile';
 
 @Injectable({
@@ -36,5 +37,26 @@ export class StorageService {
 
   public getUserProfile(): Observable<any> {
     return this.http.get(API_URL);
+  }
+
+  public removeAlertMessage(): void {
+    window.sessionStorage.removeItem('alert-message');
+  }
+
+  public saveAlertMessage(message: string): void {
+    window.sessionStorage.setItem('alert-message', message);
+  }
+
+  public getAlertMessage(): string {
+    const message = window.sessionStorage.getItem('alert-message');
+    if (message) {
+      return message;
+    }
+    return '';
+  }
+
+  public isAlertMessage(): boolean {
+    const message = window.sessionStorage.getItem('alert-message');
+    return !!message;
   }
 }

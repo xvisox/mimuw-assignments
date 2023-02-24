@@ -17,6 +17,9 @@ export class BoardUserComponent implements OnInit {
   public extendPrice?: any;
   public days?: any;
   public cars: RentedCar[] = [];
+  // Alert messages.
+  public visible?: boolean;
+  public message?: string;
 
   constructor(private offerService: OfferService, private rentalService: RentService, private storage: StorageService) {
   }
@@ -27,6 +30,9 @@ export class BoardUserComponent implements OnInit {
         this.content = "OK"
         this.cars = data;
         this.error = false;
+        this.visible = this.storage.isAlertMessage();
+        this.message = this.storage.getAlertMessage();
+        this.storage.removeAlertMessage();
       },
       error: err => {
         console.log(err)
@@ -53,6 +59,7 @@ export class BoardUserComponent implements OnInit {
     this.rentalService.extendRental(this.storage.getUser().username, carId, this.days).subscribe({
       next: data => {
         console.log(data);
+        this.storage.saveAlertMessage("Rental extended.");
         this.reloadPage();
       },
       error: err => {
@@ -65,6 +72,7 @@ export class BoardUserComponent implements OnInit {
     this.rentalService.returnCar(this.storage.getUser().username, carId).subscribe({
       next: data => {
         console.log(data);
+        this.storage.saveAlertMessage("Car returned.");
         this.reloadPage();
       },
       error: err => {
