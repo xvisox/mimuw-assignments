@@ -27,7 +27,7 @@
 }
 
 .main-div-enhanced {
-  background-image: url('/frontend/src/assets/images/background-2.jpg');
+  background-image: url('/assets/images/background-2.jpg');
   height: calc(100vh - 56px);
   background-size: cover;
   display: flex;
