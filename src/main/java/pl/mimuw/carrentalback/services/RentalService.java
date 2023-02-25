@@ -6,7 +6,7 @@ import pl.mimuw.carrentalback.data.CarRepository;
 import pl.mimuw.carrentalback.data.UserCarRepository;
 import pl.mimuw.carrentalback.data.UserRepository;
 import pl.mimuw.carrentalback.models.Car;
-import pl.mimuw.carrentalback.models.RentedCar;
+import pl.mimuw.carrentalback.payload.response.RentedCarResponse;
 import pl.mimuw.carrentalback.models.User;
 import pl.mimuw.carrentalback.models.UserCar;
 import pl.mimuw.carrentalback.payload.request.ExtendRequest;
@@ -57,16 +57,16 @@ public class RentalService {
         return TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
     }
 
-    public List<RentedCar> getMyOffers(String username) {
+    public List<RentedCarResponse> getMyOffers(String username) {
         List<Object> result = carRepo.findAllRentedCarsByUsername(username);
 
-        List<RentedCar> cars = new ArrayList<>();
+        List<RentedCarResponse> cars = new ArrayList<>();
         for (Object o : result) {
             Object[] arr = (Object[]) o;
             Car car = (Car) arr[0];
             Date startDate = (Date) arr[1];
             Date endDate = (Date) arr[2];
-            cars.add(new RentedCar(car, startDate, endDate));
+            cars.add(new RentedCarResponse(car, startDate, endDate));
         }
         return cars;
     }

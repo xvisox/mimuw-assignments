@@ -1,10 +1,13 @@
-package pl.mimuw.carrentalback.data;
+package pl.mimuw.carrentalback.data.load;
 
 import lombok.Data;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import pl.mimuw.carrentalback.data.CarRepository;
+import pl.mimuw.carrentalback.data.RoleRepository;
+import pl.mimuw.carrentalback.data.UserRepository;
 import pl.mimuw.carrentalback.models.Car;
 import pl.mimuw.carrentalback.models.ERole;
 import pl.mimuw.carrentalback.models.Role;

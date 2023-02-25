@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pl.mimuw.carrentalback.models.Car;
-import pl.mimuw.carrentalback.models.RentedCar;
+import pl.mimuw.carrentalback.payload.response.RentedCarResponse;
 import pl.mimuw.carrentalback.services.RentalService;
 
 import java.util.List;
@@ -27,9 +27,9 @@ public class OfferController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<RentedCar>> getMyCars() {
+    public ResponseEntity<List<RentedCarResponse>> getMyCars() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        List<RentedCar> cars = rentalService.getMyOffers(auth.getName());
+        List<RentedCarResponse> cars = rentalService.getMyOffers(auth.getName());
         return ResponseEntity.ok(cars);
     }
 }
