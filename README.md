@@ -34,11 +34,22 @@ additional challenge was to secure it with JSON Web Token.
 
 ## Screenshots
 
-TODO
+
+
+https://user-images.githubusercontent.com/43937184/221375468-42615a4a-fd15-48e4-8474-1a2992bafe6d.mp4
+
+
 
 ## Usage
 
-TODO
+```bash
+cd backend
+mvn spring-boot:run # jdk 17 required; port 8080
+cd ../frontend
+npm install
+ng serve # port 4200
+```
+
 
 ## Room for Improvement
 
