@@ -1,7 +1,9 @@
-import {Car} from "../offer/car";
-
 export interface RentedCar {
-  car: Car;
+  id: number;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
   startDate: string;
   endDate: string;
 }
