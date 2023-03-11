@@ -67,12 +67,16 @@ void print_perm(int *p, size_t n) {
 }
 
 int main() {
-    CHECK_SIZE(0, seq_a);
-    CHECK_SIZE((size_t) INT_MAX + 2, seq_a);
-    CHECK_SIZE((size_t) - 2, seq_a);
-    CHECK_FALSE(seq_b);
-    CHECK_FALSE(seq_c);
-    CHECK_FALSE(seq_d);
+    if (true) {
+        CHECK_SIZE(0, seq_a);
+        CHECK_SIZE((size_t) INT_MAX + 2, seq_a);
+        CHECK_SIZE((size_t) - 2, seq_a);
+        CHECK_FALSE(seq_b);
+        CHECK_FALSE(seq_c);
+        CHECK_FALSE(seq_d);
+    }
+
+    print_perm(seq_h, SIZE(seq_h));
 
     if (false) {
         CHECK_TRUE(seq_a);
