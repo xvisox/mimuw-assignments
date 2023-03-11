@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 
 // Ten plik zawiera przykład użycia funkcji:
 bool inverse_permutation(size_t n, int *p);
@@ -56,17 +57,24 @@ static int work_space[8];
     assert(check_inverse_permutation(SIZE(P), P, work_space)); \
   } while (0)
 
-int main() {
+void print_perm(int *p, size_t n) {
+    bool xd = inverse_permutation(n, p);
+    printf("%d\n", xd);
+    for (size_t i = 0; i < n; i++) {
+        printf("%d ", p[i]);
+    }
+    printf("\n");
+}
 
+int main() {
     CHECK_SIZE(0, seq_a);
     CHECK_SIZE((size_t) INT_MAX + 2, seq_a);
     CHECK_SIZE((size_t) - 2, seq_a);
+    CHECK_FALSE(seq_b);
+    CHECK_FALSE(seq_c);
+    CHECK_FALSE(seq_d);
+
     if (false) {
-
-        CHECK_FALSE(seq_b);
-        CHECK_FALSE(seq_c);
-        CHECK_FALSE(seq_d);
-
         CHECK_TRUE(seq_a);
         CHECK_TRUE(seq_e);
         CHECK_TRUE(seq_f);
