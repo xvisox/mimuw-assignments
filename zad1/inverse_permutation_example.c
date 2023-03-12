@@ -78,6 +78,8 @@ int main() {
 
 //    print_perm(seq_h, SIZE(seq_h));
 
+//    print_perm(seq_e, SIZE(seq_e));
+
     if (true) {
         CHECK_TRUE(seq_a);
         CHECK_TRUE(seq_e);

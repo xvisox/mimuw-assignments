@@ -2,16 +2,27 @@ global inverse_permutation
 
 section .text
 
+; clear the most significant bit of each element
+clean:
+    mov r12d, 0x7fffffff        ; r12d will store the mask to clear the most significant bit
+    mov ecx, edi                ; save n in ecx
+    mov rdx, rsi                ; save pointer in rdx
+.loop_clean:
+    mov eax, dword [rdx]        ; get element
+    and eax, r12d               ; clear the most significant bit
+    mov dword [rdx], eax        ; store the element in the address
+    add rdx, 4                  ; go to next element
+    loop .loop_clean
+    ret
+
 ; rdi - n (number of elements)
 ; rsi - pointer to array of elements (ints)
 inverse_permutation:
     push rbp                    ; save rbp
     mov rbp, rsp                ; set up the stack frame
-    push r11                    ; save r11
     push r12                    ; save r12
     push r13                    ; save r13
     xor r10b, r10b              ; clear r10b, will store the return code
-    xor rax, rax                ; clear rax
 
     ; validate n
     test rdi, rdi               ; check if n is 0
@@ -43,7 +54,7 @@ inverse_permutation:
     and eax, r12d               ; clear the most significant bit
     lea r9, [rsi + 4 * rax]     ; r9 will store the address of the element
     test dword [r9], r11d       ; check if the most significant bit is set
-    jnz .clean                  ; if set, the permutation is not valid
+    jnz .clear                  ; if set, the permutation is not valid
     mov eax, dword [r9]         ; get the element p[i]
     or eax, r11d                ; set the most significant bit
     mov dword [r9], eax         ; store the element in the address
@@ -51,20 +62,8 @@ inverse_permutation:
     loop .loop_visited
 
     ; exited the loop, permutation is valid
-    mov r10b, 0x1 ; set the return to true
-
-.clean:
-    mov ecx, edi                ; save n in ecx
-    mov rdx, rsi                ; save pointer in rdx
-.loop_clean:
-    mov eax, dword [rdx]        ; get element
-    and eax, r12d               ; clear the most significant bit
-    mov dword [rdx], eax        ; store the element in the address
-    add rdx, 4                  ; go to next element
-    loop .loop_clean
-
-    test r10b, r10b             ; check if the return code is true
-    jz .end                     ; if not, return
+    mov r10b, 0x1               ; set the return to true
+    call clean                  ; clear the most significant bits
 
     ; permutation is valid, now compute the inverse
     ; ecx - i
@@ -100,21 +99,12 @@ inverse_permutation:
     cmp ecx, edi                ; check if i == n
     jne .loop_inverse           ; if not, continue the loop
 
-    ; clear the most significant bits
-    mov ecx, edi                ; save n in ecx
-    mov rdx, rsi                ; save pointer in rdx
-.loop_clear:
-    mov eax, dword [rdx]        ; get element
-    xor eax, r11d               ; clear the most significant bit
-    mov dword [rdx], eax        ; store the element in the address
-    add rdx, 4                  ; go to next element
-    loop .loop_clear
-
+.clear:
+    call clean                  ; clear the most significant bits
 .end:
     mov al, r10b                ; return the error code
     pop r13                     ; restore r13
     pop r12                     ; restore r12
-    pop r11                     ; restore r11
     mov rsp, rbp                ; restore stack pointer
     pop rbp                     ; restore rbp
     ret
