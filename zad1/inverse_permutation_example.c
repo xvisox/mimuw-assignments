@@ -76,9 +76,9 @@ int main() {
         CHECK_FALSE(seq_d);
     }
 
-    print_perm(seq_h, SIZE(seq_h));
+//    print_perm(seq_h, SIZE(seq_h));
 
-    if (false) {
+    if (true) {
         CHECK_TRUE(seq_a);
         CHECK_TRUE(seq_e);
         CHECK_TRUE(seq_f);
@@ -87,3 +87,17 @@ int main() {
     }
     return 0;
 }
+
+// for (int i = 1; i <= n; i++) {
+//        if (p[i] > 0) {
+//            int prv = i;
+//            int j = p[i];
+//            for (;j != i;) {
+//                int nxt = p[j];
+//                p[j] = -prv;
+//                prv = j;
+//                j = nxt;
+//            }
+//            p[i] = -prv;
+//        }
+//    }

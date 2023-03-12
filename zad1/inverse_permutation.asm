@@ -7,10 +7,9 @@ section .text
 inverse_permutation:
     push rbp                    ; save rbp
     mov rbp, rsp                ; set up the stack frame
-    push r9                     ; save r9
-    push r10                    ; save r10
     push r11                    ; save r11
     push r12                    ; save r12
+    push r13                    ; save r13
     xor r10b, r10b              ; clear r10b, will store the return code
     xor rax, rax                ; clear rax
 
@@ -67,15 +66,55 @@ inverse_permutation:
     test r10b, r10b             ; check if the return code is true
     jz .end                     ; if not, return
 
+    ; permutation is valid, now compute the inverse
+    ; ecx - i
+    ; r12d - j
+    ; rdx - pointer to p[i]
+    ; r11d - mask to check if the most significant bit is set
+    ; eax - next
 .inverse:
+    xor ecx, ecx                ; ecx will store i
+    mov rdx, rsi                ; save pointer in rdx
+    xor r12d, r12d              ; r12d will store j
+.loop_inverse:
+    test dword [rdx], r11d      ; check if the most significant bit is set
+    jnz .skip                   ; if set, skip the element
+    mov r13d, ecx               ; prev = i
+    mov r12d, dword [rdx]       ; j = p[i]
+.cycle:
+    cmp r12d, ecx               ; check if j == i
+    jz .end_loop                ; if so, break the loop
+    lea r9, [rsi + 4 * r12]     ; r9 will store the address of the element
+    mov eax, dword [r9]         ; next = p[j]
+    xor r13d, r11d              ; prev ^= mask
+    mov dword [r9], r13d        ; p[j] = prev
+    mov r13d, r12d              ; prev = j
+    mov r12d, eax               ; j = next
+    jmp .cycle                  ; continue the loop
+.end_loop:
+    xor r13d, r11d              ; prev ^= mask
+    mov dword [rdx], r13d       ; p[i] = prev
+.skip:
+    add rdx, 4                  ; go to next element
+    inc ecx                     ; i++
+    cmp ecx, edi                ; check if i == n
+    jne .loop_inverse           ; if not, continue the loop
 
+    ; clear the most significant bits
+    mov ecx, edi                ; save n in ecx
+    mov rdx, rsi                ; save pointer in rdx
+.loop_clear:
+    mov eax, dword [rdx]        ; get element
+    xor eax, r11d               ; clear the most significant bit
+    mov dword [rdx], eax        ; store the element in the address
+    add rdx, 4                  ; go to next element
+    loop .loop_clear
 
 .end:
     mov al, r10b                ; return the error code
+    pop r13                     ; restore r13
     pop r12                     ; restore r12
     pop r11                     ; restore r11
-    pop r10                     ; restore r10
-    pop r9                      ; restore r9
     mov rsp, rbp                ; restore stack pointer
     pop rbp                     ; restore rbp
     ret
