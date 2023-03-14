@@ -96,3 +96,7 @@ inverse_permutation:
     call clean                  ; clear the most significant bits
 .end:
     ret
+
+; rsp + 0x8 - n (number of elements)
+; zmienic na stale w kodzie
+; zmienic komenatrze do znaczacych bitow

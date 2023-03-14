@@ -1,9 +1,10 @@
 #include <assert.h>
 #include <limits.h>
 
+// To jest deklaracja pierwszej z testowanych funkcji.
 int smax(int, int);
 
-// Funkcja umax ma sygnaturę
+// Funkcja umax ma deklarację
 //  unsigned umax(unsigned, unsigned);
 // ale w testach deklarujemy ją z 64-bitowymi argumentami,
 // żeby sprawdzić, czy zostały użyte właściwe rejestry.
