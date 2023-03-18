@@ -94,7 +94,7 @@ int main() {
 //        if (p[i] > 0) {
 //            int prv = i;
 //            int j = p[i];
-//            for (;j != i;) {
+//            while (j != i) {
 //                int nxt = p[j];
 //                p[j] = -prv;
 //                prv = j;
