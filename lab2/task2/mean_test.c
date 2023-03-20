@@ -20,9 +20,9 @@ int main() {
         assert(mean(UINT64_MAX / 2 + 1, UINT64_MAX / 2 + 3) == UINT64_MAX / 2 + 2);
     }
     assert(mean(UINT64_MAX / 2 + 1, UINT64_MAX / 2 + 4) == UINT64_MAX / 2 + 2);
-//    assert(mean(UINT64_MAX / 2 + 1, UINT64_MAX / 2 - 5) == UINT64_MAX / 2 - 2);
-//    assert(mean(m, m) == m);
-//    assert(mean(m, m + 1) == m);
-//    assert(mean(m + 1, m) == m);
-//    assert(mean(m - 1, m + 1) == m);
+    assert(mean(UINT64_MAX / 2 + 1, UINT64_MAX / 2 - 5) == UINT64_MAX / 2 - 2);
+    assert(mean(m, m) == m);
+    assert(mean(m, m + 1) == m);
+    assert(mean(m + 1, m) == m);
+    assert(mean(m - 1, m + 1) == m);
 }
