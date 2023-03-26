@@ -24,17 +24,17 @@ inverse_permutation:                    ; inverses the permutation given in the 
 .loop_bounds:
         lea     rdx, [rsi + 4 * rcx - 4]; r8 will store the address of the (n-i)-th element
         cmp     dword [rdx], edi        ; check if element is greater than or equal to n
-        jae     .end
+        jae     .end                    ; use unsigned comparison to check both bounds at once (>= 0 and < n)
         loop    .loop_bounds
 
                                         ; all elements are valid, now check if they are unique
                                         ; the most significant bit will be used to check if the element was visited
         mov     ecx, edi                ; save n in ecx
-        mov     r11d, SET_MASK          ; r11d will store the most significant bit
+        mov     r11d, SET_MASK          ; r11d will store mask to set the most significant bit
 .loop_visited:
         lea     rdx, [rsi + 4 * rcx - 4]; rdx will store the address of the (n-i)-th element
         mov     r10d, dword [rdx]       ; get current element, lets call it p[i]
-        and     r10d, CLEAR_MASK        ; clear the most significant bit
+        and     r10d, CLEAR_MASK        ; clear the most significant bit, so we can use it as an index
         lea     r9, [rsi + 4 * r10]     ; r9 will store the address of the element under the index p[i] i.e. p[p[i]]
         test    dword [r9], r11d        ; check if the element was visited
         jnz     .clear                  ; if set, the permutation is not valid
@@ -44,6 +44,8 @@ inverse_permutation:                    ; inverses the permutation given in the 
         loop    .loop_visited
 
                                         ; all elements are unique, the permutation is valid
+                                        ; additionally, all elements are now marked as visited
+                                        ; now we will mark visited elements by clearing the most significant bits
                                         ; compute the inverse permutation
                                         ; r11d - mask to check if the element was visited
                                         ; eax  - auxiliary variable to store the next element
@@ -53,7 +55,7 @@ inverse_permutation:                    ; inverses the permutation given in the 
 .loop_inverse:
         lea     rdx, [rsi + 4 * rcx]    ; rdx will store the address of the i-th element
         test    dword [rdx], r11d       ; check if the element was already visited
-        jz     .skip                    ; if set, skip the element
+        jz     .skip                    ; if not set, skip the element
                                         ; otherwise, we start the inner loop to compute the inverse
         mov     r10d, ecx               ; store the previous element i.e. prev = i
         mov     r8d, dword [rdx]        ; store the index that will be changed i.e. j = p[i]
