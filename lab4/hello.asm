@@ -1,8 +1,6 @@
 global _start
-
-SYS_WRITE equ 1
-SYS_EXIT  equ 60
-STDOUT    equ 1
+%include "macro_print.asm"
+%include "call_consts.asm"
 
 section .rodata
 
@@ -12,6 +10,8 @@ HELLO_LEN equ $ - hello
 section .text
 
 _start:
+    mov rax, 0x2115
+    print "rax = ", rax
     mov eax, SYS_WRITE
     mov edi, STDOUT
     mov esi, hello

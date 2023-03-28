@@ -5,4 +5,4 @@ ld --fatal-warnings -o hello hello.o
 
 ./hello
 
-# rm hello.o hello
+rm hello.o hello
