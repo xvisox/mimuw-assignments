@@ -1,6 +1,6 @@
 global inverse_permutation
 
-SET_MASK        equ 0x80000000
+MAX_N           equ 0x80000000
 CLEAR_MASK      equ 0x7fffffff
 
 section .text
@@ -12,11 +12,11 @@ inverse_permutation:                    ; inverses the permutation given in the 
                                         ;            1 otherwise and in that case the inverse permutation
                                         ;            is stored in the array initially given in rsi
                                         ; [modified] - r8, r9, r10, r11, rdx, rcx, rax
-        xor     eax, eax                ; set the return to false
+        xor     al, al                  ; set the return to false
         test    rdi, rdi                ; check if n is 0
         jz      .end
-        mov     r8, (1 << 31)
-        cmp     rdi, r8
+        mov     r11, MAX_N              ; r11 will store the maximum n value
+        cmp     rdi, r11
         ja      .end                    ; check if n is greater than 2^31
 
                                         ; validate permutation in two steps
@@ -29,8 +29,8 @@ inverse_permutation:                    ; inverses the permutation given in the 
 
                                         ; all elements are valid, now check if they are unique
                                         ; the most significant bit will be used to check if the element was visited
+                                        ; r11d stores the mask to check if the element was visited
         mov     ecx, edi                ; save n in ecx
-        mov     r11d, SET_MASK          ; r11d will store mask to set the most significant bit
 .loop_visited:
         lea     rdx, [rsi + 4 * rcx - 4]; rdx will store the address of the (n-i)-th element
         mov     r10d, dword [rdx]       ; get current element, lets call it p[i]
@@ -38,9 +38,7 @@ inverse_permutation:                    ; inverses the permutation given in the 
         lea     r9, [rsi + 4 * r10]     ; r9 will store the address of the element under the index p[i] i.e. p[p[i]]
         test    dword [r9], r11d        ; check if the element was visited
         jnz     .clear                  ; if set, the permutation is not valid
-        mov     r10d, dword [r9]        ; get the element p[p[i]]
-        or      r10d, r11d              ; mark the element as visited (by setting the most significant bit)
-        mov     dword [r9], r10d        ; store the element in the address
+        or      dword [r9], r11d        ; mark the element as visited (by setting the most significant bit)
         loop    .loop_visited
 
                                         ; all elements are unique, the permutation is valid
@@ -86,9 +84,7 @@ inverse_permutation:                    ; inverses the permutation given in the 
         mov     ecx, edi                ; save n in ecx
 .loop_clear:
         lea     rdx, [rsi + 4 * rcx - 4]; rdx will store the address of the (n-i)-th element
-        mov     r10d, dword [rdx]       ; get element
-        and     r10d, CLEAR_MASK        ; clear the most significant bit of it
-        mov     dword [rdx], r10d       ; store the element back in the address
+        and     dword [rdx], CLEAR_MASK ; clear the most significant bit of it
         loop    .loop_clear
 .end:
         ret
