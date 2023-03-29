@@ -22,7 +22,7 @@ inverse_permutation:                    ; inverses the permutation given in the 
                                         ; validate permutation in two steps
         mov     ecx, edi                ; save n in ecx
 .loop_bounds:
-        lea     rdx, [rsi + 4 * rcx - 4]; r8 will store the address of the (n-i)-th element
+        lea     rdx, [rsi + 4 * rcx - 4]; rdx will store the address of the (n-i)-th element
         cmp     dword [rdx], edi        ; check if element is greater than or equal to n
         jae     .end                    ; use unsigned comparison to check both bounds at once (>= 0 and < n)
         loop    .loop_bounds
