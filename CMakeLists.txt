@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.1)
-project(RADIO C)
+project(SIKRadio)
 
-set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
+set(PROJECT_HEADERS utils/err.h utils/const.h utils/types.h utils/common.h)
 
-set(PROJECT_HEADERS
-        err.h)
+find_package(Boost COMPONENTS REQUIRED program_options log)
+include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(sikradio-sender sikradio-sender.c sender_utility.h ${PROJECT_HEADERS})
-add_executable(sikradio-receiver sikradio-receiver.c ${PROJECT_HEADERS})
+# Sender executable file.
+file(GLOB SENDER_SRC "sender/*.h" "sender/*.cpp")
+file(GLOB SENDER_MAIN "sikradio-sender.cpp")
+add_executable(sikradio-sender ${SENDER_MAIN} ${SENDER_SRC} ${PROJECT_HEADERS})
+target_link_libraries(sikradio-sender ${Boost_LIBRARIES})
+# Receiver executable file.
+file(GLOB RECEIVER_SRC "receiver/*.h" "receiver/*.cpp")
+file(GLOB RECEIVER_MAIN "sikradio-receiver.cpp")
+add_executable(sikradio-receiver ${RECEIVER_MAIN} ${RECEIVER_SRC} ${PROJECT_HEADERS})
