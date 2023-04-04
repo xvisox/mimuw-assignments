@@ -1,8 +1,8 @@
 #include <ctime>
 #include <iostream>
 
-#include "sender/sender_utility.h"
-#include "sender/sender_params.h"
+#include "sender/sender_utility.hpp"
+#include "sender/sender_params.hpp"
 #include "utils/common.h"
 
 struct AudioPacket *packet = nullptr;

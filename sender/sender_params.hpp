@@ -1,8 +1,19 @@
-#include "sender_params.h"
-#include "../utils/const.h"
-#include "../utils/err.h"
+#ifndef SENDER_PARAMS_HPP
+#define SENDER_PARAMS_HPP
+
+#include <string>
 #include <boost/program_options.hpp>
 #include <iostream>
+#include "../utils/types.h"
+#include "../utils/const.h"
+#include "../utils/err.h"
+
+struct SenderParameters {
+    std::string dest_addr;
+    std::string name;
+    port_t data_port;
+    packet_size_t psize;
+};
 
 namespace po = boost::program_options;
 
@@ -22,7 +33,7 @@ SenderParameters parse(int argc, const char **argv) {
             ("packet-size,p", po::value<packet_size_t>()->default_value(PSIZE), "set the packet size")
             ("name,n", po::value<std::string>()->default_value(DEFAULT_NAME), "set the name of the sender");
 
-    SenderParameters params;
+    SenderParameters params{};
     try {
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -44,3 +55,5 @@ SenderParameters parse(int argc, const char **argv) {
     validate(params);
     return params;
 }
+
+#endif // SENDER_PARAMS_HPP

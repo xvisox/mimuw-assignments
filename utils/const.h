@@ -5,5 +5,6 @@
 #define PSIZE 512
 #define BSIZE 65536
 #define DEFAULT_NAME "Nienazwany Nadajnik"
+#define NO_FLAGS 0
 
 #endif // CONST_H

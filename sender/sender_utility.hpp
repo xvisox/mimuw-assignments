@@ -1,5 +1,5 @@
-#ifndef SENDER_UTILITY_H
-#define SENDER_UTILITY_H
+#ifndef SENDER_UTILITY_HPP
+#define SENDER_UTILITY_HPP
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,13 +37,12 @@ inline static struct sockaddr_in get_send_address(char const *host, port_t port)
 inline static void send_packet(const struct sockaddr_in *send_address, int socket_fd,
                                struct AudioPacket *packet, size_t packet_size) {
     auto address_length = (socklen_t) sizeof(*send_address);
-    int flags = 0;
     errno = 0;
-    ssize_t sent_length = sendto(socket_fd, packet, packet_size, flags,
+    ssize_t sent_length = sendto(socket_fd, packet, packet_size, NO_FLAGS,
                                  (struct sockaddr *) send_address, address_length);
 
     if (sent_length < 0) PRINT_ERRNO();
     ENSURE(sent_length == packet_size);
 }
 
-#endif // SENDER_UTILITY_H
+#endif // SENDER_UTILITY_HPP
