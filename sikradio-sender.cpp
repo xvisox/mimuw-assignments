@@ -3,9 +3,9 @@
 
 #include "sender/sender_utility.hpp"
 #include "sender/sender_params.hpp"
-#include "utils/common.h"
 
 struct AudioPacket *packet = nullptr;
+int socket_fd = -1;
 
 void init_packet(size_t packet_size) {
     // Allocate memory for the audio data.
@@ -15,12 +15,13 @@ void init_packet(size_t packet_size) {
     packet->session_id = time(nullptr);
 }
 
-void clean_packet() {
+void clean() {
     free(packet);
+    CHECK_ERRNO(close(socket_fd));
 }
 
 int main(int argc, const char **argv) {
-    atexit(clean_packet);
+    atexit(clean);
     SenderParameters params = parse(argc, argv);
 
     // FIXME: Remove this, only for debugging purposes.
@@ -31,7 +32,7 @@ int main(int argc, const char **argv) {
 
     // Get the address of the receiver and create a socket.
     struct sockaddr_in address = get_send_address(params.dest_addr.c_str(), params.data_port);
-    int socket_fd = open_socket();
+    socket_fd = open_socket();
 
     // Send the audio data.
     packet_size_t psize = params.psize;
@@ -48,7 +49,6 @@ int main(int argc, const char **argv) {
         ENSURE(psize == read_bytes);
         packet->first_byte_num += psize;
     }
-    CHECK_ERRNO(close(socket_fd));
 
     return 0;
 }

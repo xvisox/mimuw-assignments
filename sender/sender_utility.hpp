@@ -14,6 +14,13 @@
 #include "../utils/const.h"
 #include "../utils/audio_packet.h"
 
+inline static int open_socket() {
+    int socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (socket_fd < 0) PRINT_ERRNO();
+
+    return socket_fd;
+}
+
 inline static struct sockaddr_in get_send_address(char const *host, port_t port) {
     struct addrinfo hints{};
     memset(&hints, 0, sizeof(struct addrinfo));
