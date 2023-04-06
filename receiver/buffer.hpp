@@ -75,21 +75,22 @@ public:
         }
 
         // Convert the audio data to a vector of bytes.
-        std::optional<byte_vector_t> packet_data;
+        byte_vector_t packet_data;
         for (size_t i = 0; i < audio_data_size; i++) {
-            packet_data->push_back(packet->audio_data[i]);
+            packet_data.push_back(packet->audio_data[i]);
         }
+        std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
 
         if (packet->first_byte_num % session.packet_size != 0) {
             // TODO: What to do in this case?
             fatal("The first byte number is not a multiple of the packet size");
         } else if (packets.empty() || packet->first_byte_num > packets.back()) {
             // Add the packet to the end of the buffer.
-            append(packet_data, packet->first_byte_num);
+            append(packet_data_opt, packet->first_byte_num);
         } else if (packets.front() <= packet->first_byte_num && packet->first_byte_num <= packets.back()) {
             // Add missing packet to the buffer.
             size_t position = (packet->first_byte_num - packets.front()) / session.packet_size;
-            insert(packet_data, position);
+            insert(packet_data_opt, position);
         }
         // Print missing packets before new packet.
         packet_id_t n = (packet->first_byte_num - packets.front()) / session.packet_size;

@@ -48,8 +48,8 @@ public:
             read_length = read_message(socket_fd, &client_address, buffer, BSIZE);
             init_packet(read_length);
             // FIXME: Remove this, only for debugging purposes.
-            std::cout << "Received packet: " << packet->session_id << " " << packet->first_byte_num << std::endl;
-            std::cout << "Data: " << packet->audio_data << std::endl;
+            std::cerr << "Received packet: " << packet->session_id << " " << packet->first_byte_num
+                      << " Data: " << packet->audio_data << std::endl;
 
             // Add the packet to the buffer.
             packets_buffer.add_packet(packet, read_length);
@@ -61,7 +61,7 @@ public:
             // Get the packet from the buffer.
             try {
                 auto data = packets_buffer.read();
-                std::cout << std::string(data.begin(), data.end()) << std::endl;
+                std::cout << "Raw data: " << std::string(data.begin(), data.end()) << std::endl;
             } catch (std::exception &e) {
                 // Buffer is empty, wait for a while.
             }
