@@ -23,6 +23,8 @@ private:
         packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
         memcpy(packet, buffer, packet_size);
+        packet->first_byte_num = be64toh(packet->first_byte_num);
+        packet->session_id = be64toh(packet->session_id);
     }
 
 public:

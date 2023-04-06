@@ -18,7 +18,7 @@ private:
         packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
         // Set the session ID.
-        packet->session_id = time(nullptr);
+        packet->session_id = htobe64(time(nullptr));
     }
 
 public:
@@ -38,16 +38,19 @@ public:
         packet_size_t psize = params.psize;
         size_t packet_size = sizeof(struct AudioPacket) + psize;
         init_packet(packet_size);
+        packet_id_t byte_num = 0;
         while (!feof(stdin)) {
             // Read the audio data.
             size_t read_bytes = fread(packet->audio_data, sizeof(byte_t), psize, stdin);
             if (read_bytes < psize) {
                 break;
             }
-            // Set the first byte number.
+            // Send the audio data.
             send_packet(&address, socket_fd, packet, packet_size);
             ENSURE(psize == read_bytes);
-            packet->first_byte_num += psize;
+            // Update the packet.
+            byte_num += psize;
+            packet->first_byte_num = htobe64(byte_num);
         }
     }
 };

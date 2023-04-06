@@ -17,7 +17,11 @@ private:
     packet_id_t BYTE_0;         // First byte number received.
 
     void setup_if_necessary(struct AudioPacket *packet, size_t audio_data_size) {
-        if (session.is_initialized()) return;
+        if (session.session_id < packet->session_id) {
+            clear();
+        } else if (session.is_initialized()) {
+            return;
+        }
         // Initialize the session.
         session.state = SessionState::IN_PROGRESS;
         session.session_id = packet->session_id;
@@ -25,6 +29,13 @@ private:
         // Initialize the buffer.
         BYTE_0 = packet->first_byte_num;
         capacity = (buffer_size / session.packet_size);
+    }
+
+    void clear() {
+        data.clear();
+        packets.clear();
+        BYTE_0 = 0;
+        capacity = 0;
     }
 
     bool is_ready_to_print(struct AudioPacket *last_packet) const {
@@ -70,6 +81,9 @@ public:
         std::lock_guard<std::mutex> lock(mutex);
         size_t audio_data_size = bytes - sizeof(struct AudioPacket);
         setup_if_necessary(packet, audio_data_size);
+        // Ignore packets from previous sessions.
+        if (packet->session_id != session.session_id) return;
+
         if (is_ready_to_print(packet)) {
             session.state = SessionState::READY;
         }
