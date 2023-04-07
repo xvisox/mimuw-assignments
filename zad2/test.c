@@ -2,9 +2,10 @@
 #include <inttypes.h>
 #include <pthread.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-#define N 1
+#define N 2
 
 // To jest deklaracja funkcji, którą trzeba zaimplementować.
 uint64_t core(uint64_t n, char const *p);
@@ -22,13 +23,61 @@ void put_value(uint64_t n, uint64_t v) {
     assert(v == n + 4);
 }
 
-void test()
-{
-    assert(core(0, "329*") == 112);
+// To jest struktura służąca do przekazania do wątku parametrów wywołania
+// rdzenia i zapisania wyniku obliczenia.
+typedef struct {
+    uint64_t n, result;
+    char const *p;
+} core_call_t;
+
+// Wszystkie rdzenie powinny wystartować równocześnie.
+static volatile int wait = 0;
+
+// Ta funkcja uruchamia obliczenie na jednym rdzeniu.
+static void *core_thread(void *params) {
+    core_call_t *cp = (core_call_t*)params;
+    // Wszystkie rdzenie powinny wystartować równocześnie.
+    while (wait == 0);
+
+    cp->result = core(cp->n, cp->p);
+
+    return NULL;
+}
+
+void test() {
+    assert((long long) core(0, "34E-*") == -12); // E test
+    assert(core(0, "3B2229") == 9);
+    assert(core(0, "G") == 1);
+    assert(core(0, "4P1") == 1);
 }
 
 int main() {
-    uint64_t res = core(0, "29*");
-    printf("%lu\n", res);
+    test();
+
+    static pthread_t tid[N];
+    static core_call_t params[N];
+    static const char *computation[N] = {
+            "91S1S1S1S1S",
+            "60S0S0S0S0S"
+    };
+    static const uint64_t result[N] = {6, 9};
+
+    for (size_t n = 0; n < N; ++n) {
+        params[n].n = n;
+        params[n].result = 0;
+        params[n].p = computation[n];
+    }
+
+    for (size_t n = 0; n < N; ++n)
+        assert(0 == pthread_create(&tid[n], NULL, &core_thread, (void *) &params[n]));
+
+    wait = 1; // Wystartuj rdzenie.
+
+    for (size_t n = 0; n < N; ++n)
+        assert(0 == pthread_join(tid[n], NULL));
+
+    for (size_t n = 0; n < N; ++n)
+        assert(params[n].result == result[n]);
+
     return 0;
 }
