@@ -39,6 +39,7 @@ core:
     ; add the top two numbers on stack
     pop r8
     add [rsp], r8
+    jmp .switch_end
 .multiply:
     cmp al, '*'
     jnz .negate
@@ -46,11 +47,13 @@ core:
     pop rax
     imul qword [rsp]
     mov [rsp], rax
+    jmp .switch_end
 .negate:
     cmp al, '-'
     jnz .number
     ; negate the top number on stack
     neg qword [rsp]
+    jmp .switch_end
 .number:
     cmp al, '0'
     jb .core_identifier
@@ -59,32 +62,42 @@ core:
     ; push number
     sub al, '0'
     push rax
+    jmp .switch_end
 .core_identifier:
     cmp al, 'n'
     jnz .move
     ; push core identifier
     push r12
+    jmp .switch_end
 .move:
     cmp al, 'B'
     jnz .abandon
     ; move the pointer by a value from the top of the stack
     pop r8
+    mov rax, [rsp]
+    test rax, rax
+    jz  .switch_end
+
     cmp r8, 0
-    jge .positive
+    jg  .positive
+    neg r8
     sub r13, r8
     jmp .switch_end
 .positive:
     add r13, r8
+    jmp .switch_end
 .abandon:
     cmp al, 'C'
     jnz .duplicate
     ; abandon the top value from the stack
     pop r8
+    jmp .switch_end
 .duplicate:
     cmp al, 'D'
     jnz .swap
     ; duplicate the top value of the stack
     push qword [rsp]
+    jmp .switch_end
 .swap:
     cmp al, 'E'
     jnz .call_get
@@ -92,18 +105,21 @@ core:
     pop r8
     xchg [rsp], r8
     push r8
+    jmp .switch_end
 .call_get:
     cmp al, 'G'
     jnz .call_put
     ; call get_value
     call_func_with_stack_alignment get_value
     push rax
+    jmp .switch_end
 .call_put:
     cmp al, 'P'
     jnz .synchronize
     ; call put_value
     pop rsi
     call_func_with_stack_alignment put_value
+    jmp .switch_end
 .synchronize:
     cmp al, 'S'
     jnz .switch_end

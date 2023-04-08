@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 #include <stddef.h>
+#include <stdio.h>
 
 // Ustalamy liczbę rdzeni.
 #define N 2
@@ -66,6 +67,8 @@ int main() {
   for (size_t n = 0; n < N; ++n)
     assert(0 == pthread_join(tid[n], NULL));
 
-  for (size_t n = 0; n < N; ++n)
-    assert(params[n].result == result[n]);
+  for (size_t n = 0; n < N; ++n) {
+      printf("Result: %lu\n", params[n].result);
+      assert(params[n].result == result[n]);
+  }
 }

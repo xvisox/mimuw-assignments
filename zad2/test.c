@@ -14,7 +14,7 @@ uint64_t core(uint64_t n, char const *p);
 // Tę funkcję woła rdzeń.
 uint64_t get_value(uint64_t n) {
     assert(n < N);
-    return n + 1;
+    return 2115;
 }
 
 // Tę funkcję woła rdzeń.
@@ -35,7 +35,7 @@ static volatile int wait = 0;
 
 // Ta funkcja uruchamia obliczenie na jednym rdzeniu.
 static void *core_thread(void *params) {
-    core_call_t *cp = (core_call_t*)params;
+    core_call_t *cp = (core_call_t *) params;
     // Wszystkie rdzenie powinny wystartować równocześnie.
     while (wait == 0);
 
@@ -47,8 +47,8 @@ static void *core_thread(void *params) {
 void test() {
     assert((long long) core(0, "34E-*") == -12); // E test
     assert(core(0, "3B2229") == 9);
-    assert(core(0, "G") == 1);
     assert(core(0, "4P1") == 1);
+    assert((long long) core(0, "G0E-") == -2115);
 }
 
 int main() {
@@ -57,10 +57,10 @@ int main() {
     static pthread_t tid[N];
     static core_call_t params[N];
     static const char *computation[N] = {
-            "91S1S1S1S1S",
-            "60S0S0S0S0S"
+            "G1S1S1S1S1S",
+            "n0S0S0S0S0S"
     };
-    static const uint64_t result[N] = {6, 9};
+    static const uint64_t result[N] = {1, 2115};
 
     for (size_t n = 0; n < N; ++n) {
         params[n].n = n;
