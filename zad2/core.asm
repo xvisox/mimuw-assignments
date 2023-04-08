@@ -31,7 +31,6 @@ core:
 
     ; loop through the string
 .loop:
-    xor rax, rax
     mov al, [r13]
 .add:
     cmp al, '+'
@@ -39,7 +38,7 @@ core:
     ; add the top two numbers on stack
     pop r8
     add [rsp], r8
-    jmp .switch_end
+    jmp .end
 .multiply:
     cmp al, '*'
     jnz .negate
@@ -47,13 +46,13 @@ core:
     pop rax
     imul qword [rsp]
     mov [rsp], rax
-    jmp .switch_end
+    jmp .end
 .negate:
     cmp al, '-'
     jnz .number
     ; negate the top number on stack
     neg qword [rsp]
-    jmp .switch_end
+    jmp .end
 .number:
     cmp al, '0'
     jb .core_identifier
@@ -61,43 +60,45 @@ core:
     ja .core_identifier
     ; push number
     sub al, '0'
-    push rax
-    jmp .switch_end
+    movzx r8, al
+    push r8
+    jmp .end
 .core_identifier:
     cmp al, 'n'
     jnz .move
     ; push core identifier
     push r12
-    jmp .switch_end
+    jmp .end
 .move:
     cmp al, 'B'
     jnz .abandon
     ; move the pointer by a value from the top of the stack
     pop r8
-    mov rax, [rsp]
-    test rax, rax
-    jz  .switch_end
+    cmp qword [rsp], 0
+    jz  .end
 
     cmp r8, 0
     jg  .positive
+
+.negative:
     neg r8
     sub r13, r8
-    jmp .switch_end
+    jmp .end
 .positive:
     add r13, r8
-    jmp .switch_end
+    jmp .end
 .abandon:
     cmp al, 'C'
     jnz .duplicate
     ; abandon the top value from the stack
     pop r8
-    jmp .switch_end
+    jmp .end
 .duplicate:
     cmp al, 'D'
     jnz .swap
     ; duplicate the top value of the stack
     push qword [rsp]
-    jmp .switch_end
+    jmp .end
 .swap:
     cmp al, 'E'
     jnz .call_get
@@ -105,24 +106,24 @@ core:
     pop r8
     xchg [rsp], r8
     push r8
-    jmp .switch_end
+    jmp .end
 .call_get:
     cmp al, 'G'
     jnz .call_put
     ; call get_value
     call_func_with_stack_alignment get_value
     push rax
-    jmp .switch_end
+    jmp .end
 .call_put:
     cmp al, 'P'
     jnz .synchronize
     ; call put_value
     pop rsi
     call_func_with_stack_alignment put_value
-    jmp .switch_end
+    jmp .end
 .synchronize:
     cmp al, 'S'
-    jnz .switch_end
+    jnz .end
     ; synchronize two cores and swap their top values
     pop r8                      ; get m from the stack
     mov rax, [rsp]              ; get the value to offer
@@ -131,27 +132,27 @@ core:
     mov [rsi + 8 * r12], rax    ; set the value to offer
     mov [rdi + 8 * r12], r8     ; set the lock to acquire
     lea rdx, [rdi + 8 * r8]     ; get the address of spin_lock[m]
-    mov rcx, -1                 ; closed lock
 .busy_wait:
     mov rax, r12                ; open lock we want to acquire
-    lock cmpxchg [rdx], rcx
+    lock cmpxchg [rdx], rax
     jnz .busy_wait
     ; we acquired the lock
     mov rax, [rsi + 8 * r8]     ; get the value to swap
     mov [rsp], rax              ; swap the values
+    mov qword [rdx], -1         ; release the lock
 
-.busier_wait:
+.wait:
     cmp qword [rdi + 8 * r12], -1
-    jnz .busier_wait
+    jnz .wait
 
-.switch_end:
+.end:
     ; increment pointer
     inc r13
     ; check if we reached the end of the string
     cmp byte [r13], 0
     jnz .loop
 
-.end:
+.return:
     ; return the top value on stack
     pop rax
     mov rsp, r14
