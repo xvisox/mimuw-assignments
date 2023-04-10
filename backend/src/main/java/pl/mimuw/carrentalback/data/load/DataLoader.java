@@ -20,7 +20,7 @@ public class DataLoader implements ApplicationRunner {
     private final RoleRepository roleRepo;
     private final UserRepository userRepo;
     private final PasswordEncoder encoder;
-    private final boolean load = false;
+    private final boolean load = true;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {

@@ -23,6 +23,7 @@ additional challenge was to secure it with JSON Web Token.
 - Spring Boot - version 3.0.2
 - Bootstrap - version 5.3.0
 - MySQL with Spring Data JPA - version 8.0
+- Docker - version 23.0.3
 
 ## Features
 
@@ -43,11 +44,7 @@ https://user-images.githubusercontent.com/43937184/221375468-42615a4a-fd15-48e4-
 ## Usage
 
 ```bash
-cd backend
-mvn spring-boot:run # jdk 17 required; port 8080
-cd ../frontend
-npm install
-ng serve # port 4200
+docker-compose up --detach
 ```
 
 
