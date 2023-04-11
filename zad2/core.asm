@@ -6,12 +6,11 @@ extern put_value
 
 %macro CALL_WITH_STACK_ALIGN 1          ; calls a function with aligned stack
                                         ; [%1] - function to call
-    mov rdi, r12                        ; pass core identifier
-    mov r15, rsp                        ; get the current stack pointer
-    and r15, 0b1111                     ; get the last 4 bits
-    sub rsp, r15                        ; align the stack
-    call %1
-    add rsp, r15                        ; restore the stack pointer
+        mov     rdi, r12                ; pass core identifier
+        mov     r15, rsp                ; get the current stack pointer
+        and     spl, 0xf0               ; align the stack pointer
+        call    %1
+        mov     rsp, r15                ; restore the stack pointer
 %endmacro
 
 section .data
@@ -47,7 +46,7 @@ core:                                   ; simulates one core of a distributed st
                                         ; add the two values from the top of the stack
         pop     r8
         add     [rsp], r8
-        jmp     .end
+        jmp     .loop_end
 .multiply:
         cmp     al, '*'
         jnz     .negate
@@ -55,59 +54,40 @@ core:                                   ; simulates one core of a distributed st
         pop     rax
         imul    qword [rsp]
         mov     [rsp], rax
-        jmp     .end
+        jmp     .loop_end
 .negate:
         cmp     al, '-'
-        jnz     .number
+        jnz     .core_identifier
                                         ; negate the value at the top of the stack
         neg     qword [rsp]
-        jmp     .end
-.number:
-        cmp     al, '0'
-        jb      .core_identifier
-        cmp     al, '9'
-        ja      .core_identifier
-                                        ; push number from the string
-        sub     al, '0'
-        movzx   r8, al
-        push    r8
-        jmp     .end
+        jmp     .loop_end
 .core_identifier:
         cmp     al, 'n'
         jnz     .move
                                         ; push core identifier
         push    r12
-        jmp     .end
+        jmp     .loop_end
 .move:
         cmp     al, 'B'
         jnz     .abandon
                                         ; move the pointer by a value from the top of the stack
         pop     r8
         cmp     qword [rsp], 0
-        jz      .end
-                                        ; we need to check if we should move forward or backward
-        cmp     r8, 0
-        jg      .positive
-
-.negative:
-        neg     r8
-        sub     r13, r8
-        jmp     .end
-.positive:
+        jz      .loop_end
         add     r13, r8
-        jmp     .end
+        jmp     .loop_end
 .abandon:
         cmp     al, 'C'
         jnz     .duplicate
                                         ; abandon the value from the top of the stack
         pop     r8
-        jmp     .end
+        jmp     .loop_end
 .duplicate:
         cmp     al, 'D'
         jnz     .swap
                                         ; duplicate the value from the top of the stack
         push    qword [rsp]
-        jmp     .end
+        jmp     .loop_end
 .swap:
         cmp     al, 'E'
         jnz     .call_get
@@ -115,24 +95,24 @@ core:                                   ; simulates one core of a distributed st
         pop     r8
         xchg    [rsp], r8
         push    r8
-        jmp     .end
+        jmp     .loop_end
 .call_get:
         cmp     al, 'G'
         jnz     .call_put
                                         ; call get_value function
         CALL_WITH_STACK_ALIGN get_value ; call function with aligned stack
         push    rax                     ; push the value returned by get_value
-        jmp     .end
+        jmp     .loop_end
 .call_put:
         cmp     al, 'P'
         jnz     .synchronize
                                         ; call put_value function
         pop     rsi                     ; get the value to put
         CALL_WITH_STACK_ALIGN put_value ; call function with aligned stack
-        jmp     .end
+        jmp     .loop_end
 .synchronize:
         cmp     al, 'S'
-        jnz     .end
+        jnz     .number
                                         ; synchronize two cores and then swap
                                         ; their values from the top
         pop     r8                      ; get value 'm' from the stack
@@ -162,8 +142,15 @@ core:                                   ; simulates one core of a distributed st
 .wait:
         cmp     qword [rdx], -1         ; check if the core 'm' has already taken our value
         jnz     .wait
+        jmp     .loop_end
 
-.end:
+.number:
+                                        ; push number from the string
+        sub     al, '0'
+        movzx   r8, al
+        push    r8
+
+.loop_end:
         inc     r13                     ; move to the next operation
         cmp     byte [r13], 0           ; check if we reached the end of the string
         jnz     .loop
