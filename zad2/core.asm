@@ -4,19 +4,25 @@ global core
 extern get_value
 extern put_value
 
+ALIGN_SPL       equ 0xf0
+
 %macro CALL_WITH_STACK_ALIGN 1              ; calls a function with aligned stack
                                             ; [%1] - function to call
-        mov     rdi, rbx                    ; pass core identifier
-        mov     r13, rsp                    ; get the current stack pointer
-        and     spl, 0xf0                   ; align the stack pointer
+        push    rdi                         ; save rdi register (core identifier)
+        push    rbp                         ; save rbp register (stack pointer)
+        mov     rbp, rsp                    ; get the current stack pointer
+        and     spl, ALIGN_SPL              ; align the stack pointer
         call    %1
-        mov     rsp, r13                    ; restore the stack pointer
+        mov     rsp, rbp                    ; restore the stack pointer
+        pop     rbp                         ; restore rbp register
+        pop     rdi                         ; restore rdi register
 %endmacro
 
 section .data
 
 spin_lock:      times N dq -1               ; the identifier of the core that certain core is waiting for
                                             ; i.e. core i wants to exchange values with core spin_lock[i]
+                                            ; -1 means that the core is not waiting for any other core
 value:          times N dq 0                ; the value that certain core is offering to exchange
 
 section .text
@@ -25,22 +31,19 @@ core:                                       ; simulates one core of a distribute
                                             ; rdi - core identifier
                                             ; rsi - pointer to string of operations to perform
                                             ; [return] - the value from the top of the stack
-                                            ; [modified] - rax, rdi, rsi, rdx, rcx
+                                            ; [modified] - rax, rsi, rdx, rcx, r8, r9
 
-                                            ; function calls can change rdi and rsi registers so we need to
-                                            ; save their values in the registers that can't be changed
-        push    rbx                         ; rbx will store core identifier
-        push    rbp                         ; rbp will store pointer to string of operations to perform
-        push    r12                         ; r12 will store pointer to stack
-        push    r13                         ; r13 will store the mask to align the stack
-        mov     rbx, rdi
-        mov     rbp, rsi
-        mov     r12, rsp
+                                            ; function call can change rsi register so we need to
+                                            ; save its value to the 'safe' register rbx
+        push    rbx                         ; rbx will store pointer to string of operations to perform
+        push    rbp                         ; rbp will store pointer to stack
+        mov     rbx, rsi
+        mov     rbp, rsp
 
                                             ; loop through the string of operations
 .loop:
         xor     eax, eax
-        mov     al, [rbp]
+        mov     al, [rbx]
 .add:
         cmp     al, '+'
         jnz     .multiply
@@ -66,7 +69,7 @@ core:                                       ; simulates one core of a distribute
         cmp     al, 'n'
         jnz     .move
                                             ; push core identifier
-        push    rbx
+        push    rdi
         jmp     .loop_end
 .move:
         cmp     al, 'B'
@@ -75,7 +78,7 @@ core:                                       ; simulates one core of a distribute
         pop     rcx
         cmp     qword [rsp], 0
         jz      .loop_end
-        add     rbp, rcx
+        add     rbx, rcx
         jmp     .loop_end
 .abandon:
         cmp     al, 'C'
@@ -121,18 +124,18 @@ core:                                       ; simulates one core of a distribute
         mov     rax, [rsp]                  ; get the value to swap with core 'm'
 
         lea     r9, [rel value]             ; get the address of values to exchange
-        mov     [r9 + 8 * rbx], rax         ; set the value[n] to the value to exchange with core 'm',
+        mov     [r9 + 8 * rdi], rax         ; set the value[n] to the value to exchange with core 'm',
                                             ; no need to atomically set the value
 
         mov     rax, rcx                    ; copy the value 'm'
         lea     r8, [rel spin_lock]         ; get the address of spin locks
-        xchg    [r8 + 8 * rbx], rax         ; set the value of spin_lock[n] to 'm' meaning that core 'n'
+        xchg    [r8 + 8 * rdi], rax         ; set the value of spin_lock[n] to 'm' meaning that core 'n'
                                             ; is waiting for core 'm' to exchange values
                                             ; we used xchg to atomically set the value
                                             ; additionally, we get the value of spin_lock[n] in rax (that is -1)
 
 .busy_wait:
-        cmp     qword [r8 + 8 * rcx], rbx   ; check if core 'm' is waiting for core 'n'
+        cmp     qword [r8 + 8 * rcx], rdi   ; check if core 'm' is waiting for core 'n'
         jnz     .busy_wait
                                             ; we acquired the lock
         mov     rdx, [r9 + 8 * rcx]         ; get the value to swap
@@ -140,7 +143,7 @@ core:                                       ; simulates one core of a distribute
         xchg    [r8 + 8 * rcx], rax         ; release the lock, set the value of spin_lock[m] to -1
 
 .wait:
-        cmp     qword [r8 + 8 * rbx],  -1   ; check if the core 'm' has already taken our value
+        cmp     qword [r8 + 8 * rdi],  -1   ; check if the core 'm' has already taken our value
         jnz     .wait
         jmp     .loop_end
 
@@ -150,16 +153,14 @@ core:                                       ; simulates one core of a distribute
         push    rax
 
 .loop_end:
-        inc     rbp                         ; move to the next operation
-        cmp     byte [rbp], 0               ; check if we reached the end of the string
+        inc     rbx                         ; move to the next operation
+        cmp     byte [rbx], 0               ; check if we reached the end of the string
         jnz     .loop
 
 .return:
         pop     rax                         ; return the value from the top of the stack
-        mov     rsp, r12
+        mov     rsp, rbp                    ; restore the stack pointer
                                             ; restore registers
-        pop     r13
-        pop     r12
         pop     rbp
         pop     rbx
         ret

@@ -18,8 +18,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c6104276-8cbe-43c2-b9f9-18b076fafabe" name="Changes" comment="First veining. (XD)">
-      <change beforePath="$PROJECT_DIR$/.idea/SO.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SO.iml" afterDir="false" />
+    <list default="true" id="c6104276-8cbe-43c2-b9f9-18b076fafabe" name="Changes" comment="Aligned comments to 45th column.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/zad2/core.asm" beforeDir="false" afterPath="$PROJECT_DIR$/zad2/core.asm" afterDir="false" />
     </list>
@@ -84,7 +83,7 @@
       <workItem from="1681199999487" duration="7266000" />
       <workItem from="1681373770227" duration="124000" />
       <workItem from="1681386509226" duration="2267000" />
-      <workItem from="1681392835941" duration="693000" />
+      <workItem from="1681392835941" duration="3306000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit 2nd assignment.">
       <created>1680872533056</created>
@@ -128,7 +127,14 @@
       <option name="project" value="LOCAL" />
       <updated>1681387259394</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Aligned comments to 45th column.">
+      <created>1681393554476</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1681393554476</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -147,7 +153,8 @@
     <MESSAGE value="Fixed spin lock." />
     <MESSAGE value="Probably finished second assignment." />
     <MESSAGE value="First veining. (XD)" />
-    <option name="LAST_COMMIT_MESSAGE" value="First veining. (XD)" />
+    <MESSAGE value="Aligned comments to 45th column." />
+    <option name="LAST_COMMIT_MESSAGE" value="Aligned comments to 45th column." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
