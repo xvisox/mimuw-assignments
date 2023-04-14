@@ -14,7 +14,7 @@ private:
 
 public:
     void push(struct AudioPacket *packet) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard <std::mutex> lock(mutex);
         // Push a copy of the packet to the queue.
         if (packet != nullptr)
             queue.push(packet);
@@ -22,16 +22,17 @@ public:
             queue.push(nullptr);
     }
 
-    struct AudioPacket *pop() {
-        std::lock_guard<std::mutex> lock(mutex);
+    struct AudioPacket *pop(bool *success) {
+        std::lock_guard <std::mutex> lock(mutex);
+        if (queue.empty()) {
+            *success = false;
+            return nullptr;
+        }
+        // Pop the packet from the queue.
         struct AudioPacket *packet = queue.front();
         queue.pop();
+        *success = true;
         return packet;
-    }
-
-    bool empty() {
-        std::lock_guard<std::mutex> lock(mutex);
-        return queue.empty();
     }
 };
 

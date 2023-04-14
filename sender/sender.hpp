@@ -64,14 +64,15 @@ public:
         address = get_send_address(params.dest_addr.c_str(), params.data_port);
         socket_fd = open_socket();
 
+        bool success = false;
         struct AudioPacket *audio_packet;
         // Send the audio data.
         while (true) {
-            if (packets_queue.empty()) continue;
-
-            // Get the next packet.
-            audio_packet = packets_queue.pop();
-            if (audio_packet == nullptr) break;
+            // Success is set to true if the queue wasn't empty.
+            audio_packet = packets_queue.pop(&success);
+            if (!success) continue;
+            // If the queue wasn't empty and the packet is null, it means that the stream has ended.
+            if (audio_packet == nullptr && success) break;
             send_packet(&address, socket_fd, audio_packet, packet_size);
             free(audio_packet);
         }
