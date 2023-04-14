@@ -64,7 +64,7 @@ public:
 
             // Print the packet.
             auto data = optional_packet.value();
-            std::cout << std::string(data.begin(), data.end()) << std::endl;
+            std::cout << std::string(data.begin(), data.end());
         }
     }
 };

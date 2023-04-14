@@ -78,8 +78,16 @@ public:
                                                  BYTE_0(0), capacity(0) {}
 
     void add_packet(struct AudioPacket *packet, size_t bytes) {
-        std::lock_guard<std::mutex> lock(mutex);
         size_t audio_data_size = bytes - sizeof(struct AudioPacket);
+        // Convert the audio data to a vector of bytes.
+        byte_vector_t packet_data;
+        for (size_t i = 0; i < audio_data_size; i++) {
+            packet_data.push_back(packet->audio_data[i]);
+        }
+        std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
+
+        // Add the packet to the buffer.
+        std::lock_guard<std::mutex> lock(mutex);
         setup_if_necessary(packet, audio_data_size);
         // Ignore packets from previous sessions.
         if (packet->session_id != session.session_id) return;
@@ -87,13 +95,6 @@ public:
         if (is_ready_to_print(packet)) {
             session.state = SessionState::READY;
         }
-
-        // Convert the audio data to a vector of bytes.
-        byte_vector_t packet_data;
-        for (size_t i = 0; i < audio_data_size; i++) {
-            packet_data.push_back(packet->audio_data[i]);
-        }
-        std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
 
         if (packet->first_byte_num % session.packet_size != 0) {
             // Probably will never happen.
@@ -119,7 +120,7 @@ public:
         if (session.state != SessionState::READY || data.empty() || !data.front().has_value())
             return std::nullopt;
 
-        auto result = std::move(data.front().value());
+        auto result = std::move(data.front());
         data.pop_front();
         packets.pop_front();
         return result;
