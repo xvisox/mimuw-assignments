@@ -16,18 +16,18 @@ private:
     packet_id_deque_t packets;  // Identifiers of above packets.
     packet_id_t BYTE_0;         // First byte number received.
 
-    void setup_if_necessary(struct AudioPacket *packet, size_t audio_data_size) {
-        if (session.session_id < packet->session_id) {
+    void setup_if_necessary(packet_id_t id, session_id_t session_id, size_t audio_data_size) {
+        if (session.session_id < session_id) {
             clear();
         } else if (session.is_initialized()) {
             return;
         }
         // Initialize the session.
         session.state = SessionState::IN_PROGRESS;
-        session.session_id = packet->session_id;
+        session.session_id = session_id;
         session.packet_size = audio_data_size;
         // Initialize the buffer.
-        BYTE_0 = packet->first_byte_num;
+        BYTE_0 = id;
         capacity = (buffer_size / session.packet_size);
     }
 
@@ -38,8 +38,8 @@ private:
         capacity = 0;
     }
 
-    bool is_ready_to_print(struct AudioPacket *last_packet) const {
-        return last_packet->first_byte_num >= BYTE_0 + (buffer_size * 3) / 4;
+    bool is_ready_to_print(packet_id_t last_packet_id) const {
+        return last_packet_id >= BYTE_0 + (buffer_size * 3) / 4;
     }
 
     void prevent_overflow() {
@@ -77,53 +77,49 @@ public:
     explicit Buffer(buffer_size_t buffer_size) : buffer_size(buffer_size), data(), packets(),
                                                  BYTE_0(0), capacity(0) {}
 
-    void add_packet(struct AudioPacket *packet, size_t bytes) {
-        size_t audio_data_size = bytes - sizeof(struct AudioPacket);
-        // Convert the audio data to a vector of bytes.
-        byte_vector_t packet_data;
-        for (size_t i = 0; i < audio_data_size; i++) {
-            packet_data.push_back(packet->audio_data[i]);
-        }
-        std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
+    void add_packet(std::optional<byte_vector_t> packet_data_opt, size_t audio_data_size,
+                    packet_id_t id, session_id_t session_id) {
 
         // Add the packet to the buffer.
         std::lock_guard<std::mutex> lock(mutex);
-        setup_if_necessary(packet, audio_data_size);
+        setup_if_necessary(id, session_id, audio_data_size);
         // Ignore packets from previous sessions.
-        if (packet->session_id != session.session_id) return;
+        if (session_id != session.session_id) return;
 
-        if (is_ready_to_print(packet)) {
+        if (is_ready_to_print(id)) {
             session.state = SessionState::READY;
         }
 
-        if (packet->first_byte_num % session.packet_size != 0) {
+        if (id % session.packet_size != 0) {
             // Probably will never happen.
             fatal("The first byte number is not a multiple of the packet size");
-        } else if (packets.empty() || packet->first_byte_num > packets.back()) {
+        } else if (packets.empty() || id > packets.back()) {
             // Add the packet to the end of the buffer.
-            append(packet_data_opt, packet->first_byte_num);
-        } else if (packets.front() <= packet->first_byte_num && packet->first_byte_num <= packets.back()) {
+            append(packet_data_opt, id);
+        } else if (packets.front() <= id && id <= packets.back()) {
             // Add missing packet to the buffer.
-            size_t position = (packet->first_byte_num - packets.front()) / session.packet_size;
+            size_t position = (id - packets.front()) / session.packet_size;
             insert(packet_data_opt, position);
         }
         // Print missing packets before new packet.
-        packet_id_t n = (packet->first_byte_num - packets.front()) / session.packet_size;
+        packet_id_t n = (id - packets.front()) / session.packet_size;
         for (packet_id_t i = 0; i < n; i++) {
             if (data[i].has_value()) continue;
-            std::cerr << "MISSING: BEFORE " << packet->first_byte_num << " EXPECTED " << packets[i] << std::endl;
+            std::cerr << "MISSING: BEFORE " << id << " EXPECTED " << packets[i] << std::endl;
         }
     }
 
-    std::optional<byte_vector_t> read() {
+    void print_packets() {
         std::lock_guard<std::mutex> lock(mutex);
-        if (session.state != SessionState::READY || data.empty() || !data.front().has_value())
-            return std::nullopt;
+        if (session.state != SessionState::READY)
+            return;
 
-        auto result = std::move(data.front());
-        data.pop_front();
-        packets.pop_front();
-        return result;
+        while (!data.empty() && data.front().has_value()) {
+            auto &packet_data = data.front().value();
+            fwrite(packet_data.data(), sizeof(byte_t), packet_data.size(), stdout);
+            data.pop_front();
+            packets.pop_front();
+        }
     }
 };
 

@@ -18,14 +18,9 @@ private:
     int socket_fd;
 
     void init_packet(size_t packet_size) {
-        // Allocate memory for the audio data, but firstly free the old one.
-        free(packet);
+        // Allocate memory for the audio data.
         packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
-        // Copy the data from the buffer to the packet.
-        memcpy(packet, buffer, packet_size);
-        packet->first_byte_num = be64toh(packet->first_byte_num);
-        packet->session_id = be64toh(packet->session_id);
     }
 
 public:
@@ -45,26 +40,32 @@ public:
 
     void receiver() {
         socket_fd = bind_socket(params.data_port);
-        struct sockaddr_in client_address{};
+
+        size_t empty_packet_size = sizeof(struct AudioPacket);
         size_t read_length;
+        init_packet(empty_packet_size);
+        struct sockaddr_in client_address{};
         do {
             read_length = read_message(socket_fd, &client_address, buffer, BSIZE);
-            init_packet(read_length);
+            // Copy the data from the buffer to the packet.
+            memcpy(packet, buffer, empty_packet_size);
+            packet->first_byte_num = be64toh(packet->first_byte_num);
+            packet->session_id = be64toh(packet->session_id);
+
+            // Convert the data to a vector.
+            byte_vector_t packet_data(buffer + empty_packet_size, buffer + read_length);
+            std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
 
             // Add the packet to the buffer.
-            packets_buffer.add_packet(packet, read_length);
+            packets_buffer.add_packet(std::move(packet_data_opt),
+                                      read_length - empty_packet_size,
+                                      packet->first_byte_num, packet->session_id);
         } while (read_length > 0);
     }
 
     void writer() {
         while (true) {
-            // Get the packet from the buffer.
-            auto optional_packet = packets_buffer.read();
-            if (!optional_packet.has_value()) continue;
-
-            // Print the packet.
-            auto data = optional_packet.value();
-            std::cout << std::string(data.begin(), data.end());
+            packets_buffer.print_packets();
         }
     }
 };

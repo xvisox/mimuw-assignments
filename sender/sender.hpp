@@ -18,7 +18,7 @@ private:
 
     void init_packet(size_t packet_size) {
         // Allocate memory for the audio data.
-        packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
+        packet = static_cast<AudioPacket *>(malloc(packet_size));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
         // Set the session ID.
         packet->session_id = htobe64(time(nullptr));
@@ -49,7 +49,7 @@ public:
             packet->first_byte_num = htobe64(byte_num);
             byte_num += psize;
             // Copy the packet into different pointer.
-            auto *packet_copy = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
+            auto *packet_copy = static_cast<AudioPacket *>(malloc(packet_size));
             if (packet_copy == nullptr) fatal("Cannot allocate memory for the audio data");
             memcpy(packet_copy, packet, packet_size);
             // Push the packet to the queue.
@@ -82,8 +82,9 @@ public:
         size_t packet_size = sizeof(struct AudioPacket) + params.psize;
         // Create a thread for reading the audio data.
         std::thread reader_thread(&Sender::reader, this, packet_size);
+        reader_thread.detach();
+        sleep(1);
         sender(packet_size);
-        reader_thread.join();
     }
 };
 
