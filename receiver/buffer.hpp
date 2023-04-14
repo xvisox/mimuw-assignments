@@ -96,7 +96,7 @@ public:
         std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
 
         if (packet->first_byte_num % session.packet_size != 0) {
-            // TODO: What to do in this case?
+            // Probably will never happen.
             fatal("The first byte number is not a multiple of the packet size");
         } else if (packets.empty() || packet->first_byte_num > packets.back()) {
             // Add the packet to the end of the buffer.
@@ -114,11 +114,10 @@ public:
         }
     }
 
-    byte_vector_t read() {
+    std::optional<byte_vector_t> read() {
         std::lock_guard<std::mutex> lock(mutex);
-        // FIXME: What to do if the buffer is empty?
         if (session.state != SessionState::READY || data.empty() || !data.front().has_value())
-            throw std::runtime_error("Buffer is not ready to read");
+            return std::nullopt;
 
         auto result = std::move(data.front().value());
         data.pop_front();

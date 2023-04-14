@@ -22,6 +22,7 @@ private:
         free(packet);
         packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
+        // Copy the data from the buffer to the packet.
         memcpy(packet, buffer, packet_size);
         packet->first_byte_num = be64toh(packet->first_byte_num);
         packet->session_id = be64toh(packet->session_id);
@@ -49,9 +50,6 @@ public:
         do {
             read_length = read_message(socket_fd, &client_address, buffer, BSIZE);
             init_packet(read_length);
-            // FIXME: Remove this, only for debugging purposes.
-            std::cerr << "Received packet: " << packet->session_id << " " << packet->first_byte_num
-                      << " Data: " << packet->audio_data << std::endl;
 
             // Add the packet to the buffer.
             packets_buffer.add_packet(packet, read_length);
@@ -61,12 +59,12 @@ public:
     void writer() {
         while (true) {
             // Get the packet from the buffer.
-            try {
-                auto data = packets_buffer.read();
-                std::cout << "Raw data: " << std::string(data.begin(), data.end()) << std::endl;
-            } catch (std::exception &e) {
-                // Buffer is empty, wait for a while.
-            }
+            auto optional_packet = packets_buffer.read();
+            if (!optional_packet.has_value()) continue;
+
+            // Print the packet.
+            auto data = optional_packet.value();
+            std::cout << std::string(data.begin(), data.end()) << std::endl;
         }
     }
 };
