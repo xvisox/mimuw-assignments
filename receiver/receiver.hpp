@@ -57,7 +57,7 @@ public:
             std::optional<byte_vector_t> packet_data_opt = std::make_optional(std::move(packet_data));
 
             // Add the packet to the buffer.
-            packets_buffer.add_packet(std::move(packet_data_opt),
+            packets_buffer.add_packet(packet_data_opt,
                                       read_length - empty_packet_size,
                                       packet->first_byte_num, packet->session_id);
         } while (read_length > 0);

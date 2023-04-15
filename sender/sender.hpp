@@ -72,7 +72,7 @@ public:
             audio_packet = packets_queue.pop(&success);
             if (!success) continue;
             // If the queue wasn't empty and the packet is null, it means that the stream has ended.
-            if (audio_packet == nullptr && success) break;
+            if (audio_packet == nullptr) break;
             send_packet(&address, socket_fd, audio_packet, packet_size);
             free(audio_packet);
         }

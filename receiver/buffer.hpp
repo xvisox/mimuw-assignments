@@ -77,7 +77,7 @@ public:
     explicit Buffer(buffer_size_t buffer_size) : buffer_size(buffer_size), data(), packets(),
                                                  BYTE_0(0), capacity(0) {}
 
-    void add_packet(std::optional<byte_vector_t> packet_data_opt, size_t audio_data_size,
+    void add_packet(std::optional<byte_vector_t> &packet_data_opt, size_t audio_data_size,
                     packet_id_t id, session_id_t session_id) {
 
         // Add the packet to the buffer.
