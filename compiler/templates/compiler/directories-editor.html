@@ -1,0 +1,24 @@
+<li>
+    {% if dir.is_file %}
+        <i class="fa fa-file-o" aria-hidden="true"></i>
+    {% else %}
+        <i class="fa fa-folder-o" aria-hidden="true"></i>
+    {% endif %}
+    <div class="file-or-dir">{{ dir.info.name }}
+        <form action="{% url 'compiler:remove_file' dir.info.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fa fa-trash-o fa-lg"></i>
+            </button>
+        </form>
+    </div>
+    {% if dir.has_children %}
+        <ul>
+            {% for dirchild in dir.get_children %}
+                {% with dir=dirchild template_name="compiler/directories-editor.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

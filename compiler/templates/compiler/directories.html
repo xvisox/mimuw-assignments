@@ -1,4 +1,10 @@
-<li> {{ dir.info.name }}
+<li>
+    {% if dir.is_file %}
+        <i class="fa fa-file-o" aria-hidden="true"></i>
+    {% else %}
+        <i class="fa fa-folder-o" aria-hidden="true"></i>
+    {% endif %}
+    {{ dir.info.name }}
     {% if dir.has_children %}
         <ul>
             {% for dirchild in dir.get_children %}

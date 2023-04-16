@@ -176,8 +176,7 @@ input:checked + .slider:before {
 }
 
 .directory-structure {
-    font-size: 24px;
-    margin-left: 20px;
+    font-size: 20px;
     margin-top: 5px;
     color: var(--color-text);
 }
@@ -234,4 +233,10 @@ input:checked + .slider:before {
     .choose-file {
         border-right: 5px solid var(--color-nav);
     }
+}
+
+li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }

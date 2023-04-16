@@ -1,15 +1,17 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+from django.utils import timezone
 
 
 class FileInfo(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=20)
-    description = models.CharField(max_length=100)
-    creation_date = models.DateTimeField()
+    description = models.CharField(max_length=100, null=True, blank=True)
+    creation_date = models.DateTimeField(default=timezone.now)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     available = models.BooleanField(default=True)
-    last_modified = models.DateTimeField()
+    available_modification_date = models.DateTimeField(default=timezone.now)
+    last_modified = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.name
@@ -19,6 +21,9 @@ class Directory(models.Model):
     id = models.AutoField(primary_key=True)
     info = models.OneToOneField(FileInfo, on_delete=models.CASCADE)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
+    def is_file(self):
+        return False
 
     def __str__(self):
         return self.info.name
@@ -36,6 +41,9 @@ class File(models.Model):
     info = models.OneToOneField(FileInfo, on_delete=models.CASCADE)
     parent = models.ForeignKey(Directory, on_delete=models.CASCADE)
     content = models.TextField()
+
+    def is_file(self):
+        return True
 
     def __str__(self):
         return self.info.name
