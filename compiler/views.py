@@ -51,7 +51,7 @@ def remove_file(request, file_info_id):
 
 
 def add_directory(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         name = request.POST['name']
         description = request.POST['description']
         parent_id = request.POST['parent']
