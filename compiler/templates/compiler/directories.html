@@ -1,0 +1,11 @@
+<li> {{ dir.info.name }}
+    {% if dir.has_children %}
+        <ul>
+            {% for dirchild in dir.get_children %}
+                {% with dir=dirchild template_name="compiler/directories.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

@@ -1,92 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "compiler/base.html" %}
+{% load static %}
 
-<head>
-    <title>AWW</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="../../static/compiler/styles.css">
-</head>
-
-<body>
-    <div class="grid-container">
-        <div class="grid-item navbar navbar-expand navbar-dark">
-            <div class="container-fluid">
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div class="navbar-nav">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        <a class="nav-link" href="#">File</a>
-                        <a class="nav-link" href="#">Edit</a>
-                        <a class="nav-link" href="#">Options</a>
-                    </div>
-                    <div class="theme-switch-wrapper">
-                        <label class="switch">
-                            <input type="checkbox" id="themeButton">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+{% block content %}
+    <div class="grid-item choose-file">
+        <div class="directory-structure">
+            <ul>
+                {% for dir in directories %}
+                    {% include "compiler/directories.html" %}
+                {% endfor %}
+            </ul>
         </div>
-        <div class="grid-item choose-file">
-            <div class="directory-structure">
-                <div class="dir-element">
-                    <a class="dir-name" data-bs-toggle="collapse" href="#dir-example" role="button"
-                        aria-expanded="false" aria-controls="dir-example">
-                        <i class="fa fa-folder-open" aria-hidden="true"></i>
-                        <span>source</span>
-                    </a>
-                    <div class="src-files collapse show" id="dir-example">
-                        <ul>
-                            <li>main.c</li>
-                            <li>sol.cpp</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+    </div>
+    <div class="grid-item program-content">
+        <div class="editor-container">
+            <div id="editor"></div>
         </div>
-        <div class="grid-item program-content">
-            <div class="editor-container">
-                <div id="editor"></div>
-            </div>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.3/ace.js"></script>
-            <script src="../../static/compiler/main.js"></script>
-        </div>
-        <div class="grid-item code-fragment"></div>
-        <div class="grid-item compile-options">
-            <div class="d-flex align-items-start">
-                <div class="nav flex-column nav-pills me-3 ml-0" id="v-pills-tab" role="tablist"
-                    aria-orientation="vertical">
-                    <button class="nav-link active" id="v-pills-processor-tab" data-bs-toggle="pill"
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.3/ace.js"></script>
+    </div>
+    <div class="grid-item code-fragment"></div>
+    <div class="grid-item compile-options">
+        <div class="d-flex align-items-start">
+            <div class="nav flex-column nav-pills me-3 ml-0" id="v-pills-tab" role="tablist"
+                 aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-processor-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-processor" type="button" role="tab" aria-controls="v-pills-processor"
-                        aria-selected="true">Processor</button>
-                    <button class="nav-link" id="v-pills-options-tab" data-bs-toggle="pill"
+                        aria-selected="true">Processor
+                </button>
+                <button class="nav-link" id="v-pills-options-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-options" type="button" role="tab" aria-controls="v-pills-options"
-                        aria-selected="false">Options</button>
-                    <button class="nav-link" id="v-pills-standard-tab" data-bs-toggle="pill"
+                        aria-selected="false">Options
+                </button>
+                <button class="nav-link" id="v-pills-standard-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-standard" type="button" role="tab" aria-controls="v-pills-standard"
-                        aria-selected="false">Standard</button>
-                    <button class="nav-link" id="v-pills-format-tab" data-bs-toggle="pill"
+                        aria-selected="false">Standard
+                </button>
+                <button class="nav-link" id="v-pills-format-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-format" type="button" role="tab" aria-controls="v-pills-format"
-                        aria-selected="false">Format</button>
+                        aria-selected="false">Format
+                </button>
+            </div>
+            <div class="tab-content compile-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
+                     aria-labelledby="v-pills-processor-tab">Tab1
                 </div>
-                <div class="tab-content compile-content" id="v-pills-tabContent">
-                    <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
-                        aria-labelledby="v-pills-processor-tab">Tab1</div>
-                    <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
-                        aria-labelledby="v-pills-options-tab">Tab2</div>
-                    <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
-                        aria-labelledby="v-pills-standard-tab">Tab3</div>
-                    <div class="tab-pane fade" id="v-pills-format" role="tabpanel" aria-labelledby="v-pills-format-tab">
-                        Tab4</div>
+                <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
+                     aria-labelledby="v-pills-options-tab">Tab2
+                </div>
+                <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
+                     aria-labelledby="v-pills-standard-tab">Tab3
+                </div>
+                <div class="tab-pane fade" id="v-pills-format" role="tabpanel" aria-labelledby="v-pills-format-tab">
+                    Tab4
                 </div>
             </div>
         </div>
     </div>
-</body>
-
-</html>
+{% endblock content %}

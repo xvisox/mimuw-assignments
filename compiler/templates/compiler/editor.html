@@ -1,0 +1,16 @@
+{% extends "compiler/base.html" %}
+
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'compiler/editor-styles.css' %}?{% now "U" %}">
+{% endblock head %}
+
+{% block content %}
+    <div class="grid-item dir-editor">
+        <ul>
+            {% for dir in directories %}
+                {% include "compiler/directories.html" %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock content %}

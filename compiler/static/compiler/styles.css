@@ -39,6 +39,7 @@ body {
     background-color: var(--color-nav);
     color: var(--color-text);
     font-size: 22px;
+    min-height: 70px;
 }
 
 /* Choose file style */
@@ -96,7 +97,7 @@ body {
 }
 
 .nav-pills .nav-link.active,
-.nav-pills .show>.nav-link {
+.nav-pills .show > .nav-link {
     background-color: var(--color-nav-element);
     color: var(--color-text-neg);
 }
@@ -153,15 +154,15 @@ body.dark {
     transition: .4s;
 }
 
-input:checked+.slider {
+input:checked + .slider {
     background-color: var(--color-footer);
 }
 
-input:focus+.slider {
+input:focus + .slider {
     box-shadow: 0 0 1px var(--color-footer);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
     transform: translateX(26px);
 }
 

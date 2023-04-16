@@ -1,0 +1,21 @@
+/* Grid style */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "navbar"
+        "dir-editor";
+}
+
+@media (min-width: 600px) {
+    .grid-container {
+        grid-template-rows: 70px 1fr;
+    }
+}
+
+.dir-editor {
+    grid-area: dir-editor;
+    background-color: var(--color-footer);
+    color: var(--color-text);
+}
