@@ -16,6 +16,20 @@
             <div id="editor"></div>
         </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.3/ace.js"></script>
+
+        <script type="text/javascript">
+            const parsedCode = JSON.parse('{{ code|safe }}');
+            let code = parsedCode['code']
+
+            let editorTemp = document.querySelector("#editor");
+            ace.edit(editorTemp, {
+                theme: "ace/theme/dracula", // "ace/theme/chrome"
+                mode: "ace/mode/c_cpp",
+                fontSize: "14pt",
+                value: code.join(" ")
+            });
+
+        </script>
     </div>
     <div class="grid-item code-fragment"></div>
     <div class="grid-item compile-options">

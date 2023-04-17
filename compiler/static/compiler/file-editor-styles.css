@@ -1,0 +1,36 @@
+/* Grid style */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "navbar"
+        "file-editor"
+        "file-adder";
+}
+
+@media (min-width: 600px) {
+    .grid-container {
+        grid-template-rows: 70px 1fr;
+        grid-template-columns: 5fr 8fr;
+        grid-template-areas:
+            "navbar navbar"
+            "file-editor file-adder";
+    }
+}
+
+.file-editor {
+    grid-area: file-editor;
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-footer);
+    color: var(--color-text);
+}
+
+.file-adder {
+    grid-area: file-adder;
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-sidebar);
+    color: var(--color-text);
+}

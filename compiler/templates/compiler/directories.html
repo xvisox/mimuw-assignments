@@ -4,7 +4,11 @@
     {% else %}
         <i class="fa fa-folder-o" aria-hidden="true"></i>
     {% endif %}
-    {{ dir.info.name }}
+    {% if dir.is_file %}
+        <a class="text-decoration-none" href="{% url 'compiler:show_file' dir.info.id %}">{{ dir.info.name }}</a>
+    {% else %}
+        {{ dir.info.name }}
+    {% endif %}
     {% if dir.has_children %}
         <ul>
             {% for dirchild in dir.get_children %}

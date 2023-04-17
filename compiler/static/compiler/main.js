@@ -4,13 +4,12 @@ if (editor != null) {
     ace.edit(editor, {
         theme: "ace/theme/dracula", // "ace/theme/chrome"
         mode: "ace/mode/c_cpp",
-        fontSize: "14pt",
-        value: '#include <stdio.h>\n\nint main() {\n\tprintf("Hello, World!");\n\treturn 0;\n}\n'
+        fontSize: "14pt"
     });
 }
 
-const swtichButton = document.querySelector("#themeButton");
-swtichButton.addEventListener("click", () => {
+const switchButton = document.querySelector("#themeButton");
+switchButton.addEventListener("click", () => {
     if (editor != null) {
         let theme = !editor.classList.contains("dark") ? "ace/theme/chrome" : "ace/theme/dracula";
         editor.classList.toggle("dark");

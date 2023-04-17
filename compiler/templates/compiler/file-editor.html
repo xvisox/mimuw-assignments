@@ -1,0 +1,14 @@
+{% extends "compiler/base.html" %}
+{% load static %}
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'compiler/file-editor-styles.css' %}?{% now "U" %}">
+{% endblock head %}
+
+{% block content %}
+    <div class="file-editor">
+
+    </div>
+    <div class="file-adder">
+
+    </div>
+{% endblock content %}
