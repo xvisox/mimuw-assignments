@@ -13,17 +13,18 @@ ALIGN_SPL       equ 0xf0
         mov     rbp, rsp                    ; get the current stack pointer
         and     spl, ALIGN_SPL              ; align the stack pointer
         call    %1
-        mov     rsp, rbp                    ; restore the stack pointer
+        mov     rsp, rbp                    ; restore the stack pointer before alignment
         pop     rbp                         ; restore rbp register
         pop     rdi                         ; restore rdi register
 %endmacro
 
 section .data
-
-spin_lock:      times N dq -1               ; the identifier of the core that certain core is waiting for
-                                            ; i.e. core i wants to exchange values with core spin_lock[i]
+spin_lock:      times N dq -1               ; the identifier of the core that certain core is waiting for,
+                                            ; that is core i wants to exchange values with core spin_lock[i]
                                             ; -1 means that the core is not waiting for any other core
-value:          times N dq 0                ; the value that certain core is offering to exchange
+
+section .bss
+value:          resq N                      ; the value that certain core is offering to exchange
 
 section .text
 
@@ -36,7 +37,7 @@ core:                                       ; simulates one core of a distribute
                                             ; function call can change rsi register so we need to
                                             ; save its value to the 'safe' register rbx
         push    rbx                         ; rbx will store pointer to string of operations to perform
-        push    rbp                         ; rbp will store pointer to stack
+        push    rbp                         ; rbp will store pointer to the stack from the beginning of the simulation
         mov     rbx, rsi
         mov     rbp, rsp
 
