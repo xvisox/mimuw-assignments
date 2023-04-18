@@ -41,85 +41,75 @@ core:                                       ; simulates one core of a distribute
         mov     rbx, rsi
         mov     rbp, rsp
 
-                                            ; loop through the string of operations
-.loop:
+.loop:                                      ; loop through the string of operations
         xor     eax, eax
-        mov     al, [rbx]
-.add:
+        mov     al, [rbx]                   ; get the next operation
         cmp     al, '+'
-        jnz     .multiply
-                                            ; add the two values from the top of the stack
+        jz      .add
+        cmp     al, '*'
+        jz      .multiply
+        cmp     al, '-'
+        jz      .negate
+        cmp     al, 'n'
+        jz      .core_identifier
+        cmp     al, 'B'
+        jz      .move
+        cmp     al, 'C'
+        jz      .abandon
+        cmp     al, 'D'
+        jz      .duplicate
+        cmp     al, 'E'
+        jz      .swap
+        cmp     al, 'G'
+        jz      .call_get
+        cmp     al, 'P'
+        jz      .call_put
+        cmp     al, 'S'
+        jz      .synchronize
+        jmp     .number
+
+.add:                                       ; add the two values from the top of the stack
         pop     rcx
         add     [rsp], rcx
         jmp     .loop_end
-.multiply:
-        cmp     al, '*'
-        jnz     .negate
-                                            ; multiply the two values from the top of the stack
+.multiply:                                  ; multiply the two values from the top of the stack
         pop     rax
         imul    qword [rsp]
         mov     [rsp], rax
         jmp     .loop_end
-.negate:
-        cmp     al, '-'
-        jnz     .core_identifier
-                                            ; negate the value at the top of the stack
+.negate:                                    ; negate the value at the top of the stack
         neg     qword [rsp]
         jmp     .loop_end
-.core_identifier:
-        cmp     al, 'n'
-        jnz     .move
-                                            ; push core identifier
+.core_identifier:                           ; push core identifier
         push    rdi
         jmp     .loop_end
-.move:
-        cmp     al, 'B'
-        jnz     .abandon
-                                            ; move the pointer by a value from the top of the stack
+.move:                                      ; move the pointer by a value from the top of the stack
         pop     rcx
         cmp     qword [rsp], 0
         jz      .loop_end
         add     rbx, rcx
         jmp     .loop_end
-.abandon:
-        cmp     al, 'C'
-        jnz     .duplicate
-                                            ; abandon the value from the top of the stack
+.abandon:                                   ; abandon the value from the top of the stack
         pop     rcx
         jmp     .loop_end
-.duplicate:
-        cmp     al, 'D'
-        jnz     .swap
-                                            ; duplicate the value from the top of the stack
+.duplicate:                                 ; duplicate the value from the top of the stack
         push    qword [rsp]
         jmp     .loop_end
-.swap:
-        cmp     al, 'E'
-        jnz     .call_get
-                                            ; swap two values from the top of the stack
+.swap:                                      ; swap two values from the top of the stack
         pop     rcx
         pop     rax
         push    rcx
         push    rax
         jmp     .loop_end
-.call_get:
-        cmp     al, 'G'
-        jnz     .call_put
-                                            ; call get_value function
+.call_get:                                  ; call get_value function
         CALL_WITH_STACK_ALIGN get_value     ; call function with aligned stack
         push    rax                         ; push the value returned by get_value
         jmp     .loop_end
-.call_put:
-        cmp     al, 'P'
-        jnz     .synchronize
-                                            ; call put_value function
+.call_put:                                  ; call put_value function
         pop     rsi                         ; get the value to put
         CALL_WITH_STACK_ALIGN put_value     ; call function with aligned stack
         jmp     .loop_end
-.synchronize:
-        cmp     al, 'S'
-        jnz     .number
-                                            ; synchronize two cores and then swap
+.synchronize:                               ; synchronize two cores and then swap
                                             ; their values from the top
         pop     rcx                         ; get value 'm' from the stack
         mov     rax, [rsp]                  ; get the value to swap with core 'm'
@@ -148,8 +138,7 @@ core:                                       ; simulates one core of a distribute
         jnz     .wait
         jmp     .loop_end
 
-.number:
-                                            ; push number from the string
+.number:                                    ; push number from the string
         sub     al, '0'
         push    rax
 
