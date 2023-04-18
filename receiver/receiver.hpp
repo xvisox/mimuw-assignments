@@ -65,7 +65,13 @@ public:
 
     void writer() {
         while (true) {
-            packets_buffer.print_packets();
+            // Get the packet from the buffer.
+            auto optional_packet = packets_buffer.read();
+            if (!optional_packet.has_value()) continue;
+
+            // Print the packet.
+            auto data = optional_packet.value();
+            fwrite(data.data(), sizeof(byte_t), data.size(), stdout);
         }
     }
 };

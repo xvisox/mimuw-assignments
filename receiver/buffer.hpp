@@ -109,17 +109,15 @@ public:
         }
     }
 
-    void print_packets() {
+    std::optional<byte_vector_t> read() {
         std::lock_guard<std::mutex> lock(mutex);
-        if (session.state != SessionState::READY)
-            return;
+        if (session.state != SessionState::READY || data.empty() || !data.front().has_value())
+            return std::nullopt;
 
-        while (!data.empty() && data.front().has_value()) {
-            auto &packet_data = data.front().value();
-            fwrite(packet_data.data(), sizeof(byte_t), packet_data.size(), stdout);
-            data.pop_front();
-            packets.pop_front();
-        }
+        auto result = std::move(data.front().value());
+        data.pop_front();
+        packets.pop_front();
+        return result;
     }
 };
 
