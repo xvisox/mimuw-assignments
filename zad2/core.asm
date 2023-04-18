@@ -40,33 +40,7 @@ core:                                       ; simulates one core of a distribute
         push    rbp                         ; rbp will store pointer to the stack from the beginning of the simulation
         mov     rbx, rsi
         mov     rbp, rsp
-
-.loop:                                      ; loop through the string of operations
-        xor     eax, eax
-        mov     al, [rbx]                   ; get the next operation
-        cmp     al, '+'
-        jz      .add
-        cmp     al, '*'
-        jz      .multiply
-        cmp     al, '-'
-        jz      .negate
-        cmp     al, 'n'
-        jz      .core_identifier
-        cmp     al, 'B'
-        jz      .move
-        cmp     al, 'C'
-        jz      .abandon
-        cmp     al, 'D'
-        jz      .duplicate
-        cmp     al, 'E'
-        jz      .swap
-        cmp     al, 'G'
-        jz      .call_get
-        cmp     al, 'P'
-        jz      .call_put
-        cmp     al, 'S'
-        jz      .synchronize
-        jmp     .number
+        jmp     .loop
 
 .add:                                       ; add the two values from the top of the stack
         pop     rcx
@@ -108,7 +82,35 @@ core:                                       ; simulates one core of a distribute
 .call_put:                                  ; call put_value function
         pop     rsi                         ; get the value to put
         CALL_WITH_STACK_ALIGN put_value     ; call function with aligned stack
-        jmp     .loop_end
+.loop_end:
+        inc     rbx                         ; move to the next operation
+        cmp     byte [rbx], 0               ; check if we reached the end of the string
+        jz      .return
+.loop:                                      ; loop through the string of operations
+        xor     eax, eax
+        mov     al, [rbx]                   ; get the next operation
+        cmp     al, '+'
+        jz      .add
+        cmp     al, '*'
+        jz      .multiply
+        cmp     al, '-'
+        jz      .negate
+        cmp     al, 'n'
+        jz      .core_identifier
+        cmp     al, 'B'
+        jz      .move
+        cmp     al, 'C'
+        jz      .abandon
+        cmp     al, 'D'
+        jz      .duplicate
+        cmp     al, 'E'
+        jz      .swap
+        cmp     al, 'G'
+        jz      .call_get
+        cmp     al, 'P'
+        jz      .call_put
+        cmp     al, 'S'
+        jnz     .number                     ; if the operation is not recognized, it must be a number
 .synchronize:                               ; synchronize two cores and then swap
                                             ; their values from the top
         pop     rcx                         ; get value 'm' from the stack
@@ -141,11 +143,7 @@ core:                                       ; simulates one core of a distribute
 .number:                                    ; push number from the string
         sub     al, '0'
         push    rax
-
-.loop_end:
-        inc     rbx                         ; move to the next operation
-        cmp     byte [rbx], 0               ; check if we reached the end of the string
-        jnz     .loop
+        jmp     .loop_end
 
 .return:
         pop     rax                         ; return the value from the top of the stack
