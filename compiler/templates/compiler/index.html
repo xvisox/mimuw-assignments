@@ -6,7 +6,7 @@
         <div class="directory-structure">
             <ul>
                 {% for dir in directories %}
-                    {% include "compiler/directories.html" %}
+                    {% include "compiler/directories-tree.html" %}
                 {% endfor %}
             </ul>
         </div>
@@ -21,12 +21,13 @@
             const parsedCode = JSON.parse('{{ code|safe }}');
             let code = parsedCode['code']
 
+            console.log(code)
             let editorTemp = document.querySelector("#editor");
             ace.edit(editorTemp, {
                 theme: "ace/theme/dracula", // "ace/theme/chrome"
                 mode: "ace/mode/c_cpp",
-                fontSize: "14pt",
-                value: code.join(" ")
+                fontSize: "12pt",
+                value: code.join("\n"),
             });
 
         </script>

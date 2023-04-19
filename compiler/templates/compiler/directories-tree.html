@@ -12,7 +12,7 @@
     {% if dir.has_children %}
         <ul>
             {% for dirchild in dir.get_children %}
-                {% with dir=dirchild template_name="compiler/directories.html" %}
+                {% with dir=dirchild template_name="compiler/directories-tree.html" %}
                     {% include template_name %}
                 {% endwith %}
             {% endfor %}

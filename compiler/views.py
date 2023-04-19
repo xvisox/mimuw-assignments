@@ -2,37 +2,52 @@ import json
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
+from compiler.forms import UploadFileForm
 from compiler.models import Directory, FileInfo, File
 
 
 class IndexView(generic.ListView):
     template_name = 'compiler/index.html'
+    context_object_name = 'directories'
 
     def get_queryset(self):
-        return None
+        return get_root_directories(self.request.user)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Get all user directories with no parent
-        context['directories'] = get_root_directories(self.request.user)
         # Get sample code
         context['code'] = get_code(SAMPLE_CODE)
         return context
 
 
-class EditView(generic.ListView):
-    template_name = 'compiler/editor.html'
+class ShowFileView(generic.DetailView):
+    template_name = 'compiler/index.html'
+    model = FileInfo
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get all user directories with no parent
+        context['directories'] = get_root_directories(self.request.user)
+        # Get file
+        file_info = FileInfo.objects.get(pk=self.kwargs['pk'])
+        file = File.objects.get(info=file_info)
+        context['code'] = get_code(file.content.read().decode('utf-8'))
+        # Provide file id
+        context['file_id'] = file_info.id
+        return context
+
+
+class DirectoryEditView(generic.ListView):
+    template_name = 'compiler/dir-editor.html'
     context_object_name = 'all_directories'
 
     def get_queryset(self):
-        if (not self.request.user.is_authenticated) or (not self.request.user.is_active):
-            return None
-        return Directory.objects.filter(info__owner=self.request.user, info__available=True)
+        return get_all_directories(self.request.user)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -49,55 +64,76 @@ def remove_file(request, file_info_id):
 
 
 def add_directory(request):
-    if request.method == 'POST' and request.user.is_authenticated:
+    if request.method == 'POST' and request.user.is_authenticated and request.POST['name'] != '':
         name = request.POST['name']
         description = request.POST['description']
-        parent_id = request.POST['parent']
-        if parent_id == '':
-            parent = None
-        else:
-            parent = Directory.objects.get(pk=parent_id)
-            parent.info.last_modified = timezone.now()
-            parent.info.save()
-        directory = Directory.objects.create(info=FileInfo.objects.create(name=name, description=description,
-                                                                          owner=request.user), parent=parent)
+        parent = get_and_update_parent(request.POST['parent'])
+        # Create directory info and directory
+        file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
+        directory = Directory.objects.create(info=file_info, parent=parent)
         directory.save()
     return HttpResponseRedirect(reverse('compiler:edit'))
 
 
-class FileView(generic.ListView):
-    template_name = 'compiler/file-editor.html'
-
-    def get_queryset(self):
-        return None
-
-
-class ShowFileView(generic.DetailView):
-    template_name = 'compiler/index.html'
-    model = FileInfo
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Get all user directories with no parent
-        context['directories'] = get_root_directories(self.request.user)
-        # Get file
-        file_info = FileInfo.objects.get(pk=self.kwargs['pk'])
-        file = File.objects.get(info=file_info)
-        context['code'] = get_code(file.content)
-        return context
+def upload_file(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            name = request.FILES['file'].name
+            description = request.POST['description']
+            parent = get_and_update_parent(request.POST['parent'])
+            # Create file info and file
+            file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
+            file = File.objects.create(info=file_info, parent=parent, content=request.FILES['file'])
+            file.save()
+            return HttpResponseRedirect(reverse('compiler:show_file', args=(file.info.id,)))
+    form = UploadFileForm()
+    all_directories = get_all_directories(request.user)
+    return render(request, 'compiler/file-editor.html', {'form': form, 'all_directories': all_directories})
 
 
 def get_root_directories(user):
-    if user.is_authenticated:
-        return Directory.objects.filter(info__owner=user, parent=None, info__available=True)
-    else:
+    if not user.is_authenticated:
         return None
+    return Directory.objects.filter(info__owner=user, parent=None, info__available=True)
+
+
+def get_all_directories(user):
+    if (not user.is_authenticated) or (not user.is_active):
+        return None
+    all_directories = get_root_directories(user)
+    root_directories = get_root_directories(user)
+    for directory in root_directories:
+        all_directories = all_directories | get_all_subdirectories(directory)
+    return all_directories
+
+
+def get_all_subdirectories(directory):
+    subdirectories = Directory.objects.filter(parent=directory, info__available=True)
+    for subdirectory in subdirectories:
+        subdirectories = subdirectories | get_all_subdirectories(subdirectory)
+    return subdirectories
+
+
+def get_and_update_parent(parent_id):
+    if parent_id == '':
+        parent = None
+    else:
+        parent = Directory.objects.get(pk=parent_id)
+        parent.info.last_modified = timezone.now()
+        parent.info.save()
+    return parent
+
+
+SAMPLE_CODE = '// Welcome to home page!\n#include <stdio.h>\n\nint main()' \
+              '{\n\tprintf("Hello, World!");\n\treturn 0;\n}\n'
 
 
 def get_code(raw):
-    code_obj = {'code': raw.split(' ')}
+    code_list = raw.split('\n')
+    for i in range(len(code_list)):
+        code_list[i] = code_list[i].replace('\t', '\\t').replace('"', '\\"').replace('\\n', ' newline')
+
+    # Convert to json
+    code_obj = {'code': code_list}
     return json.dumps(code_obj, cls=DjangoJSONEncoder)
-
-
-SAMPLE_CODE = '// Welcome to home page!\\n#include <stdio.h>\\n\\nint main() {\\n\\tprintf(\\"Hello, ' \
-              'World!\\");\\n\\treturn 0;\\n}\\n'

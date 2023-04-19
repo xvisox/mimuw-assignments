@@ -40,7 +40,7 @@ class File(models.Model):
     id = models.AutoField(primary_key=True)
     info = models.OneToOneField(FileInfo, on_delete=models.CASCADE)
     parent = models.ForeignKey(Directory, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.FileField(upload_to='files/')
 
     def is_file(self):
         return True

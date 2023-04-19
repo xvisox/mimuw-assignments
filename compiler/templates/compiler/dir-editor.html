@@ -2,14 +2,14 @@
 
 {% load static %}
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{% static 'compiler/editor-styles.css' %}?{% now "U" %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'compiler/dir-editor-styles.css' %}?{% now "U" %}">
 {% endblock head %}
 
 {% block content %}
     <div class="grid-item dir-editor">
         <ul>
             {% for dir in directories %}
-                {% include "compiler/directories-editor.html" %}
+                {% include "compiler/directories-tree-editor.html" %}
             {% endfor %}
         </ul>
     </div>

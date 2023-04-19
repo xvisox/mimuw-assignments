@@ -4,7 +4,7 @@ if (editor != null) {
     ace.edit(editor, {
         theme: "ace/theme/dracula", // "ace/theme/chrome"
         mode: "ace/mode/c_cpp",
-        fontSize: "14pt"
+        fontSize: "12pt"
     });
 }
 

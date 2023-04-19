@@ -5,10 +5,30 @@
 {% endblock head %}
 
 {% block content %}
-    <div class="file-editor">
-
-    </div>
-    <div class="file-adder">
-
+    <div class="file-upload">
+        <div class="form-wrapper">
+            <form action="{% url 'compiler:file' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label>
+                            {{ field.label }}
+                            {{ field }}
+                        </label>
+                    </div>
+                {% endfor %}
+                <div class="form-group">
+                    <label>
+                        Parent directory
+                        <select class="form-control" name="parent">
+                            {% for dir in all_directories %}
+                                <option value="{{ dir.id }}">{{ dir.info.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-outline-light mt-2">Upload file</button>
+            </form>
+        </div>
     </div>
 {% endblock content %}
