@@ -70,6 +70,9 @@ body {
     grid-area: code-fragment;
     background-color: var(--color-sidebar);
     border-top: 5px solid var(--color-nav);
+    color: var(--color-text);
+    overflow: auto;
+    font-size: 16px;
 }
 
 /* Compile options style */
@@ -206,7 +209,7 @@ input:checked + .slider:before {
 @media (min-width: 600px) {
     .grid-container {
         height: 100vh;
-        grid-template-columns: 20% 1fr 20%;
+        grid-template-columns: 20% 1fr 30%;
         grid-template-rows: 70px 3fr 1fr;
         grid-template-areas:
             "navbar navbar navbar"
@@ -239,4 +242,19 @@ li {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+.line {
+    color: inherit;
+    overflow: visible;
+    margin: 0;
+    min-width: 40vw;
+}
+
+.line:hover {
+    background-color: var(--color-footer);
+}
+
+.form-control {
+    margin-bottom: 5px;
 }

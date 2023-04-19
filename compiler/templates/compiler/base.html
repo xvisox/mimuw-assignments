@@ -37,7 +37,9 @@
                     <a class="nav-link active" aria-current="page" href={% url 'compiler:index' %}>Home</a>
                     <a class="nav-link" href="{% url 'compiler:file' %}">File</a>
                     <a class="nav-link" href="{% url 'compiler:edit' %}">Edit</a>
-                    <a class="nav-link" href="#">Options</a>
+                    {% if file_id is not None %}
+                        <a class="nav-link" href="{% url 'compiler:compile_file' file_id %}">Run</a>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     {% else %}

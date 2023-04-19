@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views import generic
 
-from compiler.forms import UploadFileForm
+from compiler.forms import UploadFileForm, CompileForm
 from compiler.models import Directory, FileInfo, File
 
 
@@ -39,6 +39,36 @@ class ShowFileView(generic.DetailView):
         context['code'] = get_code(file.content.read().decode('utf-8'))
         # Provide file id
         context['file_id'] = file_info.id
+        # Provide form
+        form = CompileForm()
+        context['form'] = form
+        return context
+
+
+class CompileFileView(ShowFileView):
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get file
+        file_info = FileInfo.objects.get(pk=self.kwargs['pk'])
+        file = File.objects.get(info=file_info)
+        # Compiling the file
+        import os
+        # Change directory to temporary
+        temporary_path = file.content.path.replace("media/files", "temporary")
+        os.chdir(os.path.dirname(temporary_path))
+        # Compile with options
+        OPTIONS = ''
+        cmd = 'sdcc' + ' ' + OPTIONS + ' ' + file.content.path
+        err_message = os.popen(cmd + ' 2>&1').read()
+        # Get output
+        try:
+            with open(temporary_path.replace('.c', '.asm'), 'r') as output_file:
+                context['output'] = separate_code_to_sections(output_file.read().split('\n'))
+        except FileNotFoundError:
+            context['output'] = parse_err_message(err_message)
+        # Remove all files from temporary directory
+        os.system('rm -rf ' + os.path.dirname(temporary_path) + '/*')
         return context
 
 
@@ -59,6 +89,7 @@ class DirectoryEditView(generic.ListView):
 def remove_file(request, file_info_id):
     file_info = get_object_or_404(FileInfo, pk=file_info_id)
     file_info.available = False
+    file_info.available_modification_date = timezone.now()
     file_info.save()
     return HttpResponseRedirect(reverse('compiler:edit'))
 
@@ -137,3 +168,35 @@ def get_code(raw):
     # Convert to json
     code_obj = {'code': code_list}
     return json.dumps(code_obj, cls=DjangoJSONEncoder)
+
+
+def parse_err_message(err_message):
+    err_list = err_message.split('\n')
+    for i in range(len(err_list)):
+        idx = find_first_index(err_list[i])
+        if idx != -1:
+            err_list[i] = err_list[i][idx:]
+    return err_list
+
+
+def find_first_index(message):
+    idx = message.find(".c:")
+    for i in range(idx, 0, -1):
+        if message[i] == '/':
+            return i + 1
+
+
+def separate_code_to_sections(raw):
+    count = 0
+    sections = []
+    SEPARATOR = ';---------'
+    for line in raw:
+        if SEPARATOR in line:
+            count += 1
+            if count % 2 == 1:
+                sections.append([])
+        sections[-1].append(line)
+    # Concatenate each section
+    for i in range(len(sections)):
+        sections[i] = '\n'.join(sections[i])
+    return sections
