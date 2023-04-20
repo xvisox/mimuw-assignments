@@ -25,53 +25,6 @@ class IndexView(generic.ListView):
         return context
 
 
-class ShowFileView(generic.DetailView):
-    template_name = 'compiler/index.html'
-    model = FileInfo
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Get all user directories with no parent
-        context['directories'] = get_root_directories(self.request.user)
-        # Get file
-        file_info = FileInfo.objects.get(pk=self.kwargs['pk'])
-        file = File.objects.get(info=file_info)
-        context['code'] = get_code(file.content.read().decode('utf-8'))
-        # Provide file id
-        context['file_id'] = file_info.id
-        # Provide form
-        form = CompileForm()
-        context['form'] = form
-        return context
-
-
-class CompileFileView(ShowFileView):
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Get file
-        file_info = FileInfo.objects.get(pk=self.kwargs['pk'])
-        file = File.objects.get(info=file_info)
-        # Compiling the file
-        import os
-        # Change directory to temporary
-        temporary_path = file.content.path.replace("media/files", "temporary")
-        os.chdir(os.path.dirname(temporary_path))
-        # Compile with options
-        OPTIONS = ''
-        cmd = 'sdcc' + ' ' + OPTIONS + ' ' + file.content.path
-        err_message = os.popen(cmd + ' 2>&1').read()
-        # Get output
-        try:
-            with open(temporary_path.replace('.c', '.asm'), 'r') as output_file:
-                context['output'] = separate_code_to_sections(output_file.read().split('\n'))
-        except FileNotFoundError:
-            context['output'] = parse_err_message(err_message)
-        # Remove all files from temporary directory
-        os.system('rm -rf ' + os.path.dirname(temporary_path) + '/*')
-        return context
-
-
 class DirectoryEditView(generic.ListView):
     template_name = 'compiler/dir-editor.html'
     context_object_name = 'all_directories'
@@ -84,6 +37,45 @@ class DirectoryEditView(generic.ListView):
         # Get all user directories with no parent
         context['directories'] = get_root_directories(self.request.user)
         return context
+
+
+def show_file(request, file_info_id):
+    context = dict()
+    # Get all user directories with no parent
+    context['directories'] = get_root_directories(request.user)
+    # Get file
+    file_info = get_object_or_404(FileInfo, pk=file_info_id)
+    file = File.objects.get(info=file_info)
+    context['code'] = get_code(file.content.read().decode('utf-8'))
+    # Provide file id
+    context['file_id'] = file_info.id
+    if request.method == 'POST':
+        # Get compilation options
+        form = CompileForm(request.POST)
+        options = get_options(form)
+        # Compiling the file
+        import os
+        # Change directory to temporary
+        temporary_path = file.content.path.replace("media/files", "temporary")
+        os.chdir(os.path.dirname(temporary_path))
+        # Compile with options
+        cmd = 'sdcc' + ' ' + options + ' ' + file.content.path
+        context['cmd'] = cmd
+        err_message = os.popen(cmd + ' 2>&1').read()
+        # Get output
+        try:
+            with open(temporary_path.replace('.c', '.asm'), 'r') as output_file:
+                context['output'] = separate_code_to_sections(output_file.read().split('\n'))
+        except FileNotFoundError:
+            context['output'] = parse_err_message(err_message)
+        # Remove all files from temporary directory
+        os.system('rm -rf ' + os.path.dirname(temporary_path) + '/*')
+
+    # Provide form
+    form = CompileForm()
+    context['form'] = form
+    # Return rendered page
+    return render(request, 'compiler/index.html', context)
 
 
 def remove_file(request, file_info_id):
@@ -110,12 +102,12 @@ def upload_file(request):
     if request.method == 'POST' and request.user.is_authenticated:
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            name = request.FILES['file'].name
-            description = request.POST['description']
-            parent = get_and_update_parent(request.POST['parent'])
+            name = form.cleaned_data['file'].name
+            description = form.cleaned_data['description']
+            parent = get_and_update_parent(request.POST['parent'])  # no parent field in django form
             # Create file info and file
             file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
-            file = File.objects.create(info=file_info, parent=parent, content=request.FILES['file'])
+            file = File.objects.create(info=file_info, parent=parent, content=form.cleaned_data['file'])
             file.save()
             return HttpResponseRedirect(reverse('compiler:show_file', args=(file.info.id,)))
     form = UploadFileForm()
@@ -200,3 +192,22 @@ def separate_code_to_sections(raw):
     for i in range(len(sections)):
         sections[i] = '\n'.join(sections[i])
     return sections
+
+
+def get_options(form):
+    form.is_valid()  # ignore errors
+    processor = form.cleaned_data['processor']
+    standard = form.cleaned_data['standard']
+    optimization = form.cleaned_data['optimization']
+    options = ''
+
+    if processor == '-mmcs51':
+        options = form.cleaned_data['options_MCS51']
+    elif processor == '-mz80':
+        options = form.cleaned_data['options_Z80']
+    elif processor == '-mstm8':
+        options = form.cleaned_data['options_STM8']
+
+    # return concatenation of all options
+    all_options = [processor, standard, " ".join(optimization), options]
+    return " ".join(all_options).replace('Default', '')

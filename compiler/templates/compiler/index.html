@@ -32,11 +32,14 @@
         </script>
     </div>
     <div class="grid-item code-fragment">
-        <div class="mb-0 h-100 w-100 p-2 overflow-auto">
-            {% for line in output %}
-                <pre class="line">{{ line }}</pre>
-            {% endfor %}
-        </div>
+        {% if output %}
+            <div class="mb-0 h-100 w-100 p-2 overflow-auto">
+                Compiled with {{ cmd }}
+                {% for line in output %}
+                    <pre class="line">{{ line }}</pre>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
     <div class="grid-item compile-options">
         <div class="d-flex align-items-start">
@@ -60,17 +63,28 @@
                         aria-selected="false">Options
                 </button>
             </div>
+            {% if file_id %}
+                <form method="post" action="{% url 'compiler:show_file' file_id %}" id="compile-form">
+                {% csrf_token %}
+            {% endif %}
             <div class="tab-content compile-content" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
-                     aria-labelledby="v-pills-processor-tab">{{ form.processor }}
+                     aria-labelledby="v-pills-processor-tab">
+                    Choose processor for compilation.
+                    {{ form.processor }}
                 </div>
                 <div class="tab-pane fade" id="v-pills-optimization" role="tabpanel"
-                     aria-labelledby="v-pills-optimization-tab">{{ form.optimization }}
+                     aria-labelledby="v-pills-optimization-tab">
+                    Choose optimizations for compilation (multiple choice).
+                    {{ form.optimization }}
                 </div>
                 <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
-                     aria-labelledby="v-pills-standard-tab">{{ form.standard }}
+                     aria-labelledby="v-pills-standard-tab">
+                    Choose standard for compilation.
+                    {{ form.standard }}
                 </div>
-                <div class="tab-pane fade" id="v-pills-options" role="tabpanel" aria-labelledby="v-pills-options-tab">
+                <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
+                     aria-labelledby="v-pills-options-tab">
                     Choose options for your processor, options for other processors will be omitted.
                     <div class="form-group">
                         {{ form.options_AVR }}
@@ -80,6 +94,9 @@
                     </div>
                 </div>
             </div>
+            {% if file_id %}
+                </form>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}
