@@ -35,7 +35,7 @@
             <div class="collapse navbar-collapse p-2" id="navbarToggleExternalContent">
                 <div class="navbar-nav">
                     <a class="nav-link active" aria-current="page" href={% url 'compiler:index' %}>Home</a>
-                    <a class="nav-link" href="{% url 'compiler:file' %}">File</a>
+                    <a class="nav-link" href="{% url 'compiler:add_file' %}">File</a>
                     <a class="nav-link" href="{% url 'compiler:edit' %}">Edit</a>
                     {% if file_id is not None %}
                         <a class="nav-link" href="#" onclick="document.getElementById('compile-form').submit();">Run</a>

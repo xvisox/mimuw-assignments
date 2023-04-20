@@ -5,38 +5,25 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views import generic
 
 from compiler.forms import UploadFileForm, CompileForm
-from compiler.models import Directory, FileInfo, File
+from compiler.models import Directory, FileInfo, File, Section
 
 
-class IndexView(generic.ListView):
-    template_name = 'compiler/index.html'
-    context_object_name = 'directories'
-
-    def get_queryset(self):
-        return get_root_directories(self.request.user)
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Get sample code
-        context['code'] = get_code(SAMPLE_CODE)
-        return context
+def index(request):
+    context = dict()
+    # Get all user directories with no parent
+    context['directories'] = get_root_directories(request.user)
+    # Get sample code
+    context['code'] = get_code(SAMPLE_CODE)
+    return render(request, 'compiler/index.html', context)
 
 
-class DirectoryEditView(generic.ListView):
-    template_name = 'compiler/dir-editor.html'
-    context_object_name = 'all_directories'
-
-    def get_queryset(self):
-        return get_all_directories(self.request.user)
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Get all user directories with no parent
-        context['directories'] = get_root_directories(self.request.user)
-        return context
+def edit(request):
+    context = dict()
+    context['directories'] = get_root_directories(request.user)
+    context['all_directories'] = get_all_directories(request.user)
+    return render(request, 'compiler/dir-editor.html', context)
 
 
 def show_file(request, file_info_id):
@@ -45,21 +32,20 @@ def show_file(request, file_info_id):
     context['directories'] = get_root_directories(request.user)
     # Get file
     file_info = get_object_or_404(FileInfo, pk=file_info_id)
-    file = File.objects.get(info=file_info)
+    file = get_object_or_404(File, info=file_info)
+    # Provide file id and code to display
     context['code'] = get_code(file.content.read().decode('utf-8'))
-    # Provide file id
     context['file_id'] = file_info.id
     if request.method == 'POST':
         # Get compilation options
         form = CompileForm(request.POST)
         options = get_options(form)
-        # Compiling the file
+        # Compiling the file, firstly save it to temporary directory
         import os
-        # Change directory to temporary
         temporary_path = file.content.path.replace("media/files", "temporary")
         os.chdir(os.path.dirname(temporary_path))
         # Compile with options
-        cmd = 'sdcc' + ' ' + options + ' ' + file.content.path
+        cmd = 'sdcc' + ' -S ' + options + ' ' + file.content.path
         context['cmd'] = cmd
         err_message = os.popen(cmd + ' 2>&1').read()
         # Get output
@@ -108,11 +94,27 @@ def upload_file(request):
             # Create file info and file
             file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
             file = File.objects.create(info=file_info, parent=parent, content=form.cleaned_data['file'])
+            create_file_sections(file.content.read().decode('utf-8'), file)
             file.save()
-            return HttpResponseRedirect(reverse('compiler:show_file', args=(file.info.id,)))
+            return HttpResponseRedirect(reverse('compiler:edit_file', args=(file_info.id,)))
+
     form = UploadFileForm()
     all_directories = get_all_directories(request.user)
     return render(request, 'compiler/file-editor.html', {'form': form, 'all_directories': all_directories})
+
+
+def edit_file(request, file_info_id):
+    # Provide form and directories
+    form = UploadFileForm()
+    all_directories = get_all_directories(request.user)
+    # Get file with sections
+    file_info = get_object_or_404(FileInfo, pk=file_info_id)
+    file = get_object_or_404(File, info=file_info)
+    content = file.content.read().decode('utf-8')
+    sections = get_line_by_line(Section.objects.filter(file=file), len(content.split('\n')))
+    # Return rendered page
+    return render(request, 'compiler/file-editor.html', {'form': form, 'all_directories': all_directories,
+                                                         'content': content, 'sections': sections})
 
 
 def get_root_directories(user):
@@ -155,7 +157,12 @@ SAMPLE_CODE = '// Welcome to home page!\n#include <stdio.h>\n\nint main()' \
 def get_code(raw):
     code_list = raw.split('\n')
     for i in range(len(code_list)):
-        code_list[i] = code_list[i].replace('\t', '\\t').replace('"', '\\"').replace('\\n', ' newline')
+        code_list[i] = code_list[i] \
+            .replace('\t', '\\t') \
+            .replace('"', '\\"') \
+            .replace("'", '\\"') \
+            .replace('\\n', ' newline') \
+            .replace('\\0', ' nullchar')
 
     # Convert to json
     code_obj = {'code': code_list}
@@ -211,3 +218,46 @@ def get_options(form):
     # return concatenation of all options
     all_options = [processor, standard, " ".join(optimization), options]
     return " ".join(all_options).replace('Default', '')
+
+
+def create_file_sections(lines, file):
+    labels = []
+    label_bounds = []
+    i = 0
+    for line in lines.split('\n'):
+        labels.append(get_label(line))
+        label_bounds.append([i, i])
+        i += 1
+
+    # todo: merge consecutive sections with the same label
+    for i in range(len(labels)):
+        section = Section.objects.create(file=file,
+                                         start_row=label_bounds[i][0],
+                                         end_row=label_bounds[i][1],
+                                         type=labels[i])
+        section.save()
+
+
+def get_label(line):
+    if line.startswith("//"):
+        return Section.SectionType.COMMENT
+    elif "asm" in line or "__asm__" in line:
+        return Section.SectionType.INLINE_ASM
+    elif line.startswith("#"):
+        return Section.SectionType.DIRECTIVE
+    elif "(" in line and ")" in line and "{" in line:
+        return Section.SectionType.PROCEDURE
+    elif "=" in line or ";" in line:
+        return Section.SectionType.VARIABLE
+    else:
+        return Section.SectionType.UNKNOWN
+
+
+def get_line_by_line(sections, length):
+    line_by_line = []
+    for i in range(length):
+        line_by_line.append(Section.SectionType.UNKNOWN)
+    for section in sections:
+        for i in range(section.start_row, section.end_row + 1):
+            line_by_line[i] = section.type
+    return line_by_line

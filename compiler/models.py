@@ -47,3 +47,37 @@ class File(models.Model):
 
     def __str__(self):
         return self.info.name
+
+
+class Section(models.Model):
+    id = models.AutoField(primary_key=True)
+    file = models.ForeignKey(File, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, null=True, blank=True)
+    description = models.CharField(max_length=100, null=True, blank=True)
+    creation_date = models.DateTimeField(default=timezone.now)
+    start_row = models.PositiveIntegerField()
+    end_row = models.PositiveIntegerField()
+    # to represent subsections
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+
+    class SectionType(models.TextChoices):
+        PROCEDURE = 'PROCEDURE', 'Procedure'
+        COMMENT = 'COMMENT', 'Comment'
+        DIRECTIVE = 'DIRECTIVE', 'Directive'
+        VARIABLE = 'VARIABLE', 'Variable'
+        INLINE_ASM = 'INLINE_ASM', 'Inline Assembly'
+        UNKNOWN = 'UNKNOWN', 'Unknown'
+
+    type = models.CharField(max_length=20, choices=SectionType.choices, default=SectionType.UNKNOWN)
+
+    class SectionStatus(models.TextChoices):
+        COMPILES_WITH_WARNINGS = 'COMPILES_WITH_WARNINGS', 'Compiles with warnings'
+        COMPILE_OK = 'COMPILE_OK', 'Compiles'
+        COMPILE_ERROR = 'COMPILE_ERROR', 'Compile error'
+
+    status = models.CharField(max_length=30, choices=SectionStatus.choices, default=SectionStatus.COMPILE_OK)
+
+    additional_status_info = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return self.file.info.name
