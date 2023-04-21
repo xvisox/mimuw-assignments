@@ -1,19 +1,19 @@
 let editor = document.querySelector("#editor");
-
-if (editor != null) {
-    ace.edit(editor, {
-        theme: "ace/theme/dracula", // "ace/theme/chrome"
-        mode: "ace/mode/c_cpp",
-        fontSize: "12pt"
-    });
-}
-
 const switchButton = document.querySelector("#themeButton");
+let theme = localStorage.getItem("theme") || "dark";
 switchButton.addEventListener("click", () => {
-    if (editor != null) {
-        let theme = !editor.classList.contains("dark") ? "ace/theme/chrome" : "ace/theme/dracula";
-        editor.classList.toggle("dark");
-        editor.env.editor.setTheme(theme);
+    if (theme === "dark") {
+        document.querySelector("body").classList.add("light");
+        ace.edit(editor).setTheme("ace/theme/chrome");
+        theme = "light";
+    } else {
+        document.querySelector("body").classList.remove("light");
+        ace.edit(editor).setTheme("ace/theme/dracula");
+        theme = "dark";
     }
-    document.querySelector("body").classList.toggle("dark");
+    localStorage.setItem("theme", theme);
 });
+
+if (theme === "light") {
+    document.querySelector("body").classList.add("light");
+}

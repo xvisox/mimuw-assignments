@@ -66,6 +66,7 @@ class Section(models.Model):
         DIRECTIVE = 'DIRECTIVE', 'Directive'
         VARIABLE = 'VARIABLE', 'Variable'
         INLINE_ASM = 'INLINE_ASM', 'Inline Assembly'
+        FUNCTION = 'FUNCTION', 'Function'
         UNKNOWN = 'UNKNOWN', 'Unknown'
 
     type = models.CharField(max_length=20, choices=SectionType.choices, default=SectionType.UNKNOWN)

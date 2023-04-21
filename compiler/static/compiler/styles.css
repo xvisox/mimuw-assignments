@@ -105,8 +105,7 @@ body {
     color: var(--color-text-neg);
 }
 
-/* Dark theme */
-body.dark {
+body.light {
     --color-nav: #6c757d;
     --color-sidebar: #adb5bd;
     --color-footer: #dee2e6;
@@ -142,7 +141,7 @@ body.dark {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--color-nav-element);
+    background-color: var(--color-footer);
     transition: .4s;
 }
 

@@ -11,6 +11,14 @@
                 <i class="fa fa-trash-o fa-lg"></i>
             </button>
         </form>
+        {% if dir.is_file %}
+            <form action="{% url 'compiler:edit_file' dir.info.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-pencil fa-lg"></i>
+                </button>
+            </form>
+        {% endif %}
     </div>
     {% if dir.has_children %}
         <ul>

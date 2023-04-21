@@ -23,7 +23,7 @@
     grid-area: file-upload;
     height: 100%;
     width: 100%;
-    background-color: var(--color-footer);
+    background-color: var(--color-sidebar);
     color: var(--color-text);
     display: flex;
     justify-content: center;
@@ -36,7 +36,7 @@
     grid-area: file-content;
     height: 100%;
     width: 100%;
-    background-color: var(--color-sidebar);
+    background-color: var(--color-footer);
     color: var(--color-text);
     display: flex;
     flex-direction: row;

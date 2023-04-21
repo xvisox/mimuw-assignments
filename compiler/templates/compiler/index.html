@@ -20,10 +20,11 @@
             const parsedCode = JSON.parse('{{ code|safe }}');
             let code = parsedCode['code']
 
-            console.log(code)
             let editorTemp = document.querySelector("#editor");
+            let themeTemp = localStorage.getItem("theme");
+            let editorTheme = themeTemp === "light" ? "ace/theme/chrome" : "ace/theme/dracula";
             ace.edit(editorTemp, {
-                theme: "ace/theme/dracula", // "ace/theme/chrome"
+                theme: editorTheme,
                 mode: "ace/mode/c_cpp",
                 fontSize: "12pt",
                 value: code.join("\n"),

@@ -12,7 +12,7 @@
 @media (min-width: 600px) {
     .grid-container {
         grid-template-rows: 70px 1fr;
-        grid-template-columns: 5fr 8fr;
+        grid-template-columns: 1fr 1fr;
         grid-template-areas:
             "navbar navbar"
             "dir-editor dir-adder";

@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponseRedirect
@@ -12,9 +13,7 @@ from compiler.models import Directory, FileInfo, File, Section
 
 def index(request):
     context = dict()
-    # Get all user directories with no parent
     context['directories'] = get_root_directories(request.user)
-    # Get sample code
     context['code'] = get_code(SAMPLE_CODE)
     return render(request, 'compiler/index.html', context)
 
@@ -40,7 +39,7 @@ def show_file(request, file_info_id):
         # Get compilation options
         form = CompileForm(request.POST)
         options = get_options(form)
-        # Compiling the file, firstly save it to temporary directory
+        # Compiling the file, saving the output to the temporary directory
         import os
         temporary_path = file.content.path.replace("media/files", "temporary")
         os.chdir(os.path.dirname(temporary_path))
@@ -51,7 +50,7 @@ def show_file(request, file_info_id):
         # Get output
         try:
             with open(temporary_path.replace('.c', '.asm'), 'r') as output_file:
-                context['output'] = separate_code_to_sections(output_file.read().split('\n'))
+                context['output'] = separate_code_to_sections(output_file.read())
         except FileNotFoundError:
             context['output'] = parse_err_message(err_message)
         # Remove all files from temporary directory
@@ -161,8 +160,8 @@ def get_code(raw):
             .replace('\t', '\\t') \
             .replace('"', '\\"') \
             .replace("'", '\\"') \
-            .replace('\\n', ' newline') \
-            .replace('\\0', ' nullchar')
+            .replace('\\n', 'newline') \
+            .replace('\\0', 'nullchar')
 
     # Convert to json
     code_obj = {'code': code_list}
@@ -186,11 +185,12 @@ def find_first_index(message):
 
 
 def separate_code_to_sections(raw):
+    code_list = raw.split('\n')
     count = 0
     sections = []
-    SEPARATOR = ';---------'
-    for line in raw:
-        if SEPARATOR in line:
+    separator = ';---------'
+    for line in code_list:
+        if separator in line:
             count += 1
             if count % 2 == 1:
                 sections.append([])
@@ -239,18 +239,36 @@ def create_file_sections(lines, file):
 
 
 def get_label(line):
-    if line.startswith("//"):
+    # Check for comments
+    if line.startswith("//") or line.startswith("/*") or line.endswith("*/"):
         return Section.SectionType.COMMENT
-    elif "asm" in line or "__asm__" in line:
+
+    # Check for inline assembly
+    if re.search(r"\basm\b|\b__asm__\b", line):
         return Section.SectionType.INLINE_ASM
-    elif line.startswith("#"):
+
+    # Check for preprocessor directives
+    if line.startswith("#"):
         return Section.SectionType.DIRECTIVE
-    elif "(" in line and ")" in line and "{" in line:
+
+    # Check for function declarations or definitions
+    if re.match(r"\s*(\w+\s+){0,2}\w+\s+\**\w+\s*\([^)]*\)\s*\{?", line):
         return Section.SectionType.PROCEDURE
-    elif "=" in line or ";" in line:
+
+    # Check for function calls
+    if re.match(r"\s*\w+\s*\([^)]*\)\s*;", line):
+        return Section.SectionType.FUNCTION
+
+    # Check for variable declarations
+    if re.match(r"\s*(\w+\s+)+\**\w+\s*(, *\**\w+\s*)*;?", line):
         return Section.SectionType.VARIABLE
-    else:
-        return Section.SectionType.UNKNOWN
+
+    # Check for variable assignments or other statements
+    if re.search(r"[\w\s]+\s*(=|;)", line):
+        return Section.SectionType.VARIABLE
+
+    # If none of the above apply, return unknown
+    return Section.SectionType.UNKNOWN
 
 
 def get_line_by_line(sections, length):
