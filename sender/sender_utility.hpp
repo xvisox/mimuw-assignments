@@ -17,7 +17,6 @@
 inline static int open_socket() {
     int socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
     if (socket_fd < 0) PRINT_ERRNO();
-
     return socket_fd;
 }
 
@@ -42,14 +41,15 @@ inline static struct sockaddr_in get_send_address(char const *host, port_t port)
 }
 
 inline static void send_packet(const struct sockaddr_in *send_address, int socket_fd,
-                               struct AudioPacket *packet, size_t packet_size) {
+                               const struct AudioPacket *packet, size_t packet_size) {
     auto address_length = (socklen_t) sizeof(*send_address);
-    errno = 0;
-    ssize_t sent_length = sendto(socket_fd, packet, packet_size, NO_FLAGS,
-                                 (struct sockaddr *) send_address, address_length);
-
-    if (sent_length < 0) PRINT_ERRNO();
-    ENSURE((size_t) sent_length == packet_size);
+    ssize_t sent_length;
+    do {
+        errno = 0;
+        sent_length = sendto(socket_fd, packet, packet_size, NO_FLAGS,
+                             (struct sockaddr *) send_address, address_length);
+    } while (sent_length < 0);
+    // if (sent_length < 0) PRINT_ERRNO();
 }
 
 #endif // SENDER_UTILITY_HPP

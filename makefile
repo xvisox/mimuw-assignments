@@ -1,5 +1,5 @@
 COMPILER = g++
-PRE_FLAGS = -std=c++20 -Wall -Werror
+PRE_FLAGS = -std=c++20 -Wall -Werror -O2
 POST_FLAGS = -lpthread -lboost_program_options
 
 all: sikradio-sender sikradio-receiver

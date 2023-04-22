@@ -17,8 +17,6 @@ private:
         // Allocate memory for the audio data.
         packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
         if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
-        // Set the session ID.
-        packet->session_id = htobe64(time(nullptr));
     }
 
 public:
@@ -27,7 +25,7 @@ public:
 
     ~Sender() {
         free(packet);
-        CHECK_ERRNO(close(socket_fd));
+        if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
     }
 
     void run() {
@@ -38,6 +36,7 @@ public:
         packet_size_t psize = params.psize;
         size_t packet_size = sizeof(struct AudioPacket) + psize;
         init_packet(packet_size);
+        packet->session_id = htobe64(time(nullptr));
         packet_id_t byte_num = 0;
         while (!feof(stdin)) {
             // Read the audio data.

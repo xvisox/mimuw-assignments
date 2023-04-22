@@ -30,7 +30,7 @@ public:
 
     ~Receiver() {
         free(packet);
-        CHECK_ERRNO(close(socket_fd));
+        if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
     }
 
     void run() {

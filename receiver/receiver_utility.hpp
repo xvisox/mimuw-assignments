@@ -9,6 +9,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <cstdint>
+#include "../utils/audio_packet.h"
 #include "../utils/err.h"
 #include "../utils/const.h"
 
@@ -31,12 +32,17 @@ inline static int bind_socket(uint16_t port) {
 }
 
 inline static size_t read_message(int socket_fd, struct sockaddr_in *client_address, char *buffer, size_t max_length) {
+    ssize_t len;
+    auto empty_packet_size = (ssize_t) sizeof(struct AudioPacket);
     auto address_length = (socklen_t) sizeof(*client_address);
-    errno = 0;
-    ssize_t len = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
-                           (struct sockaddr *) client_address, &address_length);
+    do {
+        errno = 0;
+        len = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
+                       (struct sockaddr *) client_address, &address_length);
+    } while (len <= empty_packet_size);
 
-    if (len < 0) PRINT_ERRNO();
+    // Maybe this would be a better way to handle error.
+    // if (len < 0) PRINT_ERRNO();
     return (size_t) len;
 }
 
