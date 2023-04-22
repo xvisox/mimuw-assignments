@@ -22,7 +22,8 @@ private:
     }
 
 public:
-    explicit Sender(SenderParameters &params) : params(params), packet(nullptr), socket_fd(-1), address() {}
+    explicit Sender(SenderParameters &params) : params(params), packet(nullptr), address(), socket_fd(-1) {}
+
 
     ~Sender() {
         free(packet);

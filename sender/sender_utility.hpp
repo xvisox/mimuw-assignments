@@ -49,7 +49,7 @@ inline static void send_packet(const struct sockaddr_in *send_address, int socke
                                  (struct sockaddr *) send_address, address_length);
 
     if (sent_length < 0) PRINT_ERRNO();
-    ENSURE(sent_length == packet_size);
+    ENSURE((size_t) sent_length == packet_size);
 }
 
 #endif // SENDER_UTILITY_HPP

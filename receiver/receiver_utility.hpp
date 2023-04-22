@@ -12,7 +12,7 @@
 #include "../utils/err.h"
 #include "../utils/const.h"
 
-int bind_socket(uint16_t port) {
+inline static int bind_socket(uint16_t port) {
     // Creating IPv4 UDP socket.
     int socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
     ENSURE(socket_fd > 0);
@@ -30,7 +30,7 @@ int bind_socket(uint16_t port) {
     return socket_fd;
 }
 
-size_t read_message(int socket_fd, struct sockaddr_in *client_address, char *buffer, size_t max_length) {
+inline static size_t read_message(int socket_fd, struct sockaddr_in *client_address, char *buffer, size_t max_length) {
     auto address_length = (socklen_t) sizeof(*client_address);
     errno = 0;
     ssize_t len = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,

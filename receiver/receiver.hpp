@@ -15,6 +15,7 @@ private:
     byte_t buffer[BSIZE];       // The buffer will store raw data.
     Buffer packets_buffer;      // The buffer will store the packets to be printed.
     struct AudioPacket *packet; // The packet will store the data from the buffer.
+    struct sockaddr_in client_address;
     int socket_fd;
 
     void init_packet(size_t packet_size) {
@@ -24,8 +25,8 @@ private:
     }
 
 public:
-    explicit Receiver(ReceiverParameters &params) : params(params), packet(nullptr), socket_fd(-1),
-                                                    packets_buffer(params.buffer_size), buffer{} {}
+    explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
+                                                    packet(nullptr), client_address(), socket_fd(-1) {}
 
     ~Receiver() {
         free(packet);
@@ -34,8 +35,8 @@ public:
 
     void run() {
         std::thread receiver_thread(&Receiver::receiver, this);
-        writer(); // The writer thread will be the main thread.
-        receiver_thread.join();
+        receiver_thread.detach();
+        writer();
     }
 
     void receiver() {
@@ -44,7 +45,6 @@ public:
         size_t empty_packet_size = sizeof(struct AudioPacket);
         size_t read_length;
         init_packet(empty_packet_size);
-        struct sockaddr_in client_address{};
         do {
             read_length = read_message(socket_fd, &client_address, buffer, BSIZE);
             // Copy the data from the buffer to the packet.
@@ -63,7 +63,7 @@ public:
         } while (read_length > 0);
     }
 
-    void writer() {
+    [[noreturn]] void writer() {
         while (true) {
             // Get the packet from the buffer.
             auto optional_packet = packets_buffer.read();
