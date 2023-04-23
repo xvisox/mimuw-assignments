@@ -12,7 +12,7 @@
 
 #include "../utils/err.h"
 #include "../utils/const.h"
-#include "../utils/audio_packet.h"
+#include "../utils/types.h"
 
 inline static int open_socket() {
     int socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -41,7 +41,7 @@ inline static struct sockaddr_in get_send_address(char const *host, port_t port)
 }
 
 inline static void send_packet(const struct sockaddr_in *send_address, int socket_fd,
-                               const struct AudioPacket *packet, size_t packet_size) {
+                               byte_t *packet, packet_size_t packet_size) {
     auto address_length = (socklen_t) sizeof(*send_address);
     ssize_t sent_length;
     do {
@@ -49,6 +49,7 @@ inline static void send_packet(const struct sockaddr_in *send_address, int socke
         sent_length = sendto(socket_fd, packet, packet_size, NO_FLAGS,
                              (struct sockaddr *) send_address, address_length);
     } while (sent_length < 0);
+    // Maybe this would be a better way to handle error.
     // if (sent_length < 0) PRINT_ERRNO();
 }
 

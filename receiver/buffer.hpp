@@ -2,9 +2,8 @@
 #define BUFFER_H
 
 #include <mutex>
-#include "../utils/audio_packet.h"
-#include "../utils/types.h"
 #include "session.hpp"
+#include "../utils/types.h"
 
 class Buffer {
 private:
@@ -16,7 +15,7 @@ private:
     packet_id_deque_t packets;  // Identifiers of above packets.
     packet_id_t BYTE_0;         // First byte number received.
 
-    void setup_if_necessary(packet_id_t id, session_id_t session_id, size_t audio_data_size) {
+    void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
         if (session.session_id < session_id) {
             clear();
         } else if (session.is_initialized()) {

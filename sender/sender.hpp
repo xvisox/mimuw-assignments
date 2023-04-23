@@ -9,22 +9,13 @@
 class Sender {
 private:
     SenderParameters params;
-    struct AudioPacket *packet;
     struct sockaddr_in address;
     int socket_fd;
 
-    void init_packet(size_t packet_size) {
-        // Allocate memory for the audio data.
-        packet = static_cast<AudioPacket *>(calloc(packet_size, sizeof(byte_t)));
-        if (packet == nullptr) fatal("Cannot allocate memory for the audio data");
-    }
-
 public:
-    explicit Sender(SenderParameters &params) : params(params), packet(nullptr), address(), socket_fd(-1) {}
-
+    explicit Sender(SenderParameters &params) : params(params), address(), socket_fd(-1) {}
 
     ~Sender() {
-        free(packet);
         if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
     }
 
@@ -33,21 +24,26 @@ public:
         address = get_send_address(params.dest_addr.c_str(), params.data_port);
         socket_fd = open_socket();
 
-        packet_size_t psize = params.psize;
-        size_t packet_size = sizeof(struct AudioPacket) + psize;
-        init_packet(packet_size);
-        packet->session_id = htobe64(time(nullptr));
+        // Initialize the packet.
+        packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
+        packet_size_t packet_size = empty_packet_size + params.psize;
+        byte_vector_t packet(packet_size);
+        // Prepare the packet.
+        session_id_t session_id = htobe64(time(nullptr));
         packet_id_t byte_num = 0;
+        memcpy(packet.data(), &session_id, sizeof(session_id_t));
+        memcpy(packet.data() + sizeof(session_id_t), &byte_num, sizeof(packet_id_t));
         while (!feof(stdin)) {
             // Read the audio data.
-            size_t read_bytes = fread(packet->audio_data, sizeof(byte_t), psize, stdin);
-            if (read_bytes < psize) break;
+            size_t read_bytes = fread(packet.data() + empty_packet_size, sizeof(byte_t), params.psize, stdin);
+            if (read_bytes < params.psize) break;
 
             // Send the audio data.
-            send_packet(&address, socket_fd, packet, packet_size);
+            send_packet(&address, socket_fd, packet.data(), packet_size);
             // Update the packet.
-            byte_num += psize;
-            packet->first_byte_num = htobe64(byte_num);
+            byte_num += params.psize;
+            packet_id_t aux = htobe64(byte_num);
+            memcpy(packet.data() + sizeof(session_id_t), &aux, sizeof(packet_id_t));
         }
     }
 };

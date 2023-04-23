@@ -2,7 +2,6 @@
 #define SESSION_HPP
 
 #include "../utils/types.h"
-#include "../utils/audio_packet.h"
 
 enum class SessionState {
     NOT_INITIALIZED,

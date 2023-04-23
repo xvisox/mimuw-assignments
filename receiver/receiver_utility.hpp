@@ -9,9 +9,9 @@
 #include <cstring>
 #include <unistd.h>
 #include <cstdint>
-#include "../utils/audio_packet.h"
 #include "../utils/err.h"
 #include "../utils/const.h"
+#include "../utils/types.h"
 
 inline static int bind_socket(uint16_t port) {
     // Creating IPv4 UDP socket.
@@ -31,19 +31,19 @@ inline static int bind_socket(uint16_t port) {
     return socket_fd;
 }
 
-inline static size_t read_message(int socket_fd, struct sockaddr_in *client_address, char *buffer, size_t max_length) {
-    ssize_t len;
-    auto empty_packet_size = (ssize_t) sizeof(struct AudioPacket);
+inline static size_t read_message(int socket_fd, struct sockaddr_in *client_address,
+                                  byte_t *buffer, size_t max_length) {
+    ssize_t read_length;
+    auto empty_packet_size = (ssize_t) (sizeof(session_id_t) + sizeof(packet_id_t));
     auto address_length = (socklen_t) sizeof(*client_address);
     do {
         errno = 0;
-        len = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
-                       (struct sockaddr *) client_address, &address_length);
-    } while (len <= empty_packet_size);
-
+        read_length = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
+                               (struct sockaddr *) client_address, &address_length);
+    } while (read_length <= empty_packet_size);
     // Maybe this would be a better way to handle error.
     // if (len < 0) PRINT_ERRNO();
-    return (size_t) len;
+    return (size_t) read_length;
 }
 
 #endif // RECEIVER_UTILITY_HPP
