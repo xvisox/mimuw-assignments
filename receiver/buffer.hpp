@@ -99,6 +99,9 @@ public:
             // Add missing packet to the buffer.
             size_t position = (id - packets.front()) / session.packet_size;
             insert(packet_data_opt, position);
+        } else {
+            // Received packet is too old, ignore it.
+            return;
         }
         // Print missing packets before new packet.
         packet_id_t n = (id - packets.front()) / session.packet_size;
