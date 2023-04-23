@@ -11,6 +11,7 @@
 struct ReceiverParameters {
     port_t data_port;
     buffer_size_t buffer_size;
+    std::string sender_addr;
 };
 
 namespace po = boost::program_options;
@@ -27,7 +28,8 @@ ReceiverParameters parse(int argc, const char **argv) {
     desc.add_options()
             ("help", "produce help message")
             ("data-port,P", po::value<port_t>()->default_value(DATA_PORT), "set the receiver's port")
-            ("buffer-size,b", po::value<buffer_size_t>()->default_value(BSIZE), "set the buffer size");
+            ("buffer-size,b", po::value<buffer_size_t>()->default_value(BSIZE), "set the buffer size")
+            ("address,a", po::value<std::string>()->required(), "set the sender's IP address");
 
     ReceiverParameters params{};
     try {
@@ -42,6 +44,7 @@ ReceiverParameters parse(int argc, const char **argv) {
 
         params.data_port = vm["data-port"].as<port_t>();
         params.buffer_size = vm["buffer-size"].as<buffer_size_t>();
+        params.sender_addr = vm["address"].as<std::string>();
     } catch (po::error &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         exit(EXIT_FAILURE);

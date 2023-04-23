@@ -15,15 +15,15 @@
 #include "../utils/types.h"
 
 inline static int open_socket() {
-    int socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
+    int socket_fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (socket_fd < 0) PRINT_ERRNO();
     return socket_fd;
 }
 
-inline static struct sockaddr_in get_send_address(char const *host, port_t port) {
+inline static struct sockaddr_in get_address(char const *host, port_t port) {
     struct addrinfo hints{};
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET; // IPv4
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
 
@@ -31,9 +31,8 @@ inline static struct sockaddr_in get_send_address(char const *host, port_t port)
     CHECK(getaddrinfo(host, nullptr, &hints, &address_result));
 
     struct sockaddr_in send_address{};
-    send_address.sin_family = AF_INET; // IPv4
-    send_address.sin_addr.s_addr =
-            ((struct sockaddr_in *) (address_result->ai_addr))->sin_addr.s_addr; // IP address
+    send_address.sin_family = AF_INET;
+    send_address.sin_addr.s_addr = ((struct sockaddr_in *) (address_result->ai_addr))->sin_addr.s_addr;
     send_address.sin_port = htons(port);
 
     freeaddrinfo(address_result);

@@ -21,7 +21,7 @@ public:
 
     void run() {
         // Get the address of the receiver and create a socket.
-        address = get_send_address(params.dest_addr.c_str(), params.data_port);
+        address = get_address(params.dest_addr.c_str(), params.data_port);
         socket_fd = open_socket();
 
         // Initialize the packet.

@@ -14,11 +14,12 @@ private:
     byte_t buffer[BSIZE];       // The buffer will store raw data.
     Buffer packets_buffer;      // The buffer will store the packets to be printed.
     struct sockaddr_in client_address;
+    struct sockaddr_in sender_address;
     int socket_fd;
 
 public:
     explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
-                                                    client_address(), socket_fd(-1) {}
+                                                    client_address(), sender_address(), socket_fd(-1) {}
 
     ~Receiver() {
         if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
@@ -31,6 +32,7 @@ public:
     }
 
     void receiver() {
+        sender_address = get_address(params.sender_addr.c_str(), params.data_port);
         socket_fd = bind_socket(params.data_port);
 
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
@@ -38,7 +40,7 @@ public:
         packet_id_t packet_id;
         size_t read_length;
         do {
-            read_length = read_message(socket_fd, &client_address, buffer, BSIZE);
+            read_length = read_message(socket_fd, &client_address, &sender_address, buffer, BSIZE);
             // Convert the data from the buffer to the packet data.
             memcpy(&session_id, buffer, sizeof(session_id_t));
             memcpy(&packet_id, buffer + sizeof(session_id_t), sizeof(packet_id_t));
