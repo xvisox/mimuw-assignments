@@ -39,17 +39,18 @@ inline static struct sockaddr_in get_address(char const *host, port_t port) {
     return send_address;
 }
 
-inline static void send_packet(const struct sockaddr_in *send_address, int socket_fd,
-                               byte_t *packet, packet_size_t packet_size) {
-    auto address_length = (socklen_t) sizeof(*send_address);
+inline static void send_packet(int socket_fd, byte_t *packet, packet_size_t packet_size) {
     ssize_t sent_length;
     do {
         errno = 0;
-        sent_length = sendto(socket_fd, packet, packet_size, NO_FLAGS,
-                             (struct sockaddr *) send_address, address_length);
+        sent_length = send(socket_fd, packet, packet_size, NO_FLAGS);
+        // Maybe this would be a better way to handle error.
+        // if (sent_length < 0) PRINT_ERRNO();
     } while (sent_length < 0);
-    // Maybe this would be a better way to handle error.
-    // if (sent_length < 0) PRINT_ERRNO();
+}
+
+inline static void connect_socket(int socket_fd, const struct sockaddr_in *address) {
+    CHECK_ERRNO(connect(socket_fd, (struct sockaddr *) address, sizeof(*address)));
 }
 
 #endif // SENDER_UTILITY_HPP

@@ -14,14 +14,14 @@
 #include "../utils/const.h"
 #include "../utils/types.h"
 
-inline static int bind_socket(port_t port) {
+inline static int bind_socket(port_t port, in_addr_t address) {
     // Creating IPv4 UDP socket.
     int socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     ENSURE(socket_fd > 0);
 
     struct sockaddr_in server_address{};
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address.sin_addr.s_addr = address;
     server_address.sin_port = htons(port);
 
     // Bind the socket to a concrete address.
@@ -31,23 +31,15 @@ inline static int bind_socket(port_t port) {
     return socket_fd;
 }
 
-inline static size_t read_message(int socket_fd, struct sockaddr_in *client_address,
-                                  struct sockaddr_in *sender_address, byte_t *buffer, size_t max_length) {
+inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length) {
     ssize_t read_length;
     auto empty_packet_size = (ssize_t) (sizeof(session_id_t) + sizeof(packet_id_t));
-    auto address_length = (socklen_t) sizeof(*client_address);
     do {
         errno = 0;
-        read_length = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
-                               (struct sockaddr *) client_address, &address_length);
-
-        // If we received a packet from a different sender than the one we are expecting,
-        // we should ignore it. The same applies to the case when we receive a packet
-        // from the expected sender, but it is not the one we are expecting.
-    } while (read_length <= empty_packet_size ||
-             ntohl(client_address->sin_addr.s_addr) != ntohl(sender_address->sin_addr.s_addr));
-    // Maybe this would be a better way to handle error.
-    // if (len < 0) PRINT_ERRNO();
+        read_length = recv(socket_fd, buffer, max_length, NO_FLAGS);
+        // Maybe this would be a better way to handle error.
+        // if (len < 0) PRINT_ERRNO();
+    } while (read_length <= empty_packet_size);
     return (size_t) read_length;
 }
 

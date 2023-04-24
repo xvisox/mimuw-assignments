@@ -23,6 +23,7 @@ public:
         // Get the address of the receiver and create a socket.
         address = get_address(params.dest_addr.c_str(), params.data_port);
         socket_fd = open_socket();
+        connect_socket(socket_fd, &address);
 
         // Initialize the packet.
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
@@ -39,7 +40,7 @@ public:
             if (read_bytes < params.psize) break;
 
             // Send the audio data.
-            send_packet(&address, socket_fd, packet.data(), packet_size);
+            send_packet(socket_fd, packet.data(), packet_size);
             // Update the packet.
             byte_num += params.psize;
             packet_id_t aux = htobe64(byte_num);

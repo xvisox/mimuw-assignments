@@ -33,14 +33,14 @@ public:
 
     void receiver() {
         sender_address = get_address(params.sender_addr.c_str(), params.data_port);
-        socket_fd = bind_socket(params.data_port);
+        socket_fd = bind_socket(params.data_port, sender_address.sin_addr.s_addr);
 
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
         session_id_t session_id;
         packet_id_t packet_id;
         size_t read_length;
         do {
-            read_length = read_message(socket_fd, &client_address, &sender_address, buffer, BSIZE);
+            read_length = read_message(socket_fd, buffer, BSIZE);
             // Convert the data from the buffer to the packet data.
             memcpy(&session_id, buffer, sizeof(session_id_t));
             memcpy(&packet_id, buffer + sizeof(session_id_t), sizeof(packet_id_t));
