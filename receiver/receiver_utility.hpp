@@ -14,14 +14,14 @@
 #include "../utils/const.h"
 #include "../utils/types.h"
 
-inline static int bind_socket(port_t port, in_addr_t address) {
+inline static int bind_socket(port_t port) {
     // Creating IPv4 UDP socket.
     int socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     ENSURE(socket_fd > 0);
 
     struct sockaddr_in server_address{};
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = address;
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(port);
 
     // Bind the socket to a concrete address.
@@ -31,15 +31,22 @@ inline static int bind_socket(port_t port, in_addr_t address) {
     return socket_fd;
 }
 
-inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length) {
+inline static bool different_address(struct sockaddr_in *addr_lhs, struct sockaddr_in *addr_rhs) {
+    return ntohl(addr_lhs->sin_addr.s_addr) != ntohl(addr_rhs->sin_addr.s_addr);
+}
+
+inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length,
+                                  struct sockaddr_in *client_address, struct sockaddr_in *sender_address) {
     ssize_t read_length;
     auto empty_packet_size = (ssize_t) (sizeof(session_id_t) + sizeof(packet_id_t));
+    auto address_length = (socklen_t) sizeof(*client_address);
     do {
         errno = 0;
-        read_length = recv(socket_fd, buffer, max_length, NO_FLAGS);
+        read_length = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
+                               (struct sockaddr *) client_address, &address_length);
         // Maybe this would be a better way to handle error.
         // if (len < 0) PRINT_ERRNO();
-    } while (read_length <= empty_packet_size);
+    } while (read_length <= empty_packet_size || different_address(client_address, sender_address));
     return (size_t) read_length;
 }
 
