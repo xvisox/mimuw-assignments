@@ -60,13 +60,13 @@ inline static struct sockaddr_in get_address(char const *host, port_t port) {
     struct addrinfo *address_result;
     CHECK(getaddrinfo(host, nullptr, &hints, &address_result));
 
-    struct sockaddr_in send_address{};
-    send_address.sin_family = AF_INET;
-    send_address.sin_addr.s_addr = ((struct sockaddr_in *) (address_result->ai_addr))->sin_addr.s_addr;
-    send_address.sin_port = htons(port);
+    struct sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = ((struct sockaddr_in *) (address_result->ai_addr))->sin_addr.s_addr;
+    address.sin_port = htons(port);
 
     freeaddrinfo(address_result);
-    return send_address;
+    return address;
 }
 
 #endif // RECEIVER_UTILITY_HPP
