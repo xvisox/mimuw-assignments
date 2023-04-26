@@ -89,7 +89,7 @@ public:
             session.state = SessionState::READY;
         }
 
-        if (id % session.packet_size != 0) {
+        if ((id - BYTE_0) % session.packet_size != 0) {
             // Probably will never happen.
             fatal("The first byte number is not a multiple of the packet size");
         } else if (packets.empty() || id > packets.back()) {
