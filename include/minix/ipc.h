@@ -9,9 +9,18 @@
 
 /*==========================================================================* 
  * Types relating to messages. 						    *
- *==========================================================================*/ 
+ *==========================================================================*/
 
 #define M_PATH_STRING_MAX  40
+
+// hm438596
+typedef struct {
+    pid_t m_src;		/* who transfers the money, 4 bytes */
+    pid_t m_dest;		/* who is the recipient, 4 bytes */
+    int m_amount;	    /* how much money is transferred, 4 bytes */
+    uint8_t padding[44];
+} mess_transfer_money;
+_ASSERT_MSG_SIZE(mess_transfer_money);
 
 typedef struct {
 	uint8_t data[56];
@@ -2027,6 +2036,8 @@ typedef struct {
 	endpoint_t m_source;		/* who sent the message */
 	int m_type;			/* what kind of message is it */
 	union {
+        mess_transfer_money    m_transfer; // hm438596
+
 		mess_u8			m_u8;
 		mess_u16		m_u16;
 		mess_u32		m_u32;
@@ -2260,6 +2271,12 @@ typedef struct {
 typedef int _ASSERT_message[/* CONSTCOND */sizeof(message) == 64 ? 1 : -1];
 
 /* The following defines provide names for useful members. */
+
+// hm438596
+#define m_trans_src m_transfer.m_src
+#define m_trans_dst m_transfer.m_dest
+#define m_trans_amt m_transfer.m_amount
+
 #define m1_i1  m_m1.m1i1
 #define m1_i2  m_m1.m1i2
 #define m1_i3  m_m1.m1i3
@@ -2324,7 +2341,7 @@ typedef int _ASSERT_message[/* CONSTCOND */sizeof(message) == 64 ? 1 : -1];
 
 /*==========================================================================* 
  * Minix run-time system (IPC). 					    *
- *==========================================================================*/ 
+ *==========================================================================*/
 
 /* Datastructure for asynchronous sends */
 typedef struct asynmsg

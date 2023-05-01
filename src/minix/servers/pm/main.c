@@ -205,7 +205,7 @@ static int sef_cb_init_fresh(int UNUSED(type), sef_init_info_t *UNUSED(info))
   				rmp->mp_parent = RS_PROC_NR;
   			}
   			rmp->mp_pid = get_free_pid();
-            rmp->account_balance = INIT_BALANCE;
+            rmp->account_balance = INIT_BALANCE; // hm438596.init_balance
 			rmp->mp_flags |= IN_USE | PRIV_PROC;
 
 			/* RS schedules this process */
