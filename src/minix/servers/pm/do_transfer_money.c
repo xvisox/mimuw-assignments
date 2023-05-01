@@ -1,23 +1,46 @@
 // hm438596
 
-#include <stdio.h>
 #include <minix/callnr.h>
 #include "pm.h"
 #include "mproc.h"
 
+#define ROOT_PID 1
+
+static int is_descendant(pid_t ancestor, pid_t descendant) {
+    pid_t current_pid = descendant;
+    while (current_pid != ROOT_PID) {
+        if (current_pid == ancestor) {
+            return 1;
+        }
+        struct mproc *proc = &mproc[find_proc(current_pid)->mp_parent];
+        current_pid = proc->mp_pid;
+    }
+    return 0;
+}
+
 int do_transfer_money(void) {
-    pid_t xd = m_in.m_trans_src;
-    printf("do_transfer_money called by %d\n", xd);
-    printf("recipient: %d\n", m_in.m_trans_dst);
-    printf("amount: %d\n", m_in.m_trans_amt);
-    struct mproc *rmp = find_proc(xd);
-    if (rmp == NULL) {
-        printf("do_transfer_money: find_proc failed wooohoe\n");
-        return -1;
-    } else {
-        printf("do_transfer_money: find_proc succeeded\n");
-        printf("%d\n", rmp->account_balance);
+    pid_t source = m_in.m_trans_src;
+    pid_t destination = m_in.m_trans_dst;
+    int amount = m_in.m_trans_amt;
+
+    struct mproc *src_proc = find_proc(source);
+    struct mproc *dst_proc = find_proc(destination);
+    if (dst_proc == NULL) {
+        return ESRCH;
     }
 
-    return 0;
+    if ((is_descendant(source, destination) ||
+         is_descendant(destination, source)) &&
+        destination != source) {
+        return EPERM;
+    }
+
+    if (amount < 0 || amount > src_proc->account_balance || dst_proc->account_balance + amount > MAX_BALANCE) {
+        return EINVAL;
+    }
+
+    src_proc->account_balance -= amount;
+    dst_proc->account_balance += amount;
+
+    return src_proc->account_balance;
 }
