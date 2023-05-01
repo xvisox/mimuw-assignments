@@ -6,5 +6,6 @@
 # constructor
 SRCS+=	initfini.c
 
+# hm438596
 # for -fstack-protector
-SRCS+=	stack_protector.c
+SRCS+=	stack_protector.c transfer_money.c
