@@ -95,4 +95,8 @@
 #define NR_PCIBUS 40
 #define NR_PCIDEV 50
 
+// hm438596
+#define INIT_BALANCE 100
+#define MAX_BALANCE 1000
+
 #endif /* _CONFIG_H */

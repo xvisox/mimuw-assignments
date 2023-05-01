@@ -112,6 +112,7 @@ int do_fork()
   /* Find a free pid for the child and put it in the table. */
   new_pid = get_free_pid();
   rmc->mp_pid = new_pid;	/* assign pid to child */
+  rmc->account_balance = INIT_BALANCE; // hm438596.init_balance
 
   memset(&m, 0, sizeof(m));
   m.m_type = VFS_PM_FORK;
@@ -204,6 +205,7 @@ int do_srv_fork()
   /* Find a free pid for the child and put it in the table. */
   new_pid = get_free_pid();
   rmc->mp_pid = new_pid;	/* assign pid to child */
+  rmc->account_balance = INIT_BALANCE; // hm438596.init_balance
 
   memset(&m, 0, sizeof(m));
   m.m_type = VFS_PM_SRV_FORK;
