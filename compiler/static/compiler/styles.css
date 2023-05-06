@@ -56,6 +56,8 @@ body {
 .program-content {
     grid-area: program-content;
     height: 100%;
+    background-color: var(--color-editor);
+    color: var(--color-text);
 }
 
 /* Editor style */
@@ -258,4 +260,15 @@ li {
 
 .form-control {
     margin-bottom: 5px;
+}
+
+.editor-panel {
+    height: 40px;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.panel-component {
+    height: 100%;
+    margin-right: 10px;
 }

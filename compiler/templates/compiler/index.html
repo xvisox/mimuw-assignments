@@ -3,23 +3,80 @@
 
 {% block content %}
     <div class="grid-item choose-file">
-        <div class="directory-structure">
-            <ul>
-                {% for dir in directories %}
-                    {% include "compiler/directories-tree.html" %}
-                {% endfor %}
-            </ul>
+        <div class="directory-structure" id="tree">
+            {% include "compiler/directories.html" %}
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Upload file to chosen directory:</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="upload-tab" data-bs-toggle="tab"
+                                        data-bs-target="#upload" type="button" role="tab" aria-controls="upload"
+                                        aria-selected="true">Upload file
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create"
+                                        type="button" role="tab" aria-controls="create" aria-selected="false">
+                                    Create directory
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade p-2 show active" id="upload" role="tabpanel"
+                                 aria-labelledby="upload-tab">
+                                <form method="post" id="upload-form">
+                                    {% csrf_token %}
+                                    {{ fileForm.file }}
+                                    {{ fileForm.description }}
+                                    {{ fileForm.parent }}
+                                </form>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                        onclick="uploadFile()">
+                                    Upload
+                                </button>
+                            </div>
+                            <div class="tab-pane fade p-2" id="create" role="tabpanel" aria-labelledby="create-tab">
+                                <form method="post" id="create-directory-form">
+                                    {% csrf_token %}
+                                    {{ directoryForm.name }}
+                                    {{ directoryForm.description }}
+                                    {{ directoryForm.parent }}
+                                </form>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                        onclick="createDirectory()">
+                                    Create
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                                onclick="deleteFile()">
+                            Delete
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="grid-item program-content">
-        <div>
-            <form method="post" id="sections-form">
+        <div class="editor-panel">
+            <form method="post" id="sections-form" class="panel-component">
                 {% csrf_token %}
                 {{ sectionsForm.start }}
                 {{ sectionsForm.end }}
                 {{ sectionsForm.sectionType }}
             </form>
-            <button onclick="changeSections()">xd</button>
+            <button class="btn btn-primary panel-component" onclick="changeSections()">Change selected</button>
+            <button class="btn btn-success panel-component" onclick="compileFile()">Compile</button>
         </div>
         <textarea id="editor"></textarea>
     </div>

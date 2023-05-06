@@ -35,9 +35,8 @@
             <div class="collapse navbar-collapse p-2" id="navbarToggleExternalContent">
                 <div class="navbar-nav">
                     <a class="nav-link active" aria-current="page" href={% url 'compiler:index' %}>Home</a>
-                    <a class="nav-link" href="#" onclick="compileFile()">Compile</a>
                     {% if user.is_authenticated %}
-                        <a class="nav-link" href="{% url 'logout' %}" onclick="dropFile()">Logout</a>
+                        <a class="nav-link" href="{% url 'logout' %}" onclick="dropLocalStorage()">Logout</a>
                     {% else %}
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     {% endif %}
