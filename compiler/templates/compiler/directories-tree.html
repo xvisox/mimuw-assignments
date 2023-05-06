@@ -5,7 +5,9 @@
         <i class="fa fa-folder-o" aria-hidden="true"></i>
     {% endif %}
     {% if dir.is_file %}
-        <a class="text-decoration-none" href="{% url 'compiler:show_file' dir.info.id %}">{{ dir.info.name }}</a>
+        <a class="text-decoration-none" href="#" onclick="chooseFile({{ dir.info.id }})">
+            {{ dir.info.name }}
+        </a>
     {% else %}
         {{ dir.info.name }}
     {% endif %}

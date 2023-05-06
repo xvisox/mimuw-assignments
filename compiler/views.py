@@ -1,41 +1,27 @@
-import json
 import re
 
-from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
 from django.utils import timezone
 
-from compiler.forms import UploadFileForm, CompileForm
+from compiler.forms import CompileForm, ChangeSectionsForm
 from compiler.models import Directory, FileInfo, File, Section
 
 
 def index(request):
     context = dict()
     context['directories'] = get_root_directories(request.user)
-    context['code'] = get_code(SAMPLE_CODE)
+    context['form'] = CompileForm()
+    context['sectionsForm'] = ChangeSectionsForm()
     return render(request, 'compiler/index.html', context)
 
 
-def edit(request):
-    context = dict()
-    context['directories'] = get_root_directories(request.user)
-    context['all_directories'] = get_all_directories(request.user)
-    return render(request, 'compiler/dir-editor.html', context)
-
-
-def show_file(request, file_info_id):
-    context = dict()
-    # Get all user directories with no parent
-    context['directories'] = get_root_directories(request.user)
-    # Get file
-    file_info = get_object_or_404(FileInfo, pk=file_info_id)
-    file = get_object_or_404(File, info=file_info)
-    # Provide file id and code to display
-    context['code'] = get_code(file.content.read().decode('utf-8'))
-    context['file_id'] = file_info.id
+def compile_file(request, file_info_id):
     if request.method == 'POST':
+        context = dict()
+        # Get file
+        file_info = get_object_or_404(FileInfo, pk=file_info_id)
+        file = get_object_or_404(File, info=file_info)
         # Get compilation options
         form = CompileForm(request.POST)
         options = get_options(form)
@@ -55,65 +41,32 @@ def show_file(request, file_info_id):
             context['output'] = parse_err_message(err_message)
         # Remove all files from temporary directory
         os.system('rm -rf ' + os.path.dirname(temporary_path) + '/*')
-
-    # Provide form
-    form = CompileForm()
-    context['form'] = form
-    # Return rendered page
-    return render(request, 'compiler/index.html', context)
+        return JsonResponse(context)
 
 
-def remove_file(request, file_info_id):
-    file_info = get_object_or_404(FileInfo, pk=file_info_id)
-    file_info.available = False
-    file_info.available_modification_date = timezone.now()
-    file_info.save()
-    return HttpResponseRedirect(reverse('compiler:edit'))
-
-
-def add_directory(request):
-    if request.method == 'POST' and request.user.is_authenticated and request.POST['name'] != '':
-        name = request.POST['name']
-        description = request.POST['description']
-        parent = get_and_update_parent(request.POST['parent'])
-        # Create directory info and directory
-        file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
-        directory = Directory.objects.create(info=file_info, parent=parent)
-        directory.save()
-    return HttpResponseRedirect(reverse('compiler:edit'))
-
-
-def upload_file(request):
-    if request.method == 'POST' and request.user.is_authenticated:
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            name = form.cleaned_data['file'].name
-            description = form.cleaned_data['description']
-            parent = get_and_update_parent(request.POST['parent'])  # no parent field in django form
-            # Create file info and file
-            file_info = FileInfo.objects.create(name=name, description=description, owner=request.user)
-            file = File.objects.create(info=file_info, parent=parent, content=form.cleaned_data['file'])
-            create_file_sections(file.content.read().decode('utf-8'), file)
-            file.save()
-            return HttpResponseRedirect(reverse('compiler:edit_file', args=(file_info.id,)))
-
-    form = UploadFileForm()
-    all_directories = get_all_directories(request.user)
-    return render(request, 'compiler/file-editor.html', {'form': form, 'all_directories': all_directories})
-
-
-def edit_file(request, file_info_id):
-    # Provide form and directories
-    form = UploadFileForm()
-    all_directories = get_all_directories(request.user)
-    # Get file with sections
+def show_file(request, file_info_id):
     file_info = get_object_or_404(FileInfo, pk=file_info_id)
     file = get_object_or_404(File, info=file_info)
     content = file.content.read().decode('utf-8')
-    sections = get_line_by_line(Section.objects.filter(file=file), len(content.split('\n')))
-    # Return rendered page
-    return render(request, 'compiler/file-editor.html', {'form': form, 'all_directories': all_directories,
-                                                         'content': content, 'sections': sections})
+    code = get_line_by_line(Section.objects.filter(file=file), content.split('\n'))
+    return JsonResponse({'code': code})
+
+
+def change_sections(request, file_info_id):
+    if request.method == 'POST':
+        form = ChangeSectionsForm(request.POST)
+        if form.is_valid():
+            context = dict()
+            # Get file
+            file_info = get_object_or_404(FileInfo, pk=file_info_id)
+            file = get_object_or_404(File, info=file_info)
+            # Get sections
+            replace_sections(form.cleaned_data['start'],
+                             form.cleaned_data['end'],
+                             form.cleaned_data['sectionType'],
+                             file)
+            # Null response
+            return JsonResponse(context)
 
 
 def get_root_directories(user):
@@ -147,25 +100,6 @@ def get_and_update_parent(parent_id):
         parent.info.last_modified = timezone.now()
         parent.info.save()
     return parent
-
-
-SAMPLE_CODE = '// Welcome to home page!\n#include <stdio.h>\n\nint main()' \
-              '{\n\tprintf("Hello, World!");\n\treturn 0;\n}\n'
-
-
-def get_code(raw):
-    code_list = raw.split('\n')
-    for i in range(len(code_list)):
-        code_list[i] = code_list[i] \
-            .replace('\t', '\\t') \
-            .replace('"', '\\"') \
-            .replace("'", '\\"') \
-            .replace('\\n', 'newline') \
-            .replace('\\0', 'nullchar')
-
-    # Convert to json
-    code_obj = {'code': code_list}
-    return json.dumps(code_obj, cls=DjangoJSONEncoder)
 
 
 def parse_err_message(err_message):
@@ -229,7 +163,6 @@ def create_file_sections(lines, file):
         label_bounds.append([i, i])
         i += 1
 
-    # todo: merge consecutive sections with the same label
     for i in range(len(labels)):
         section = Section.objects.create(file=file,
                                          start_row=label_bounds[i][0],
@@ -264,18 +197,27 @@ def get_label(line):
         return Section.SectionType.VARIABLE
 
     # Check for variable assignments or other statements
-    if re.search(r"[\w\s]+\s*(=|;)", line):
+    if re.search(r"[\w\s]+\s*([=;])", line):
         return Section.SectionType.VARIABLE
 
     # If none of the above apply, return unknown
     return Section.SectionType.UNKNOWN
 
 
-def get_line_by_line(sections, length):
+def get_line_by_line(sections, code_lines):
     line_by_line = []
-    for i in range(length):
+    # Add dummy sections to fill in the gaps
+    for i in range(len(code_lines)):
         line_by_line.append(Section.SectionType.UNKNOWN)
+
     for section in sections:
         for i in range(section.start_row, section.end_row + 1):
-            line_by_line[i] = section.type
-    return line_by_line
+            line_by_line[i] = section.type.ljust(10) + ' ' + code_lines[i]
+    return "\n".join(line_by_line)
+
+
+def replace_sections(start, end, section_type, file):
+    sections = Section.objects.filter(file=file, start_row__gte=start, end_row__lte=end)
+    for section in sections:
+        section.type = section_type
+        section.save()

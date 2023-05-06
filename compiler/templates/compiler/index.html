@@ -12,35 +12,19 @@
         </div>
     </div>
     <div class="grid-item program-content">
-        <div class="editor-container">
-            <div id="editor"></div>
+        <div>
+            <form method="post" id="sections-form">
+                {% csrf_token %}
+                {{ sectionsForm.start }}
+                {{ sectionsForm.end }}
+                {{ sectionsForm.sectionType }}
+            </form>
+            <button onclick="changeSections()">xd</button>
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.5.3/ace.js"></script>
-        <script type="text/javascript">
-            const parsedCode = JSON.parse('{{ code|safe }}');
-            let code = parsedCode['code']
-
-            let editorTemp = document.querySelector("#editor");
-            let themeTemp = localStorage.getItem("theme");
-            let editorTheme = themeTemp === "light" ? "ace/theme/chrome" : "ace/theme/dracula";
-            ace.edit(editorTemp, {
-                theme: editorTheme,
-                mode: "ace/mode/c_cpp",
-                fontSize: "12pt",
-                value: code.join("\n"),
-            });
-
-        </script>
+        <textarea id="editor"></textarea>
     </div>
     <div class="grid-item code-fragment">
-        {% if output %}
-            <div class="mb-0 h-100 w-100 p-2 overflow-auto">
-                Compiled with {{ cmd }}
-                {% for line in output %}
-                    <pre class="line">{{ line }}</pre>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div class="mb-0 h-100 w-100 p-2 overflow-auto" id="output"></div>
     </div>
     <div class="grid-item compile-options">
         <div class="d-flex align-items-start">
@@ -64,40 +48,36 @@
                         aria-selected="false">Options
                 </button>
             </div>
-            {% if file_id %}
-                <form method="post" action="{% url 'compiler:show_file' file_id %}" id="compile-form">
+            <form method="post" id="compile-form">
                 {% csrf_token %}
-            {% endif %}
-            <div class="tab-content compile-content" id="v-pills-tabContent">
-                <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
-                     aria-labelledby="v-pills-processor-tab">
-                    Choose processor for compilation.
-                    {{ form.processor }}
-                </div>
-                <div class="tab-pane fade" id="v-pills-optimization" role="tabpanel"
-                     aria-labelledby="v-pills-optimization-tab">
-                    Choose optimizations for compilation (multiple choice).
-                    {{ form.optimization }}
-                </div>
-                <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
-                     aria-labelledby="v-pills-standard-tab">
-                    Choose standard for compilation.
-                    {{ form.standard }}
-                </div>
-                <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
-                     aria-labelledby="v-pills-options-tab">
-                    Choose options for your processor, options for other processors will be omitted.
-                    <div class="form-group">
-                        {{ form.options_AVR }}
-                        {{ form.options_MCS51 }}
-                        {{ form.options_Z80 }}
-                        {{ form.options_STM8 }}
+                <div class="tab-content compile-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
+                         aria-labelledby="v-pills-processor-tab">
+                        Choose processor for compilation.
+                        {{ form.processor }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-optimization" role="tabpanel"
+                         aria-labelledby="v-pills-optimization-tab">
+                        Choose optimizations for compilation (multiple choice).
+                        {{ form.optimization }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
+                         aria-labelledby="v-pills-standard-tab">
+                        Choose standard for compilation.
+                        {{ form.standard }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
+                         aria-labelledby="v-pills-options-tab">
+                        Choose options for your processor, options for other processors will be omitted.
+                        <div class="form-group">
+                            {{ form.options_AVR }}
+                            {{ form.options_MCS51 }}
+                            {{ form.options_Z80 }}
+                            {{ form.options_STM8 }}
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% if file_id %}
-                </form>
-            {% endif %}
+            </form>
         </div>
     </div>
 {% endblock content %}

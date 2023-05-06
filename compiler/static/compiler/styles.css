@@ -1,3 +1,6 @@
+@import 'https://appsforoffice.microsoft.com/fabric/1.0/fabric.min.css';
+@import 'https://appsforoffice.microsoft.com/fabric/1.0/fabric.components.min.css';
+
 :root {
     --color-nav: #111111;
     --color-sidebar: #232323;
@@ -6,6 +9,7 @@
     --color-nav-element: #7a7a7a;
     --color-text: white;
     --color-text-neg: black;
+    --color-editor: #545050;
 }
 
 body {
@@ -51,17 +55,24 @@ body {
 /* Program content style */
 .program-content {
     grid-area: program-content;
+    height: 100%;
 }
 
 /* Editor style */
 #editor {
+    color: var(--color-text);
+    background-color: var(--color-editor);
+    overflow: auto;
+    height: inherit;
     width: 100%;
-    height: 100%;
-}
-
-.editor-container {
-    width: 100vw;
-    height: 50vh;
+    outline: none;
+    resize: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+    font-family: monospace;
 }
 
 /* Code fragment style */
@@ -113,6 +124,7 @@ body.light {
     --color-nav-element: #6c757d;
     --color-text: black;
     --color-text-neg: white;
+    --color-editor: #f8f9fa;
 }
 
 .theme-switch-wrapper {
@@ -198,7 +210,7 @@ input:checked + .slider:before {
 
 .src-files ul li::marker {
     content: "\f016";
-    font-family: FontAwesome;
+    font-family: FontAwesome, serif;
 }
 
 .src-files ul li {
@@ -214,16 +226,6 @@ input:checked + .slider:before {
             "navbar navbar navbar"
             "choose-file program-content code-fragment"
             "choose-file compile-options compile-options";
-    }
-
-    #editor {
-        width: 100%;
-        height: 100%;
-    }
-
-    .editor-container {
-        width: 100%;
-        height: 100%;
     }
 
     .code-fragment {

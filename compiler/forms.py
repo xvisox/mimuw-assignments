@@ -1,12 +1,26 @@
 from django import forms
+from compiler.models import Section
 
+
+# todo: add directory uploading
 
 class UploadFileForm(forms.Form):
     description = forms.CharField(max_length=100, required=False)
     file = forms.FileField()
+    # todo: add parent choose field
 
     description.widget.attrs.update({"class": "form-control", "placeholder": "Description (optional)"})
     file.widget.attrs.update({"class": "form-control"})
+
+
+class ChangeSectionsForm(forms.Form):
+    start = forms.IntegerField(required=True)
+    end = forms.IntegerField(required=True)
+    sectionType = forms.ChoiceField(choices=Section.SectionType.choices, required=True)
+
+    start.widget = start.hidden_widget()
+    end.widget = end.hidden_widget()
+    sectionType.widget.attrs.update({"class": "form-control"})
 
 
 class CompileForm(forms.Form):
