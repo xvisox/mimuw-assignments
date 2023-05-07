@@ -34,15 +34,19 @@ def compile_file(request, file_info_id):
         cmd = 'sdcc' + ' -S ' + options + ' ' + file.content.path
         context['cmd'] = cmd
         err_message = os.popen(cmd + ' 2>&1').read()
+        status_code = 200
         # Get output
         try:
             with open(temporary_path.replace('.c', '.asm'), 'r') as output_file:
-                context['output'] = utils.separate_assembly_sections(output_file.read())
+                [headers, bodies] = utils.separate_assembly_sections(output_file.read())
+                context['headers'] = headers
+                context['bodies'] = bodies
         except FileNotFoundError:
-            context['output'] = utils.parse_err_message(err_message)
+            context['errors'] = utils.parse_err_message(err_message)
+            status_code = 400
         # Remove all files from temporary directory
         os.system('rm -rf ' + os.path.dirname(temporary_path) + '/*')
-        return JsonResponse(context)
+        return JsonResponse(status=status_code, data=context)
 
 
 def show_file(request, file_info_id):

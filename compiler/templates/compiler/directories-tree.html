@@ -5,11 +5,11 @@
         <i class="fa fa-folder-o" aria-hidden="true"></i>
     {% endif %}
     {% if dir.is_file %}
-        <a class="text-decoration-none" href="#" onclick="displayFileAndSaveId({{ dir.info.id }})">
+        <a class="file" href="#" onclick="displayFileAndSaveId({{ dir.info.id }})">
             {{ dir.info.name }}
         </a>
     {% else %}
-        <a class="text-decoration-none" href="#" onclick="saveFileIdToForm('{{ dir.info.id }}', '{{ dir.info.name }}')"
+        <a class="file" href="#" onclick="saveFileIdToForm('{{ dir.info.id }}', '{{ dir.info.name }}')"
            data-bs-toggle="modal" data-bs-target="#exampleModal">
             {{ dir.info.name }}
         </a>

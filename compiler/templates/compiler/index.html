@@ -3,6 +3,10 @@
 
 {% block content %}
     <div class="grid-item choose-file">
+        <button class="btn btn-outline-light w-100" onclick="saveFileIdToForm('-1', 'Root')"
+                data-bs-toggle="modal" data-bs-target="#exampleModal" style="height: 40px">
+            <i class="fa fa-folder-open-o" aria-hidden="true" style="margin-right: 5px"></i>Root directory
+        </button>
         <div class="directory-structure" id="tree">
             {% include "compiler/directories.html" %}
         </div>
@@ -16,33 +20,21 @@
                     <div class="modal-body">
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="upload-tab" data-bs-toggle="tab"
-                                        data-bs-target="#upload" type="button" role="tab" aria-controls="upload"
-                                        aria-selected="true">Upload file
+                                <button class="nav-link active" id="create-tab" data-bs-toggle="tab"
+                                        data-bs-target="#create" type="button" role="tab" aria-controls="create"
+                                        aria-selected="true">Create directory
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="create-tab" data-bs-toggle="tab" data-bs-target="#create"
-                                        type="button" role="tab" aria-controls="create" aria-selected="false">
-                                    Create directory
+                                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload"
+                                        type="button" role="tab" aria-controls="upload" aria-selected="false">
+                                    Upload file
                                 </button>
                             </li>
                         </ul>
                         <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade p-2 show active" id="upload" role="tabpanel"
-                                 aria-labelledby="upload-tab">
-                                <form method="post" id="upload-form">
-                                    {% csrf_token %}
-                                    {{ fileForm.file }}
-                                    {{ fileForm.description }}
-                                    {{ fileForm.parent }}
-                                </form>
-                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                        onclick="uploadFile()">
-                                    Upload
-                                </button>
-                            </div>
-                            <div class="tab-pane fade p-2" id="create" role="tabpanel" aria-labelledby="create-tab">
+                            <div class="tab-pane fade p-2 show active" id="create" role="tabpanel"
+                                 aria-labelledby="create-tab">
                                 <form method="post" id="create-directory-form">
                                     {% csrf_token %}
                                     {{ directoryForm.name }}
@@ -50,15 +42,27 @@
                                     {{ directoryForm.parent }}
                                 </form>
                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                        onclick="createDirectory()">
+                                        onclick="createDirectory()" id="create-btn">
                                     Create
+                                </button>
+                            </div>
+                            <div class="tab-pane fade p-2" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                                <form method="post" id="upload-form">
+                                    {% csrf_token %}
+                                    {{ fileForm.file }}
+                                    {{ fileForm.description }}
+                                    {{ fileForm.parent }}
+                                </form>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                        onclick="uploadFile()" id="upload-btn">
+                                    Upload
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                                onclick="deleteFile()">
+                                onclick="deleteFile()" id="delete-btn">
                             Delete
                         </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -77,11 +81,12 @@
             </form>
             <button class="btn btn-primary panel-component" onclick="changeSections()">Change selected</button>
             <button class="btn btn-success panel-component" onclick="compileFile()">Compile</button>
+            <button class="btn btn-danger panel-component" onclick="deleteChosenFile()">Delete</button>
         </div>
         <textarea id="editor"></textarea>
     </div>
     <div class="grid-item code-fragment">
-        <div class="mb-0 h-100 w-100 p-2 overflow-auto" id="output"></div>
+        <div class="mb-0 h-100 w-100 overflow-auto" id="output"></div>
     </div>
     <div class="grid-item compile-options">
         <div class="d-flex align-items-start">

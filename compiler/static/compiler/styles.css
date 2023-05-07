@@ -65,7 +65,7 @@ body {
     color: var(--color-text);
     background-color: var(--color-editor);
     overflow: auto;
-    height: inherit;
+    height: calc(100% - 50px);
     width: 100%;
     outline: none;
     resize: none;
@@ -252,10 +252,20 @@ li {
     overflow: visible;
     margin: 0;
     min-width: 40vw;
+    cursor: pointer;
+    user-select: none;
 }
 
 .line:hover {
     background-color: var(--color-footer);
+}
+
+.section-header:hover {
+    background-color: var(--color-editor);
+}
+
+.show-hide-btn {
+    width: 98%;
 }
 
 .form-control {
@@ -271,4 +281,9 @@ li {
 .panel-component {
     height: 100%;
     margin-right: 10px;
+}
+
+.file {
+    text-decoration: none;
+    color: var(--color-text);
 }

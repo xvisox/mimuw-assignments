@@ -1,7 +1,5 @@
 import re
 
-from django.utils import timezone
-
 from compiler.models import Directory, Section
 
 
@@ -29,23 +27,30 @@ def get_all_subdirectories(directory):
 
 
 def get_parent(parent_info_id):
-    return None if parent_info_id == '' else Directory.objects.get(info__id=parent_info_id)
+    return None if parent_info_id == (-1) else Directory.objects.get(info__id=parent_info_id)
 
 
 def parse_err_message(err_message):
+    print(err_message)
     err_list = err_message.split('\n')
     for i in range(len(err_list)):
-        idx = find_first_index(err_list[i])
-        if idx != -1:
-            err_list[i] = err_list[i][idx:]
+        if '/' in err_list[i]:
+            err_list[i] = parse_error_path(err_list[i])
+        else:
+            err_list[i] = [err_list[i], '-1']
     return err_list
 
 
-def find_first_index(message):
-    idx = message.find(".c:")
-    for i in range(idx, 0, -1):
-        if message[i] == '/':
-            return i + 1
+def parse_error_path(path):
+    # Split the path into components using the colon as the delimiter
+    components = path.split(':')
+    # Extract the filename and error message from the components
+    filename = components[0].split('/')[-1]
+    line_number = components[1]
+    error_message = ':'.join(components[1:])
+    # Join the filename and error message with a colon
+    result = filename + ':' + error_message
+    return [result, line_number]
 
 
 def separate_assembly_sections(raw):
@@ -59,10 +64,22 @@ def separate_assembly_sections(raw):
             if count % 2 == 1:
                 sections.append([])
         sections[-1].append(line)
-    # Concatenate each section
+    # Separate each section into header and body
+    headers = []
+    bodies = []
     for i in range(len(sections)):
-        sections[i] = '\n'.join(sections[i])
-    return sections
+        count = 0
+        for j in range(len(sections[i])):
+            if separator in sections[i][j]:
+                count += 1
+            if count == 2:
+                headers.append(sections[i][:j + 1])
+                bodies.append(sections[i][j + 1:])
+                break
+    for i in range(len(headers)):
+        headers[i] = '\n'.join(headers[i])
+        bodies[i] = '\n'.join(bodies[i])
+    return [headers, bodies]
 
 
 def get_options(form):
@@ -142,7 +159,7 @@ def get_formatted_code(sections, code_lines):
 
     for section in sections:
         for i in range(section.start_row, section.end_row + 1):
-            line_by_line[i] = section.type.ljust(10) + ' ' + code_lines[i]
+            line_by_line[i] = str(i + 1).ljust(4) + section.type.ljust(10) + ' ' + code_lines[i]
     return "\n".join(line_by_line)
 
 
