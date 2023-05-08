@@ -1,11 +1,13 @@
 from django import forms
+from django.core.exceptions import ValidationError
+
 from compiler.models import Section
 
 
 class CreateDirectoryForm(forms.Form):
     name = forms.CharField(max_length=20)
     description = forms.CharField(max_length=100, required=False)
-    parent = forms.IntegerField()
+    parent = forms.IntegerField(min_value=-1, required=False)  # (-1, '', None) mean root directory
 
     description.widget.attrs.update({"class": "form-control", "placeholder": "Description (optional)"})
     name.widget.attrs.update({"class": "form-control", "placeholder": "Directory name"})
@@ -14,8 +16,17 @@ class CreateDirectoryForm(forms.Form):
 
 class UploadFileForm(forms.Form):
     description = forms.CharField(max_length=100, required=False)
-    parent = forms.IntegerField()
+    parent = forms.IntegerField(min_value=0, required=True)  # we want to know where to put the file
     file = forms.FileField()
+
+    # add extra validation for file extension
+    def clean_file(self):
+        uploaded_file = self.cleaned_data.get('file')
+        if uploaded_file:
+            file_extension = uploaded_file.name.split('.')[-1].lower()
+            if file_extension not in ['h', 'c', 'cc']:
+                raise ValidationError('Invalid file type. Only .h, .c and .cc are allowed.')
+        return uploaded_file
 
     description.widget.attrs.update({"class": "form-control", "placeholder": "Description (optional)"})
     file.widget.attrs.update({"class": "form-control"})
@@ -27,12 +38,22 @@ class ChangeSectionsForm(forms.Form):
     start = forms.IntegerField()
     end = forms.IntegerField()
 
+    # check if start < end
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start")
+        end = cleaned_data.get("end")
+        if start and end:
+            if start > end:
+                raise ValidationError("Start row must be lower than end row.")
+
     start.widget = start.hidden_widget()
     end.widget = end.hidden_widget()
     sectionType.widget.attrs.update({"class": "form-control h-100"})
 
 
 class CompileForm(forms.Form):
+    # this form will always be valid because of the default values
     BLANK_CHOICE = ("Default", "Select an option...")
     BLANK_CHOICE_MCS51 = ("Default", "Select an option for MCS51...")
     BLANK_CHOICE_Z80 = ("Default", "Select an option for Z80...")
@@ -44,7 +65,7 @@ class CompileForm(forms.Form):
             ("--std-c89", "C89"),
             ("--std-c99", "C99"),
             ("--std-c11", "C11")
-        ])
+        ], required=False)
 
     optimization = forms.MultipleChoiceField(
         choices=[
@@ -60,7 +81,7 @@ class CompileForm(forms.Form):
             ("-mmcs51", "MCS51"),
             ("-mz80", "Z80"),
             ("-mstm8", "STM8")
-        ])
+        ], required=False)
 
     options_MCS51 = forms.ChoiceField(
         choices=[
@@ -68,7 +89,7 @@ class CompileForm(forms.Form):
             ("--model-small", "Generate code for Small model programs. This is the default model."),
             ("--model-medium", "Generate code for Medium model programs."),
             ("--model-large", "Generate code for Large model programs."),
-        ])
+        ], required=False)
 
     options_Z80 = forms.ChoiceField(
         choices=[
@@ -77,14 +98,14 @@ class CompileForm(forms.Form):
             ("--callee-saves-bc", "Force a called function to always save BC."),
             ("--reserve-regs-iy", "This option tells the compiler that it is not allowed to use register "
                                   "pair iy. This option is incompatible with --fomit-frame-pointer.")
-        ])
+        ], required=False)
 
     options_STM8 = forms.ChoiceField(
         choices=[
             BLANK_CHOICE_STM8,
             ("--model-medium", "Generate code for Medium model programs. This is the default model."),
             ("--model-large", "Generate code for Large model programs.")
-        ])
+        ], required=False)
 
     standard.widget.attrs.update({"class": "form-control"})
     optimization.widget.attrs.update({"class": "form-control"})

@@ -1,6 +1,16 @@
 import re
 
-from compiler.models import Directory, Section
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+from compiler.models import Directory, Section, FileInfo
+
+JSON_BAD_REQUEST = JsonResponse({'message': 'Bad request'}, status=400)
+JSON_OK = JsonResponse({'message': 'OK'}, status=200)
+
+
+def test_ownership(user, file_info_id):
+    return get_object_or_404(FileInfo, pk=file_info_id).owner == user
 
 
 def get_root_directories(user):
@@ -27,7 +37,7 @@ def get_all_subdirectories(directory):
 
 
 def get_parent(parent_info_id):
-    return None if parent_info_id == (-1) else Directory.objects.get(info__id=parent_info_id)
+    return None if parent_info_id in [-1, '', None] else Directory.objects.get(info__id=parent_info_id)
 
 
 def parse_err_message(err_message):
@@ -83,22 +93,21 @@ def separate_assembly_sections(raw):
 
 
 def get_options(form):
-    if form.is_valid():  # the form will always be valid because of the default values
-        processor = form.cleaned_data['processor']
-        standard = form.cleaned_data['standard']
-        optimization = form.cleaned_data['optimization']
-        options = ''
+    processor = form.cleaned_data['processor']
+    standard = form.cleaned_data['standard']
+    optimization = form.cleaned_data['optimization']
+    options = ''
 
-        if processor == '-mmcs51':
-            options = form.cleaned_data['options_MCS51']
-        elif processor == '-mz80':
-            options = form.cleaned_data['options_Z80']
-        elif processor == '-mstm8':
-            options = form.cleaned_data['options_STM8']
+    if processor == '-mmcs51':
+        options = form.cleaned_data['options_MCS51']
+    elif processor == '-mz80':
+        options = form.cleaned_data['options_Z80']
+    elif processor == '-mstm8':
+        options = form.cleaned_data['options_STM8']
 
-        # return concatenation of all options
-        all_options = [processor, standard, " ".join(optimization), options]
-        return " ".join(all_options).replace('Default', '')
+    # return concatenation of all options
+    all_options = [processor, standard, " ".join(optimization), options]
+    return " ".join(all_options).replace('Default', '')
 
 
 def create_file_sections(lines, file):
