@@ -81,4 +81,4 @@ class Section(models.Model):
     additional_status_info = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.file.info.name

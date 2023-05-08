@@ -336,7 +336,7 @@ class SectionModelTestCase(TestCase):
             status=Section.SectionStatus.COMPILE_OK
         )
 
-        self.assertEqual(str(section), SAMPLE_NAME)
+        self.assertEqual(str(section), section.file.info.name)
 
     def test_creation_date_is_readonly(self):
         section = Section.objects.create(
