@@ -191,7 +191,8 @@ static int sef_cb_init_fresh(int UNUSED(type), sef_init_info_t *UNUSED(info))
   			 */
   			rmp->mp_parent = INIT_PROC_NR;
   			rmp->mp_procgrp = rmp->mp_pid = INIT_PID;
-			rmp->mp_flags |= IN_USE; 
+            rmp->account_balance = INIT_BALANCE; // hm438596.init_balance
+			rmp->mp_flags |= IN_USE;
 
 			/* Set scheduling info */
 			rmp->mp_scheduler = KERNEL;
