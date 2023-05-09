@@ -15,10 +15,9 @@
 
 // hm438596
 typedef struct {
-    pid_t m_src;		/* who transfers the money, 4 bytes */
     pid_t m_dest;		/* who is the recipient, 4 bytes */
     int m_amount;	    /* how much money is transferred, 4 bytes */
-    uint8_t padding[44];
+    uint8_t padding[48];
 } mess_transfer_money;
 _ASSERT_MSG_SIZE(mess_transfer_money);
 
@@ -2272,7 +2271,6 @@ typedef int _ASSERT_message[/* CONSTCOND */sizeof(message) == 64 ? 1 : -1];
 /* The following defines provide names for useful members. */
 
 // hm438596
-#define m_trans_src m_transfer.m_src
 #define m_trans_dst m_transfer.m_dest
 #define m_trans_amt m_transfer.m_amount
 

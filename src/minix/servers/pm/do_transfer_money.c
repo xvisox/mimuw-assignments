@@ -7,19 +7,20 @@
 #define ROOT_PID 1
 
 static int is_descendant(pid_t ancestor, pid_t descendant) {
+    struct mproc *proc = find_proc(descendant);
     pid_t current_pid = descendant;
     while (current_pid != ROOT_PID) {
         if (current_pid == ancestor) {
             return 1;
         }
-        struct mproc *proc = &mproc[find_proc(current_pid)->mp_parent];
+        proc = &mproc[proc->mp_parent];
         current_pid = proc->mp_pid;
     }
     return 0;
 }
 
 int do_transfer_money(void) {
-    pid_t source = m_in.m_trans_src;
+    pid_t source = mp->mp_pid;
     pid_t destination = m_in.m_trans_dst;
     int amount = m_in.m_trans_amt;
 
