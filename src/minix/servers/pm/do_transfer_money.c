@@ -7,6 +7,7 @@
 #define ROOT_PID 1
 
 static int is_descendant(pid_t ancestor, pid_t descendant) {
+    if (ancestor == descendant) return 0;
     struct mproc *proc = find_proc(descendant);
     pid_t current_pid = descendant;
     while (current_pid != ROOT_PID) {
@@ -30,9 +31,8 @@ int do_transfer_money(void) {
         return ESRCH;
     }
 
-    if ((is_descendant(source, destination) ||
-         is_descendant(destination, source)) &&
-        destination != source) {
+    if (is_descendant(source, destination) ||
+        is_descendant(destination, source)) {
         return EPERM;
     }
 
