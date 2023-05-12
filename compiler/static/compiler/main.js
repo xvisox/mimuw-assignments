@@ -1,12 +1,13 @@
 // Load previously chosen file
-let id = localStorage.getItem('file_id');
+let id = localStorage.getItem(FILE_ID);
 if (id !== null) displayFileAndSaveId(id);
+let formFileId = null;
 
 function displayFileAndSaveId(id) {
-    localStorage.setItem('file_id', id);
+    localStorage.setItem(FILE_ID, id);
     $.ajax({
-        url: 'files/' + id + '/show',
-        type: 'GET',
+        url: getFileShowUrl(id),
+        type: GET,
         success: function (data) {
             $('#editor').text(data['code']);
         },
@@ -17,37 +18,36 @@ function displayFileAndSaveId(id) {
 }
 
 function saveFileIdToForm(id, name) {
-    localStorage.setItem('form_id', id);
+    formFileId = id;
     $('#exampleModalLabel').text('Chosen directory: ' + name);
-    if (id === '-1') {
-        $('#upload-tab').addClass('disabled');
-        $('#delete-btn').addClass('disabled');
-        $('#upload-btn').addClass('disabled');
+    if (id === ROOT_ID) {
+        $('#upload-tab').addClass(DISABLED);
+        $('#delete-btn').addClass(DISABLED);
+        $('#upload-btn').addClass(DISABLED);
     } else {
-        $('#upload-tab').removeClass('disabled');
-        $('#delete-btn').removeClass('disabled');
-        $('#upload-btn').removeClass('disabled');
+        $('#upload-tab').removeClass(DISABLED);
+        $('#delete-btn').removeClass(DISABLED);
+        $('#upload-btn').removeClass(DISABLED);
     }
 }
 
 function dropLocalStorage() {
-    localStorage.removeItem('file_id');
-    localStorage.removeItem('form_id');
+    localStorage.removeItem(FILE_ID);
 }
 
 function highlightLine(line) {
-    let editor = document.querySelector("textarea")
-    let lines = editor.value.split('\n'); // split the text into an array of lines
+    let editor = $('textarea')[0];
+    let lines = editor.value.split('\n'); // Split the text into an array of lines
     let start = 0;
     let end = 0;
 
-    // find the starting and ending indices of the specified line
+    // Find the starting and ending indices of the specified line
     for (let i = 0; i < lines.length; i++) {
         if (i < line - 1) {
-            start += lines[i].length + 1; // add 1 to account for the newline character
+            start += lines[i].length + 1; // Add 1 to account for the newline character
         }
         if (i === line - 1) {
-            end = start + lines[i].length; // end index is start index plus line length
+            end = start + lines[i].length; // End index is start index plus line length
             break;
         }
     }
@@ -59,14 +59,44 @@ function highlightLine(line) {
     editor.focus();
 }
 
+function resetForm(form) {
+    form.trigger('reset');
+}
+
+function addShowHideOnAsmSections(output) {
+    // Add click event listener to each section-header
+    $('.section-header').click(function () {
+        // Toggle visibility of the section-body immediately following the clicked section-header
+        $(this).next('.section-body').toggle();
+    });
+
+    // Create a new button element to show/hide all section bodies
+    const toggleButton = $('<button>').text('Show/Hide All').addClass('btn btn-outline-light show-hide-btn')
+    toggleButton.click(function () {
+        $('.section-body').toggle();
+    });
+
+    // Add the toggle button to the output element
+    output.prepend(toggleButton);
+}
+
+function getErrorLine(errors, index) {
+    let errorLineNumber = errors[index][1];
+    if (errorLineNumber !== '-1') {
+        return '<pre class="line" data-line="' + errorLineNumber + '">' + errors[index][0] + '</pre>';
+    } else {
+        return '<pre class="line">' + errors[index][0] + '</pre>';
+    }
+}
+
 function compileFile() {
-    let id = localStorage.getItem('file_id');
+    let id = localStorage.getItem(FILE_ID);
     if (id === null) return; // No file chosen
 
-    let form = $('#compile-form').attr('action', 'files/' + id + '/compile');
+    let form = $('#compile-form');
     $.ajax({
-        url: form.attr('action'),
-        type: form.attr('method'),
+        url: getFileCompileUrl(id),
+        type: POST,
         data: form.serialize(),
         success: function (data) {
             // Display output
@@ -77,27 +107,16 @@ function compileFile() {
                 headers[i] = '<pre class="section-header line">' + headers[i] + '</pre>';
                 bodies[i] = '<pre class="section-body line">' + bodies[i] + '</pre>';
             }
+            // Merge headers and bodies
             let result = []
             for (let i = 0; i < headers.length; i++) {
                 result.push(headers[i] + bodies[i]);
             }
             let output = $('#output');
             output.html(cmd + result.join(''));
-
-            // Add click event listener to each section-header
-            $('.section-header').click(function () {
-                // Toggle visibility of the section-body immediately following the clicked section-header
-                $(this).next('.section-body').toggle();
-            });
-
-            // Create a new button element to show/hide all section bodies
-            const toggleButton = $('<button>').text('Show/Hide All').addClass('btn btn-outline-light show-hide-btn')
-            toggleButton.click(function () {
-                $('.section-body').toggle();
-            });
-
-            // Add the toggle button to the output element
-            output.prepend(toggleButton);
+            // Add click event listener to each line
+            addShowHideOnAsmSections(output);
+            resetForm(form);
         },
         error: function (data) {
             data = data['responseJSON'];
@@ -105,12 +124,7 @@ function compileFile() {
             let errors = data['errors']
             let lines = []
             for (let i = 0; i < errors.length; i++) {
-                let errorLineNumber = errors[i][1];
-                if (errorLineNumber !== '-1') {
-                    lines.push('<pre class="line" data-line="' + errorLineNumber + '">' + errors[i][0] + '</pre>');
-                } else {
-                    lines.push('<pre class="line">' + errors[i][0] + '</pre>');
-                }
+                lines.push(getErrorLine(errors, i));
             }
             let output = $('#output');
             output.html(cmd + lines.join(''));
@@ -121,16 +135,17 @@ function compileFile() {
                     highlightLine(link.dataset.line);
                 });
             });
+            resetForm(form);
         },
     });
 }
 
 function changeSections() {
-    let id = localStorage.getItem('file_id');
+    let id = localStorage.getItem(FILE_ID);
     if (id === null) return; // No file chosen
 
     // Get selected text
-    let textarea = document.querySelector("textarea")
+    let textarea = $('textarea')[0];
     let start = textarea.selectionStart;
     let end = textarea.selectionEnd;
     // Calculate row numbers
@@ -138,15 +153,16 @@ function changeSections() {
     let rowEnd = textarea.value.substr(0, end).split("\n").length - 1;
 
     // Fill form and send request
-    let form = $('#sections-form').attr('action', 'files/' + id + '/sections');
+    let form = $('#sections-form');
     form.find('input[name="start"]').val(rowStart);
     form.find('input[name="end"]').val(rowEnd);
     $.ajax({
-        url: form.attr('action'),
-        type: form.attr('method'),
+        url: getChangeSectionsUrl(id),
+        type: POST,
         data: form.serialize(),
         success: function () {
             displayFileAndSaveId(id);
+            resetForm(form);
         }
     });
 }
@@ -154,8 +170,8 @@ function changeSections() {
 function refreshTree() {
     let tree = $('#tree');
     $.ajax({
-        url: 'files/tree',
-        type: 'GET',
+        url: getFilesTreeUrl(),
+        type: GET,
         success: function (data) {
             console.log('Refreshing tree.');
             tree.html(data);
@@ -163,11 +179,11 @@ function refreshTree() {
     })
 }
 
+
 function uploadFile() {
-    let id = localStorage.getItem('form_id');
     let form = $('#upload-form').attr('action', 'files/upload');
     // Set parent id in the form
-    form.find('input[name="parent"]').val(id);
+    form.find('input[name="parent"]').val(formFileId);
 
     $.ajax({
         url: form.attr('action'),
@@ -183,41 +199,36 @@ function uploadFile() {
         async: false
     })
     refreshTree();
+    resetForm(form);
 }
 
 function deleteFile() {
-    let id = localStorage.getItem('form_id');
-    if (id === null) return; // No file chosen
-
     $.ajax({
-        url: 'files/' + id + '/delete',
-        type: 'DELETE',
+        url: getFileDeleteUrl(formFileId),
+        type: DELETE,
         async: false
     })
     refreshTree();
 }
 
 function deleteChosenFile() {
-    let id = localStorage.getItem('file_id');
+    let id = localStorage.getItem(FILE_ID);
     if (id === null) return; // No file chosen
 
-    localStorage.setItem('form_id', id);
+    formFileId = id;
     deleteFile();
     dropLocalStorage();
     $('#editor').text('');
 }
 
 function createDirectory() {
-    let id = localStorage.getItem('form_id');
-    if (id === null) return; // No file chosen
+    let form = $('#create-directory-form');
 
-    let form = $('#create-directory-form').attr('action', 'files/directory/create');
     // Set parent id in the form
-    form.find('input[name="parent"]').val(id);
-
+    form.find('input[name="parent"]').val(formFileId);
     $.ajax({
-        url: form.attr('action'),
-        type: form.attr('method'),
+        url: getCreateDirectoryUrl(),
+        type: POST,
         data: form.serialize(),
         success: function () {
             console.log('Directory created.');
@@ -227,4 +238,5 @@ function createDirectory() {
         async: false
     })
     refreshTree();
+    resetForm(form);
 }
