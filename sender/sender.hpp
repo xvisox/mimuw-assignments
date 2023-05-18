@@ -4,27 +4,59 @@
 #include <netinet/in.h>
 
 #include <utility>
+#include <thread>
 #include "sender_params.hpp"
+#include "cache.hpp"
 
 class Sender {
 private:
-    SenderParameters params;
-    struct sockaddr_in address;
+    struct sockaddr_in remote_address;
+    struct sockaddr_in receiver_address;
+    struct sockaddr_in listener_address;
     int socket_fd;
+    int listener_socket_fd;
+    SenderParameters params;
+    PacketsCache cache;
+    MissedPackets missed;
+    byte_t buffer[CTRL_BUF_SIZE + 1];
+
+    std::string get_replay_str() const {
+        std::string reply = std::string(REPLY) + " ";
+        reply += params.mcast_addr + " ";
+        reply += std::to_string(params.data_port) + " ";
+        reply += params.name + "\n";
+        return reply;
+    }
 
 public:
-    explicit Sender(SenderParameters &params) : params(params), address(), socket_fd(-1) {}
+    explicit Sender(SenderParameters &params) : remote_address(), receiver_address(), listener_address(),
+                                                socket_fd(-1), listener_socket_fd(-1), params(params),
+                                                cache((params.fsize / params.psize) * params.psize),
+                                                missed(), buffer() {
+        // Initialize values for sending packets.
+        remote_address = get_remote_address(params.mcast_addr.c_str(), params.data_port);
+        socket_fd = open_multicast_socket();
+        connect_socket(socket_fd, &remote_address);
+        // Initialize values for receiving control packets.
+        listener_address = get_listener_address(params.control_port);
+        listener_socket_fd = open_listener_socket();
+        bind_socket(listener_socket_fd, &listener_address);
+    }
 
     ~Sender() {
         if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
+        if (listener_socket_fd > 0) CHECK_ERRNO(close(listener_socket_fd));
     }
 
     void run() {
-        // Get the address of the receiver and create a socket.
-        address = get_address(params.dest_addr.c_str(), params.data_port);
-        socket_fd = open_socket();
-        connect_socket(socket_fd, &address);
+        std::thread controller_thread(&Sender::controller, this);
+        std::thread retransmission_thread(&Sender::retransmitter, this);
+        controller_thread.detach();
+        retransmission_thread.detach();
+        sender();
+    }
 
+    void sender() {
         // Initialize the packet.
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
         packet_size_t packet_size = empty_packet_size + params.psize;
@@ -41,10 +73,51 @@ public:
 
             // Send the audio data.
             send_packet(socket_fd, packet.data(), packet_size);
+            // (!!!) Cached packet is already in the network byte order but byte_num isn't.
+            cache.push(byte_num, packet);
             // Update the packet.
             byte_num += params.psize;
             packet_id_t aux = htobe64(byte_num);
             memcpy(packet.data() + sizeof(session_id_t), &aux, sizeof(packet_id_t));
+        }
+    }
+
+    [[noreturn]] void controller() {
+        auto address_length = (socklen_t) sizeof(receiver_address);
+        const auto lookup_msg_len = strlen(LOOKUP);
+        const auto rexmit_msg_len = strlen(REXMIT);
+        const auto replay = get_replay_str();
+
+        while (true) {
+            ssize_t received_bytes = recvfrom(listener_socket_fd, buffer, CTRL_BUF_SIZE, NO_FLAGS,
+                                              (struct sockaddr *) &receiver_address, &address_length);
+            if (received_bytes < 0) continue;
+
+            if (!strncmp(buffer, LOOKUP, lookup_msg_len)) {
+                sendto(listener_socket_fd, replay.c_str(), replay.size(),
+                       NO_FLAGS, (struct sockaddr *) &receiver_address,
+                       address_length);
+            }
+
+            if (!strncmp(buffer, REXMIT, rexmit_msg_len)) {
+                std::vector<packet_id_t> missed_packets = parse_rexmit(buffer, received_bytes);
+                missed.push_all(missed_packets);
+            }
+        }
+    }
+
+    [[noreturn]] void retransmitter() {
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(params.rtime));
+            std::vector<packet_id_t> missed_packets = missed.pop_all();
+            for (packet_id_t missed_packet: missed_packets) {
+                try {
+                    byte_vector_t packet = cache.pop(missed_packet);
+                    send_packet(socket_fd, packet.data(), packet.size());
+                } catch (std::out_of_range &e) {
+                    continue;
+                }
+            }
         }
     }
 };
