@@ -14,6 +14,7 @@ private:
     packets_deque_t data;       // Received and yet not printed packets.
     packet_id_deque_t packets;  // Identifiers of above packets.
     packet_id_t BYTE_0;         // First byte number received.
+    packet_id_t max_printed_id;    // Max printed packet id.
 
     void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
         if (session.session_id >= session_id && session.is_initialized()) return;
@@ -25,6 +26,7 @@ private:
         session.packet_size = audio_data_size;
         // Initialize the buffer.
         BYTE_0 = id;
+        max_printed_id = id;
         capacity = (buffer_size / session.packet_size);
     }
 
@@ -65,7 +67,7 @@ private:
 
 public:
     explicit Buffer(buffer_size_t buffer_size) : capacity(0), buffer_size(buffer_size), data(),
-                                                 packets(), BYTE_0(0) {}
+                                                 packets(), BYTE_0(0), max_printed_id(0) {}
 
     void add_packet(std::optional<byte_vector_t> &packet_data_opt, size_t audio_data_size,
                     packet_id_t id, session_id_t session_id) {
@@ -73,8 +75,8 @@ public:
         // Add the packet to the buffer.
         std::lock_guard<std::mutex> lock(mutex);
         setup_if_necessary(id, session_id, (packet_size_t) audio_data_size);
-        // Ignore packets from previous sessions.
-        if (session_id < session.session_id) return;
+        // Ignore packets from previous sessions and ignore already printed packets.
+        if (session_id < session.session_id || id <= max_printed_id) return;
 
         if (is_ready_to_print(id)) {
             session.state = SessionState::READY;
@@ -104,10 +106,16 @@ public:
 
     std::optional<byte_vector_t> read() {
         std::lock_guard<std::mutex> lock(mutex);
-        if (session.state != SessionState::READY || data.empty() || !data.front().has_value())
+        if (session.state != SessionState::READY)
             return std::nullopt;
 
+        if (data.empty() || !data.front().has_value()) {
+            session.state = SessionState::NOT_INITIALIZED;
+            return std::nullopt;
+        }
+
         auto result = std::move(data.front().value());
+        max_printed_id = std::max(max_printed_id, packets.front());
         data.pop_front();
         packets.pop_front();
         return result;
