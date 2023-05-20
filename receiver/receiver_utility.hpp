@@ -10,63 +10,80 @@
 #include <unistd.h>
 #include <cstdint>
 #include <netdb.h>
+#include <boost/algorithm/string.hpp>
 #include "../utils/err.h"
 #include "../utils/const.h"
 #include "../utils/types.h"
+#include "../utils/common.h"
+#include "station.hpp"
 
-inline static int bind_socket(port_t port) {
-    // Creating IPv4 UDP socket.
-    int socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    ENSURE(socket_fd > 0);
+inline static void drop_membership(socket_t *socket_fd, struct ip_mreq *mreq) {
+    if (*socket_fd < 0) return;
+    if (setsockopt(*socket_fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, mreq, sizeof(*mreq)))
+        PRINT_ERRNO();
 
-    struct sockaddr_in server_address{};
-    server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_address.sin_port = htons(port);
+    CHECK_ERRNO(close(*socket_fd));
+    *socket_fd = -1;
+}
 
-    // Bind the socket to a concrete address.
-    CHECK_ERRNO(bind(socket_fd, (struct sockaddr *) &server_address,
-                     (socklen_t) sizeof(server_address)));
+inline static socket_t create_membership(const char *mcast_addr, port_t port, struct ip_mreq *mreq) {
+    int socket_fd = open_listener_socket();
+
+    mreq->imr_interface.s_addr = htonl(INADDR_ANY);
+    if (!inet_aton(mcast_addr, (struct in_addr *) &mreq->imr_multiaddr.s_addr))
+        PRINT_ERRNO();
+
+    if (setsockopt(socket_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, mreq, sizeof(*mreq)))
+        PRINT_ERRNO();
+
+    struct sockaddr_in address{};
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
+    address.sin_port = htons(port);
+    bind_socket(socket_fd, &address);
 
     return socket_fd;
 }
 
-inline static bool different_address(struct sockaddr_in *addr_lhs, struct sockaddr_in *addr_rhs) {
-    return ntohl(addr_lhs->sin_addr.s_addr) != ntohl(addr_rhs->sin_addr.s_addr);
-}
-
-inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length,
-                                  struct sockaddr_in *client_address, struct sockaddr_in *sender_address) {
+inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length, packet_size_t empty_packet_size) {
     ssize_t read_length;
-    auto empty_packet_size = (ssize_t) (sizeof(session_id_t) + sizeof(packet_id_t));
-    auto address_length = (socklen_t) sizeof(*client_address);
-    do {
-        errno = 0;
-        read_length = recvfrom(socket_fd, buffer, max_length, NO_FLAGS,
-                               (struct sockaddr *) client_address, &address_length);
-        // Maybe this would be a better way to handle error.
-        // if (len < 0) PRINT_ERRNO();
-    } while (read_length <= empty_packet_size || different_address(client_address, sender_address));
+    while ((read_length = recv(socket_fd, buffer, max_length, NO_FLAGS)) <= empty_packet_size);
+    // if (read_length < 0) PRINT_ERRNO();
     return (size_t) read_length;
 }
 
-inline static struct sockaddr_in get_address(char const *host, port_t port) {
-    struct addrinfo hints{};
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
+std::optional<Station> get_station(const std::string &reply) {
+    std::vector<std::string> parsable;
+    boost::split(parsable, reply, boost::is_any_of(" "));
+    if (parsable.size() < 4) {
+        std::cerr << "get_station: Invalid message type." << std::endl;
+        return std::nullopt;
+    }
 
-    struct addrinfo *address_result;
-    CHECK(getaddrinfo(host, nullptr, &hints, &address_result));
+    struct in_addr addr{};
+    if (inet_aton(parsable[1].c_str(), &addr) == 0) {
+        std::cerr << "get_station: Invalid mcast addr." << std::endl;
+        return std::nullopt;
+    }
 
-    struct sockaddr_in address{};
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = ((struct sockaddr_in *) (address_result->ai_addr))->sin_addr.s_addr;
-    address.sin_port = htons(port);
+    int control_port;
+    try {
+        control_port = std::stoi(parsable[2]);
+    } catch (...) {
+        control_port = -1;
+    }
 
-    freeaddrinfo(address_result);
-    return address;
+    if (control_port < 1 || control_port > UINT16_MAX) {
+        std::cerr << "get_station: Invalid ctrl port." << std::endl;
+        return std::nullopt;
+    }
+
+    std::string name;
+    for (int i = 3; i != parsable.size(); ++i) {
+        name += parsable[i];
+    }
+
+    return Station(parsable[1], name, static_cast<port_t>(control_port));
 }
 
 #endif // RECEIVER_UTILITY_HPP

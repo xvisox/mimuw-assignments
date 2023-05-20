@@ -10,6 +10,7 @@
 
 struct ReceiverParameters {
     std::string discover_addr;
+    std::string name;
     port_t control_port;
     port_t ui_port;
     buffer_size_t buffer_size;
@@ -33,7 +34,8 @@ ReceiverParameters parse(int argc, const char **argv) {
             (",C", po::value<port_t>()->default_value(CTRL_PORT), "set the control port")
             (",U", po::value<port_t>()->default_value(UI_PORT), "set the user interface port")
             (",b", po::value<buffer_size_t>()->default_value(BSIZE), "set the buffer size")
-            (",R", po::value<milliseconds_t>()->default_value(RTIME), "set the retransmission time");
+            (",R", po::value<milliseconds_t>()->default_value(RTIME), "set the retransmission time")
+            (",n", po::value<std::string>()->default_value(DEFAULT_NAME), "set the name of the sender station");
 
     ReceiverParameters params{};
     try {
@@ -51,6 +53,7 @@ ReceiverParameters parse(int argc, const char **argv) {
         params.ui_port = vm["-U"].as<port_t>();
         params.buffer_size = vm["-b"].as<buffer_size_t>();
         params.rtime = vm["-R"].as<milliseconds_t>();
+        params.name = vm["-n"].as<std::string>();
     } catch (po::error &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         exit(EXIT_FAILURE);

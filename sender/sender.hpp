@@ -6,6 +6,7 @@
 #include <utility>
 #include <thread>
 #include "sender_params.hpp"
+#include "../utils/common.h"
 #include "cache.hpp"
 
 class Sender {
@@ -13,38 +14,38 @@ private:
     struct sockaddr_in remote_address;
     struct sockaddr_in receiver_address;
     struct sockaddr_in listener_address;
-    int socket_fd;
-    int listener_socket_fd;
+    socket_t multicast_socket_fd;
+    socket_t listener_socket_fd;
     SenderParameters params;
     PacketsCache cache;
     MissedPackets missed;
     byte_t buffer[CTRL_BUF_SIZE + 1];
 
-    std::string get_replay_str() const {
+    std::string get_reply_str() const {
         std::string reply = std::string(REPLY) + " ";
         reply += params.mcast_addr + " ";
         reply += std::to_string(params.data_port) + " ";
-        reply += params.name + "\n";
+        reply += params.name;
         return reply;
     }
 
 public:
     explicit Sender(SenderParameters &params) : remote_address(), receiver_address(), listener_address(),
-                                                socket_fd(-1), listener_socket_fd(-1), params(params),
+                                                multicast_socket_fd(-1), listener_socket_fd(-1), params(params),
                                                 cache((params.fsize / params.psize) * params.psize),
                                                 missed(), buffer() {
-        // Initialize values for sending packets.
-        remote_address = get_remote_address(params.mcast_addr.c_str(), params.data_port);
-        socket_fd = open_multicast_socket();
-        connect_socket(socket_fd, &remote_address);
-        // Initialize values for receiving control packets.
+        // Initialize socket for sending packets.
+        remote_address = get_remote_address(params.mcast_addr.c_str(), params.data_port, true);
+        multicast_socket_fd = open_multicast_socket();
+        connect_socket(multicast_socket_fd, &remote_address);
+        // Initialize socket for receiving control packets.
         listener_address = get_listener_address(params.control_port);
         listener_socket_fd = open_listener_socket();
         bind_socket(listener_socket_fd, &listener_address);
     }
 
     ~Sender() {
-        if (socket_fd > 0) CHECK_ERRNO(close(socket_fd));
+        if (multicast_socket_fd > 0) CHECK_ERRNO(close(multicast_socket_fd));
         if (listener_socket_fd > 0) CHECK_ERRNO(close(listener_socket_fd));
     }
 
@@ -72,7 +73,7 @@ public:
             if (read_bytes < params.psize) break;
 
             // Send the audio data.
-            send_packet(socket_fd, packet.data(), packet_size);
+            send_packet(multicast_socket_fd, packet.data(), packet_size);
             // (!!!) Cached packet is already in the network byte order but byte_num isn't.
             cache.push(byte_num, packet);
             // Update the packet.
@@ -86,7 +87,7 @@ public:
         auto address_length = (socklen_t) sizeof(receiver_address);
         const auto lookup_msg_len = strlen(LOOKUP);
         const auto rexmit_msg_len = strlen(REXMIT);
-        const auto replay = get_replay_str();
+        const auto reply = get_reply_str();
 
         while (true) {
             ssize_t received_bytes = recvfrom(listener_socket_fd, buffer, CTRL_BUF_SIZE, NO_FLAGS,
@@ -94,9 +95,7 @@ public:
             if (received_bytes < 0) continue;
 
             if (!strncmp(buffer, LOOKUP, lookup_msg_len)) {
-                sendto(listener_socket_fd, replay.c_str(), replay.size(),
-                       NO_FLAGS, (struct sockaddr *) &receiver_address,
-                       address_length);
+                send_reply(listener_socket_fd, reply, &receiver_address, address_length);
             }
 
             if (!strncmp(buffer, REXMIT, rexmit_msg_len)) {
@@ -113,7 +112,7 @@ public:
             for (packet_id_t missed_packet: missed_packets) {
                 try {
                     byte_vector_t packet = cache.pop(missed_packet);
-                    send_packet(socket_fd, packet.data(), packet.size());
+                    send_packet(multicast_socket_fd, packet.data(), packet.size());
                 } catch (std::out_of_range &e) {
                     continue;
                 }

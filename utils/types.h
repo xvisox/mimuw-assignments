@@ -13,6 +13,7 @@ typedef uint64_t packet_size_t;
 typedef uint64_t packet_id_t;
 typedef uint64_t milliseconds_t;
 typedef char byte_t;
+typedef int socket_t;
 typedef std::vector<byte_t> byte_vector_t;
 typedef std::deque<std::optional<byte_vector_t>> packets_deque_t;
 typedef std::deque<packet_id_t> packet_id_deque_t;

@@ -14,7 +14,10 @@
 #define REPLY "BOREWICZ_HERE"
 #define REXMIT "LOUDER_PLEASE"
 #define NO_FLAGS 0
-#define MAX_TTL 255
-#define CTRL_BUF_SIZE 1024
+#define MAX_TTL 64
+#define CTRL_BUF_SIZE (BSIZE)
+#define NO_TIMEOUT (-1)
+#define LOOKUP_TIME_MS 5000
+#define LOOKUP_EXPIRE_TIME_S 20
 
 #endif // CONST_H
