@@ -1,5 +1,5 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef SIKRADIO_BUFFER_HPP
+#define SIKRADIO_BUFFER_HPP
 
 #include <mutex>
 #include "session.hpp"
@@ -14,12 +14,14 @@ private:
     packets_deque_t data;       // Received and yet not printed packets.
     packet_id_deque_t packets;  // Identifiers of above packets.
     packet_id_t BYTE_0;         // First byte number received.
-    packet_id_t max_printed_id;    // Max printed packet id.
+    packet_id_t max_printed_id; // Max printed packet id.
+    missed_ids_t missed_ids;    // Set of missed packet ids.
 
     void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
         if (session.session_id >= session_id && session.is_initialized()) return;
         data.clear();
         packets.clear();
+        missed_ids.clear();
         // Initialize the session.
         session.state = SessionState::IN_PROGRESS;
         session.session_id = session_id;
@@ -35,10 +37,14 @@ private:
     }
 
     void prevent_overflow() {
-        if (data.size() == capacity) {
-            data.pop_front();
-            packets.pop_front();
-        }
+        if (data.size() == capacity) pop();
+    }
+
+    void pop() {
+        auto id = packets.front();
+        data.pop_front();
+        packets.pop_front();
+        missed_ids.erase(id);
     }
 
     void append(std::optional<byte_vector_t> &packet_data, packet_id_t id) {
@@ -54,6 +60,7 @@ private:
             prevent_overflow();
             data.emplace_back(std::nullopt);
             packets.push_back(missed_packet);
+            missed_ids.insert(missed_packet);
         }
         // Add the actual packet.
         prevent_overflow();
@@ -82,6 +89,8 @@ public:
             session.state = SessionState::READY;
         }
 
+        // Remove the packet from the set of missed packets if it was there.
+        missed_ids.erase(id);
         if ((id - BYTE_0) % session.packet_size != 0) {
             // Probably will never happen.
             fatal("The first byte number is not a multiple of the packet size");
@@ -96,12 +105,6 @@ public:
             // Received packet is too old, ignore it.
             return;
         }
-        // Print missing packets before new packet.
-        packet_id_t n = (id - packets.front()) / session.packet_size;
-        for (packet_id_t i = 0; i < n; i++) {
-            if (data[i].has_value()) continue;
-            std::cerr << "MISSING: BEFORE " << id << " EXPECTED " << packets[i] << std::endl;
-        }
     }
 
     std::optional<byte_vector_t> read() {
@@ -110,14 +113,14 @@ public:
             return std::nullopt;
 
         if (data.empty() || !data.front().has_value()) {
-            session.state = SessionState::NOT_INITIALIZED;
+            // Not the best idea, but it would be compatible with the task.
+            // session.state = SessionState::NOT_INITIALIZED;
             return std::nullopt;
         }
 
         auto result = std::move(data.front().value());
         max_printed_id = std::max(max_printed_id, packets.front());
-        data.pop_front();
-        packets.pop_front();
+        pop();
         return result;
     }
 
@@ -125,6 +128,11 @@ public:
         std::lock_guard<std::mutex> lock(mutex);
         session.state = SessionState::NOT_INITIALIZED;
     }
+
+    missed_ids_t get_missed_ids() {
+        std::lock_guard<std::mutex> lock(mutex);
+        return missed_ids;
+    }
 };
 
-#endif // BUFFER_H
+#endif // SIKRADIO_BUFFER_HPP

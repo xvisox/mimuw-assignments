@@ -88,4 +88,12 @@ inline static std::optional<Station> get_station(const std::string &reply) {
     return Station(parsable[1], name, static_cast<port_t>(control_port));
 }
 
+inline static std::string get_request_str(missed_ids_t &missed_ids, std::string &prefix) {
+    std::string request_str = prefix;
+    for (auto &id: missed_ids) {
+        request_str += std::to_string(id) + ",";
+    }
+    return request_str;
+}
+
 #endif // RECEIVER_UTILITY_HPP

@@ -12,13 +12,16 @@
 
 class Receiver {
 private:
+    using stations_t = std::vector<Station>;
+
     ReceiverParameters params;
     byte_t buffer[BSIZE];       // The buffer will store raw data.
     Buffer packets_buffer;      // The buffer will store the packets to be printed.
     struct sockaddr_in discovery_address;
+    size_t discovery_address_len;
     socket_t discovery_socket_fd;
     struct pollfd fds[2];
-    std::vector<Station> stations;
+    stations_t stations;
     struct ip_mreq mreq;
     Station *picked_station;
 
@@ -82,10 +85,12 @@ private:
 
 public:
     explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
-                                                    discovery_address(), discovery_socket_fd(-1), fds(), stations(),
+                                                    discovery_address(), discovery_address_len(0),
+                                                    discovery_socket_fd(-1), fds(), stations(),
                                                     mreq(), picked_station(nullptr) {
         // Initialize socket for sending control packets.
         discovery_address = get_remote_address(params.discover_addr.c_str(), params.control_port, false);
+        discovery_address_len = sizeof(discovery_address);
         discovery_socket_fd = open_multicast_socket();
         // Initialize poll structure.
         // Discovery socket.
@@ -101,14 +106,16 @@ public:
     }
 
     void run() {
-        std::thread receiver_thread(&Receiver::receiver, this);
-        std::thread controller_thread(&Receiver::controller, this);
+        std::thread receiver_thread(&Receiver::listening_controller, this);
+        std::thread discovery_thread(&Receiver::discovery_controller, this);
+        std::thread requests_thread(&Receiver::requests_controller, this);
         receiver_thread.detach();
-        controller_thread.detach();
+        discovery_thread.detach();
+        requests_thread.detach();
         writer();
     }
 
-    [[noreturn]] void receiver() {
+    [[noreturn]] void listening_controller() {
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
         session_id_t session_id;
         packet_id_t packet_id;
@@ -149,13 +156,26 @@ public:
         }
     }
 
-    [[noreturn]] void controller() {
+    [[noreturn]] void discovery_controller() {
         const auto lookup_msg_len = strlen(LOOKUP);
-        const auto discovery_addr_len = sizeof(discovery_address);
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(LOOKUP_TIME_MS));
             sendto(discovery_socket_fd, LOOKUP, lookup_msg_len, NO_FLAGS,
-                   (struct sockaddr *) &discovery_address, discovery_addr_len);
+                   (struct sockaddr *) &discovery_address, discovery_address_len);
+        }
+    }
+
+    [[noreturn]] void requests_controller() {
+        std::string request_msg_prefix = std::string(REXMIT) + " ";
+        while (true) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(params.rtime));
+            auto missed_ids = packets_buffer.get_missed_ids();
+            if (missed_ids.empty()) continue;
+
+            // Send request for missed packets.
+            auto request_msg = get_request_str(missed_ids, request_msg_prefix);
+            sendto(discovery_socket_fd, request_msg.c_str(), request_msg.size(), NO_FLAGS,
+                   (struct sockaddr *) &discovery_address, discovery_address_len);
         }
     }
 
