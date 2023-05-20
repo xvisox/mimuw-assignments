@@ -26,7 +26,7 @@ inline static void drop_membership(socket_t *socket_fd, struct ip_mreq *mreq) {
     *socket_fd = -1;
 }
 
-inline static socket_t create_membership(const char *mcast_addr, port_t port, struct ip_mreq *mreq) {
+inline static void create_membership(struct pollfd *pfd, const char *mcast_addr, port_t port, struct ip_mreq *mreq) {
     int socket_fd = open_listener_socket();
 
     mreq->imr_interface.s_addr = htonl(INADDR_ANY);
@@ -42,7 +42,9 @@ inline static socket_t create_membership(const char *mcast_addr, port_t port, st
     address.sin_port = htons(port);
     bind_socket(socket_fd, &address);
 
-    return socket_fd;
+    pfd->fd = socket_fd;
+    pfd->events = POLLIN;
+    pfd->revents = 0;
 }
 
 inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length, packet_size_t empty_packet_size) {
@@ -52,17 +54,17 @@ inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_leng
     return (size_t) read_length;
 }
 
-std::optional<Station> get_station(const std::string &reply) {
+inline static std::optional<Station> get_station(const std::string &reply) {
     std::vector<std::string> parsable;
     boost::split(parsable, reply, boost::is_any_of(" "));
     if (parsable.size() < 4) {
-        std::cerr << "get_station: Invalid message type." << std::endl;
+        syslog("get_station: Invalid message type.");
         return std::nullopt;
     }
 
     struct in_addr addr{};
     if (inet_aton(parsable[1].c_str(), &addr) == 0) {
-        std::cerr << "get_station: Invalid mcast addr." << std::endl;
+        syslog("get_station: Invalid multicast addr.");
         return std::nullopt;
     }
 
@@ -74,12 +76,12 @@ std::optional<Station> get_station(const std::string &reply) {
     }
 
     if (control_port < 1 || control_port > UINT16_MAX) {
-        std::cerr << "get_station: Invalid ctrl port." << std::endl;
+        syslog("get_station: Invalid ctrl port.");
         return std::nullopt;
     }
 
     std::string name;
-    for (int i = 3; i != parsable.size(); ++i) {
+    for (size_t i = 3; i != parsable.size(); ++i) {
         name += parsable[i];
     }
 

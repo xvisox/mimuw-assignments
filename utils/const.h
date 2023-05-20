@@ -16,7 +16,6 @@
 #define NO_FLAGS 0
 #define MAX_TTL 64
 #define CTRL_BUF_SIZE (BSIZE)
-#define NO_TIMEOUT (-1)
 #define LOOKUP_TIME_MS 5000
 #define LOOKUP_EXPIRE_TIME_S 20
 

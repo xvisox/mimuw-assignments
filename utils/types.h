@@ -9,7 +9,7 @@
 typedef uint16_t port_t;
 typedef int64_t session_id_t;
 typedef uint64_t buffer_size_t;
-typedef uint64_t packet_size_t;
+typedef ssize_t packet_size_t;
 typedef uint64_t packet_id_t;
 typedef uint64_t milliseconds_t;
 typedef char byte_t;

@@ -20,11 +20,70 @@ private:
     struct pollfd fds[2];
     std::vector<Station> stations;
     struct ip_mreq mreq;
+    Station *picked_station;
+
+    void remove_expired_stations_and_pick() {
+        auto it = stations.begin();
+        while (it != stations.end()) {
+            if (it->is_expired()) {
+                if (picked_station == &(*it)) {
+                    picked_station = nullptr;
+                    drop_membership(&fds[1].fd, &mreq);
+                }
+                // Remove the station from the list.
+                syslog("Station: %s expired", it->name.c_str());
+                it = stations.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        pick_best_station();
+    }
+
+    void update_stations(std::optional<Station> station_opt) {
+        // If the station is already in the list, update it.
+        bool found = false;
+        auto station = station_opt.value();
+        for (auto &s: stations) {
+            if (s == station) {
+                s.update_last_response();
+                found = true;
+                break;
+            }
+        }
+        // If the station is not in the list, add it.
+        if (!found) stations.push_back(station);
+        remove_expired_stations_and_pick();
+    }
+
+    void pick_best_station() {
+        if (stations.empty()) return;
+        // If the picked station is our favourite, do not change it.
+        if (picked_station != nullptr && picked_station->has_name(params.name)) return;
+
+        for (auto &station: stations) {
+            if (station.has_name(params.name)) {
+                drop_membership(&fds[1].fd, &mreq);
+                create_membership(&fds[1], station.mcast_addr.c_str(), station.data_port, &mreq);
+                picked_station = &station;
+                packets_buffer.clear();
+                syslog("Picked favourite station: %s", station.name.c_str());
+                return;
+            }
+        }
+
+        if (fds[1].fd > 0) return;
+        // If there is no station with the given name, pick the first one.
+        create_membership(&fds[1], stations[0].mcast_addr.c_str(), stations[0].data_port, &mreq);
+        picked_station = &stations[0];
+        packets_buffer.clear();
+        syslog("Picked first station: %s", stations[0].name.c_str());
+    }
 
 public:
     explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
                                                     discovery_address(), discovery_socket_fd(-1), fds(), stations(),
-                                                    mreq() {
+                                                    mreq(), picked_station(nullptr) {
         // Initialize socket for sending control packets.
         discovery_address = get_remote_address(params.discover_addr.c_str(), params.control_port, false);
         discovery_socket_fd = open_multicast_socket();
@@ -34,7 +93,6 @@ public:
         fds[0].events = POLLIN;
         // Radio socket.
         fds[1].fd = -1;
-        fds[1].events = POLLIN;
     }
 
     ~Receiver() {
@@ -51,66 +109,26 @@ public:
     }
 
     [[noreturn]] void receiver() {
-        Station *picked_station;
         packet_size_t empty_packet_size = sizeof(session_id_t) + sizeof(packet_id_t);
         session_id_t session_id;
         packet_id_t packet_id;
 
         while (true) {
-            int res = poll(fds, 2, NO_TIMEOUT);
+            int res = poll(fds, 2, LOOKUP_TIME_MS);
             if (res < 0) PRINT_ERRNO();
-
-            // Remove all stations that did not respond for a long time.
-            auto it = stations.begin();
-            while (it != stations.end()) {
-                if (it->is_expired()) {
-                    std::cerr << "receiver: Station " << it->name << " is old." << std::endl;
-                    if (picked_station == &(*it)) {
-                        picked_station = nullptr;
-                        drop_membership(&fds[1].fd, &mreq);
-                    }
-                    it = stations.erase(it);
-                } else {
-                    ++it;
-                }
-            }
+            if (res == 0) remove_expired_stations_and_pick();
 
             if (fds[0].revents & POLLIN) {
                 ssize_t len = recv(discovery_socket_fd, buffer, BSIZE, NO_FLAGS);
                 if (len < 0) continue;
 
-                // Parse message to station info.
                 buffer[len] = '\0';
+                syslog("Discovered station %s", buffer);
+                // Parse message to station info.
                 auto station_opt = get_station(buffer);
                 if (!station_opt.has_value()) continue;
 
-                // If the station is already in the list, update it.
-                bool found = false;
-                auto station = station_opt.value();
-                for (auto &s: stations) {
-                    if (s == station) {
-                        s.update_last_response();
-                        found = true;
-                        break;
-                    }
-                }
-                // If the station is not in the list, add it.
-                if (!found) stations.push_back(station);
-
-                // If the station is the one we are looking for, open the radio socket.
-                if (station.has_name(params.name)) {
-                    drop_membership(&fds[1].fd, &mreq);
-                    fds[1].fd = create_membership(station.mcast_addr.c_str(), station.data_port, &mreq);
-                    fds[1].events = POLLIN;
-                    fds[1].revents = 0;
-                    picked_station = &station;
-                } else if (!stations.empty() && fds[1].fd < 0) {
-                    // Pick any if nothing is selected.
-                    fds[1].fd = create_membership(stations[0].mcast_addr.c_str(), stations[0].data_port, &mreq);
-                    fds[1].events = POLLIN;
-                    fds[1].revents = 0;
-                    picked_station = &stations[0];
-                }
+                update_stations(station_opt);
             }
 
             if (fds[1].revents & POLLIN) {

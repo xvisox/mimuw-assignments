@@ -13,13 +13,11 @@ public:
     std::string name;
     port_t data_port;
     std::time_t last_response;
-    struct sockaddr_in address;
 
     Station(std::string mcast_addr, std::string name, port_t data_port) : mcast_addr(std::move(mcast_addr)),
                                                                           name(std::move(name)),
                                                                           data_port(data_port),
-                                                                          last_response(std::time(nullptr)),
-                                                                          address() {}
+                                                                          last_response(std::time(nullptr)) {}
 
     friend bool operator==(const Station &x, const Station &y) {
         return x.mcast_addr == y.mcast_addr && x.name == y.name;

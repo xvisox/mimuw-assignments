@@ -16,11 +16,9 @@ private:
     packet_id_t BYTE_0;         // First byte number received.
 
     void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
-        if (session.session_id < session_id) {
-            clear();
-        } else if (session.is_initialized()) {
-            return;
-        }
+        if (session.session_id >= session_id && session.is_initialized()) return;
+        data.clear();
+        packets.clear();
         // Initialize the session.
         session.state = SessionState::IN_PROGRESS;
         session.session_id = session_id;
@@ -28,13 +26,6 @@ private:
         // Initialize the buffer.
         BYTE_0 = id;
         capacity = (buffer_size / session.packet_size);
-    }
-
-    void clear() {
-        data.clear();
-        packets.clear();
-        BYTE_0 = 0;
-        capacity = 0;
     }
 
     bool is_ready_to_print(packet_id_t last_packet_id) const {
@@ -81,9 +72,9 @@ public:
 
         // Add the packet to the buffer.
         std::lock_guard<std::mutex> lock(mutex);
-        setup_if_necessary(id, session_id, audio_data_size);
+        setup_if_necessary(id, session_id, (packet_size_t) audio_data_size);
         // Ignore packets from previous sessions.
-        if (session_id != session.session_id) return;
+        if (session_id < session.session_id) return;
 
         if (is_ready_to_print(id)) {
             session.state = SessionState::READY;
@@ -120,6 +111,11 @@ public:
         data.pop_front();
         packets.pop_front();
         return result;
+    }
+
+    void clear() {
+        std::lock_guard<std::mutex> lock(mutex);
+        session.state = SessionState::NOT_INITIALIZED;
     }
 };
 

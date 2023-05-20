@@ -70,7 +70,7 @@ public:
         while (!feof(stdin)) {
             // Read the audio data.
             size_t read_bytes = fread(packet.data() + empty_packet_size, sizeof(byte_t), params.psize, stdin);
-            if (read_bytes < params.psize) break;
+            if (read_bytes < (size_t) params.psize) break;
 
             // Send the audio data.
             send_packet(multicast_socket_fd, packet.data(), packet_size);
