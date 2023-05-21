@@ -12,7 +12,7 @@
 
 class Receiver {
 private:
-    using stations_t = std::vector<Station>;
+    using stations_t = std::set<Station>;
 
     ReceiverParameters params;
     byte_t buffer[BSIZE];       // The buffer will store raw data.
@@ -20,25 +20,25 @@ private:
     struct sockaddr_in discovery_address;
     size_t discovery_address_len;
     socket_t discovery_socket_fd;
-    struct pollfd fds[2];
+    struct pollfd radio_fds[2];
     struct pollfd ui_fds[1 + MAX_CONNECTIONS];
     byte_t ui_buffer[UI_BUF_SIZE];
     stations_t stations;
     struct ip_mreq mreq;
-    Station *picked_station;
+    std::set<Station>::iterator picked_station;
     std::mutex stations_mutex;
     size_t picked_index;
 
     bool pick_favourite_station() {
         int i = 0;
-        for (auto &station: stations) {
-            if (station.has_name(params.name)) {
-                drop_membership(&fds[1].fd, &mreq);
-                create_membership(&fds[1], station.mcast_addr.c_str(), station.data_port, &mreq);
-                picked_station = &station;
+        for (auto station = stations.begin(); station != stations.end(); station++) {
+            if (station->has_name(params.name)) {
+                drop_membership(&radio_fds[1].fd, &mreq);
+                create_membership(&radio_fds[1], station->mcast_addr.c_str(), station->data_port, &mreq);
+                picked_station = station;
                 picked_index = i;
                 packets_buffer.clear();
-                syslog("Picked favourite station: %s", station.name.c_str());
+                syslog("Picked favourite station: %s", station->name.c_str());
                 return true;
             }
             i++;
@@ -49,11 +49,12 @@ private:
     void pick_first_station() {
         if (stations.empty()) return;
 
-        create_membership(&fds[1], stations[0].mcast_addr.c_str(), stations[0].data_port, &mreq);
-        picked_station = &stations[0];
+        auto station = stations.begin();
+        create_membership(&radio_fds[1], station->mcast_addr.c_str(), station->data_port, &mreq);
+        picked_station = stations.begin();
         picked_index = 0;
         packets_buffer.clear();
-        syslog("Picked first station: %s", stations[0].name.c_str());
+        syslog("Picked first station: %s", station->name.c_str());
     }
 
     void pick_best_station() {
@@ -61,14 +62,29 @@ private:
     }
 
     void pick_station(size_t index) {
-        if (index >= stations.size()) return;
+        if (picked_index == index) return;
 
-        drop_membership(&fds[1].fd, &mreq);
-        create_membership(&fds[1], stations[index].mcast_addr.c_str(), stations[index].data_port, &mreq);
-        picked_station = &stations[index];
+        auto station = stations.begin();
+        std::advance(station, index);
+        drop_membership(&radio_fds[1].fd, &mreq);
+        create_membership(&radio_fds[1], station->mcast_addr.c_str(), station->data_port, &mreq);
+        picked_station = station;
         picked_index = index;
         packets_buffer.clear();
-        syslog("Picked station: %s", stations[index].name.c_str());
+        syslog("Picked station: %s", station->name.c_str());
+    }
+
+    size_t get_new_index() {
+        if (picked_station == stations.end()) return 0;
+
+        auto station = stations.begin();
+        size_t index = 0;
+        while (station != stations.end()) {
+            if (station == picked_station) return index;
+            station++;
+            index++;
+        }
+        return 0;
     }
 
     void remove_expired_stations_and_pick() {
@@ -78,10 +94,10 @@ private:
         auto it = stations.begin();
         while (it != stations.end()) {
             if (it->is_expired()) {
-                if (picked_station == &(*it)) {
-                    picked_station = nullptr;
+                if (picked_station == it) {
+                    picked_station = stations.end();
                     picked_expired = true;
-                    drop_membership(&fds[1].fd, &mreq);
+                    drop_membership(&radio_fds[1].fd, &mreq);
                 }
                 // Remove the station from the list.
                 syslog("Station: %s expired", it->name.c_str());
@@ -96,43 +112,31 @@ private:
         if (picked_expired) {
             pick_best_station();
         } else if (!stations.empty()) {
-            size_t i = 0;
-            for (const auto &station: stations) {
-                if (picked_station == &station) break;
-                i++;
-            }
+            picked_index = get_new_index();
         }
         notify_all();
     }
 
     void update_stations_and_pick(std::optional<Station> station_opt) {
         std::lock_guard<std::mutex> lock(stations_mutex);
-        // If the station is already in the list, update it.
-        bool found = false;
         auto station = station_opt.value();
-        for (auto &s: stations) {
-            if (s == station) {
-                s.update_last_response();
-                found = true;
-                break;
-            }
-        }
-        if (found) return;
+        stations.insert(station);
         // If the station is not in the list, add it.
-        stations.push_back(station);
-        std::sort(stations.begin(), stations.end());
-        if (picked_station == nullptr)
+        if (picked_station == stations.end())
             pick_first_station();
         else if (station.has_name(params.name)) {
             pick_favourite_station();
+        } else {
+            picked_index = get_new_index();
         }
         notify_all();
     }
 
     void notify_all() {
-        for (int i = 1; i < 1 + MAX_CONNECTIONS; ++i) {
+        std::string menu = get_menu(stations, picked_index);
+        for (int i = 1; i < 1 + MAX_CONNECTIONS; i++) {
             if (ui_fds[i].fd > 0) {
-                send_menu(ui_fds[i].fd, stations, picked_index);
+                send_menu(ui_fds[i].fd, menu);
             }
         }
     }
@@ -140,18 +144,20 @@ private:
 public:
     explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
                                                     discovery_address(), discovery_address_len(0),
-                                                    discovery_socket_fd(-1), fds(), ui_fds(), ui_buffer(), stations(),
-                                                    mreq(), picked_station(nullptr), stations_mutex(), picked_index(0) {
+                                                    discovery_socket_fd(-1), radio_fds(), ui_fds(), ui_buffer(),
+                                                    stations(),
+                                                    mreq(), picked_station(stations.end()), stations_mutex(),
+                                                    picked_index(0) {
         // Initialize socket for sending control packets.
         discovery_address = get_remote_address(params.discover_addr.c_str(), params.control_port, false);
         discovery_address_len = sizeof(discovery_address);
         discovery_socket_fd = open_multicast_socket();
         // Initialize poll structure.
         // Discovery socket.
-        fds[0].fd = discovery_socket_fd;
-        fds[0].events = POLLIN;
+        radio_fds[0].fd = discovery_socket_fd;
+        radio_fds[0].events = POLLIN;
         // Radio socket.
-        fds[1].fd = -1;
+        radio_fds[1].fd = -1;
         // UI socket.
         ui_fds[0].fd = open_tcp_listener_socket(params.ui_port);
         ui_fds[0].events = POLLIN;
@@ -162,8 +168,8 @@ public:
     }
 
     ~Receiver() {
-        if (fds[0].fd > 0) CHECK_ERRNO(close(fds[0].fd > 0));
-        if (fds[1].fd > 0) CHECK_ERRNO(close(fds[1].fd));
+        if (radio_fds[0].fd > 0) CHECK_ERRNO(close(radio_fds[0].fd > 0));
+        if (radio_fds[1].fd > 0) CHECK_ERRNO(close(radio_fds[1].fd));
         if (ui_fds[0].fd > 0) CHECK_ERRNO(close(ui_fds[0].fd));
     }
 
@@ -185,11 +191,11 @@ public:
         packet_id_t packet_id;
 
         while (true) {
-            int res = poll(fds, 2, LOOKUP_TIME_MS);
+            int res = poll(radio_fds, 2, LOOKUP_TIME_MS);
             if (res < 0) PRINT_ERRNO();
             remove_expired_stations_and_pick();
 
-            if (fds[0].revents & POLLIN) {
+            if (radio_fds[0].revents & POLLIN) {
                 ssize_t len = recv(discovery_socket_fd, buffer, BSIZE, NO_FLAGS);
                 if (len < 0) continue;
 
@@ -200,8 +206,8 @@ public:
                 if (station_opt.has_value()) update_stations_and_pick(station_opt);
             }
 
-            if (fds[1].revents & POLLIN) {
-                size_t read_length = read_message(fds[1].fd, buffer, BSIZE, empty_packet_size);
+            if (radio_fds[1].revents & POLLIN) {
+                size_t read_length = read_message(radio_fds[1].fd, buffer, BSIZE, empty_packet_size);
 
                 memcpy(&session_id, buffer, sizeof(session_id_t));
                 memcpy(&packet_id, buffer + sizeof(session_id_t), sizeof(packet_id_t));
@@ -245,7 +251,8 @@ public:
                         ui_fds[i].events = POLLIN;
                         {
                             std::lock_guard<std::mutex> lock(stations_mutex);
-                            send_menu(client_fd, stations, picked_index);
+                            std::string menu = get_menu(stations, picked_index);
+                            send_menu(client_fd, menu);
                             accepted = true;
                         }
                         break;
@@ -265,15 +272,19 @@ public:
                         continue;
                     }
 
+                    // If there are no stations, ignore the message.
+                    if (stations.empty()) continue;
+
                     std::lock_guard<std::mutex> lock(stations_mutex);
+                    size_t index;
                     if (isUp(read_length, ui_buffer)) {
-                        picked_index = (picked_index + stations.size() - 1) % stations.size();
+                        index = (picked_index + stations.size() - 1) % stations.size();
                     } else if (isDown(read_length, ui_buffer)) {
-                        picked_index = (picked_index + 1) % stations.size();
+                        index = (picked_index + 1) % stations.size();
                     } else {
                         continue;
                     }
-                    pick_station(picked_index);
+                    pick_station(index);
                     notify_all();
                 }
             }

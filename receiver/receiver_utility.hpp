@@ -125,8 +125,7 @@ inline static bool clear_terminal(socket_t client_fd) {
     return write(client_fd, clear_message.c_str(), clear_message.size()) >= 0;
 }
 
-inline static bool send_menu(socket_t client_fd, std::vector<Station> &stations, size_t picked_index) {
-    clear_terminal(client_fd);
+inline static std::string get_menu(std::set<Station> &stations, size_t picked_index) {
     std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
     size_t i = 0;
     for (auto &station: stations) {
@@ -139,8 +138,12 @@ inline static bool send_menu(socket_t client_fd, std::vector<Station> &stations,
         data.append("\r\n");
         i++;
     }
+    return data;
+}
 
-    return write(client_fd, data.c_str(), data.size()) >= 0;
+inline static bool send_menu(socket_t client_fd, std::string &menu) {
+    clear_terminal(client_fd);
+    return write(client_fd, menu.c_str(), menu.size()) >= 0;
 }
 
 inline static bool isUp(size_t length, const char buffer[]) {
