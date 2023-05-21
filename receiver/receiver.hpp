@@ -47,7 +47,7 @@ private:
     }
 
     void pick_station(size_t index) {
-        if (stations.empty() || picked_index == index) return;
+        if (stations.empty()) return;
 
         auto station = stations.begin();
         if (index > 0) std::advance(station, index);
@@ -108,12 +108,25 @@ private:
     void update_stations_and_pick(std::optional<Station> station_opt) {
         std::lock_guard<std::mutex> lock(stations_mutex);
         auto station = station_opt.value();
-        stations.erase(station);
+        // If the station is already in the list, update it.
+        auto it = stations.find(station);
+        if (it != stations.end()) {
+            syslog("Station: %s updated", station.name.c_str());
+            if (picked_station == it) {
+                stations.erase(it);
+                picked_station = stations.insert(station).first;
+            } else {
+                stations.erase(it);
+                stations.insert(station);
+            }
+            return;
+        }
+        syslog("Station: %s added", station.name.c_str());
         stations.insert(station);
         // If this is the first station, pick it.
-        if (picked_station == stations.end())
+        if (picked_station == stations.end()) {
             pick_station(0);
-        else if (station.has_name(params.name)) {
+        } else if (station.has_name(params.name)) {
             pick_favourite_station();
         } else {
             picked_index = update_index();
