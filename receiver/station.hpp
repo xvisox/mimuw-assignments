@@ -23,10 +23,6 @@ public:
         return x.mcast_addr == y.mcast_addr && x.name == y.name;
     }
 
-    void update_last_response() {
-        this->last_response = std::time(nullptr);
-    }
-
     [[nodiscard]] bool is_expired() const {
         return std::time(nullptr) - this->last_response > LOOKUP_EXPIRE_TIME_S;
     }
@@ -34,7 +30,7 @@ public:
     [[nodiscard]] bool has_name(const std::string &desired_name) const {
         return this->name == desired_name;
     }
-    
+
     friend std::strong_ordering operator<=>(const Station &x, const Station &y) {
         return x.name <=> y.name;
     }

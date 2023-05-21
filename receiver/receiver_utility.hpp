@@ -147,11 +147,18 @@ inline static bool send_menu(socket_t client_fd, std::string &menu) {
 }
 
 inline static bool isUp(size_t length, const char buffer[]) {
+    // UP arrow
     return length == 3 && buffer[0] == 27 && buffer[1] == 91 && buffer[2] == 65;
 }
 
 inline static bool isDown(size_t length, const char buffer[]) {
+    // DOWN arrow
     return length == 3 && buffer[0] == 27 && buffer[1] == 91 && buffer[2] == 66;
+}
+
+inline static bool isQuit(size_t length, const char buffer[]) {
+    // CTRL + C
+    return length == 1 && buffer[0] == 3;
 }
 
 #endif // RECEIVER_UTILITY_HPP
