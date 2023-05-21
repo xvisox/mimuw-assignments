@@ -34,6 +34,10 @@ public:
     [[nodiscard]] bool has_name(const std::string &desired_name) const {
         return this->name == desired_name;
     }
+    
+    friend std::strong_ordering operator<=>(const Station &x, const Station &y) {
+        return x.name <=> y.name;
+    }
 };
 
 #endif //SIKRADIO_STATION_HPP

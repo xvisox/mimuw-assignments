@@ -18,5 +18,8 @@
 #define CTRL_BUF_SIZE (BSIZE)
 #define LOOKUP_TIME_MS 5000
 #define LOOKUP_EXPIRE_TIME_S 20
+#define MAX_CONNECTIONS 20
+#define QUEUE_LEN 5
+#define UI_BUF_SIZE (1024)
 
 #endif // CONST_H

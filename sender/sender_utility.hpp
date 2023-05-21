@@ -16,14 +16,6 @@
 #include "../utils/const.h"
 #include "../utils/types.h"
 
-inline static struct sockaddr_in get_listener_address(port_t port) {
-    struct sockaddr_in listener_address{};
-    listener_address.sin_family = AF_INET;
-    listener_address.sin_port = htons(port);
-    listener_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    return listener_address;
-}
-
 inline static void send_packet(socket_t socket_fd, byte_t *packet, packet_size_t packet_size) {
     errno = 0;
     while (send(socket_fd, packet, packet_size, NO_FLAGS) < 0);

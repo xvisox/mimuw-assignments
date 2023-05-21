@@ -70,4 +70,12 @@ inline static struct sockaddr_in get_remote_address(char const *host, port_t por
     return remote_address;
 }
 
+inline static struct sockaddr_in get_listener_address(port_t port) {
+    struct sockaddr_in listener_address{};
+    listener_address.sin_family = AF_INET;
+    listener_address.sin_port = htons(port);
+    listener_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    return listener_address;
+}
+
 #endif //SIKRADIO_COMMON_H

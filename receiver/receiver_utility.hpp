@@ -96,4 +96,59 @@ inline static std::string get_request_str(missed_ids_t &missed_ids, std::string 
     return request_str;
 }
 
+inline static socket_t open_tcp_listener_socket(port_t port) {
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_fd < 0) {
+        PRINT_ERRNO();
+    }
+
+    int optval = 1;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) < 0)
+        PRINT_ERRNO();
+
+    struct sockaddr_in address = get_listener_address(port);
+    bind_socket(socket_fd, &address);
+
+    if (listen(socket_fd, QUEUE_LEN) < 0)
+        PRINT_ERRNO();
+
+    return socket_fd;
+}
+
+inline static bool send_init_message(socket_t client_fd, unsigned char msg[], ssize_t init_msg_len) {
+    ssize_t len = write(client_fd, msg, init_msg_len);
+    return len == init_msg_len;
+}
+
+inline static bool clear_terminal(socket_t client_fd) {
+    static const std::string clear_message = "\033[2J\033[0;0H";
+    return write(client_fd, clear_message.c_str(), clear_message.size()) >= 0;
+}
+
+inline static bool send_menu(socket_t client_fd, std::vector<Station> &stations, size_t picked_index) {
+    clear_terminal(client_fd);
+    std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
+    size_t i = 0;
+    for (auto &station: stations) {
+        if (picked_index == i) {
+            data.append(" >");
+        } else {
+            data.append("  ");
+        }
+        data.append(station.name);
+        data.append("\r\n");
+        i++;
+    }
+
+    return write(client_fd, data.c_str(), data.size()) >= 0;
+}
+
+inline static bool isUp(size_t length, const char buffer[]) {
+    return length == 3 && buffer[0] == 27 && buffer[1] == 91 && buffer[2] == 65;
+}
+
+inline static bool isDown(size_t length, const char buffer[]) {
+    return length == 3 && buffer[0] == 27 && buffer[1] == 91 && buffer[2] == 66;
+}
+
 #endif // RECEIVER_UTILITY_HPP
