@@ -77,7 +77,6 @@ private:
     }
 
     void remove_expired_stations_and_pick() {
-        std::lock_guard<std::mutex> lock(stations_mutex);
         bool picked_expired = false;
         size_t initial_size = stations.size();
         auto station = stations.begin();
@@ -106,7 +105,6 @@ private:
     }
 
     void update_stations_and_pick(std::optional<Station> station_opt) {
-        std::lock_guard<std::mutex> lock(stations_mutex);
         auto station = station_opt.value();
         // If the station is already in the list, update it.
         auto it = stations.find(station);
@@ -191,21 +189,51 @@ public:
         while (true) {
             int res = poll(radio_fds, 2, LOOKUP_TIME_MS);
             if (res < 0) PRINT_ERRNO();
-            remove_expired_stations_and_pick();
+            else {
+                std::lock_guard<std::mutex> lock(stations_mutex);
+                remove_expired_stations_and_pick();
+            }
 
             if (radio_fds[0].revents & POLLIN) {
-                ssize_t read_length = recv(radio_fds[0].fd, buffer, BSIZE, NO_FLAGS);
-                if (read_length < 0) continue;
+                /*
+                 * Autor: Paweł Parys.
+                 * Dla głównego gniazda UDP nie mam
+                 * specjalnie pomysłu, może odczekać krótką chwilę i próbować ponownie.
+                 * Można przy okazji wypisać błąd na stderr.
+                 */
+                struct sockaddr_in sender_address{};
+                socklen_t sender_address_len = sizeof(sender_address);
+                ssize_t read_length = recvfrom(radio_fds[0].fd, buffer, BSIZE, NO_FLAGS,
+                                               (sockaddr *) &sender_address, &sender_address_len);
+                if (read_length < 0) {
+                    syslog("Error while receiving discovery message");
+                    continue;
+                }
 
                 buffer[read_length] = '\0';
                 syslog("Discovered station %s", buffer);
                 // Parse message to station info.
-                auto station_opt = get_station(buffer);
-                if (station_opt.has_value()) update_stations_and_pick(station_opt);
+                auto station_opt = get_station(buffer, sender_address, sender_address_len);
+                if (station_opt.has_value()) {
+                    std::lock_guard<std::mutex> lock(stations_mutex);
+                    update_stations_and_pick(station_opt);
+                }
             }
 
-            if (radio_fds[1].revents & POLLIN) {
-                size_t read_length = read_message(radio_fds[1].fd, buffer, BSIZE, empty_packet_size);
+            if (radio_fds[1].fd > 0 && radio_fds[1].revents & POLLIN) {
+                /*
+                 * Autor: Paweł Parys.
+                 * Jeśli to odbiór danych, to możemy usunąć aktualną stację z
+                 * listy i rozpocząć odbieranie od nowa.
+                 */
+                ssize_t read_length = recv(radio_fds[1].fd, buffer, BSIZE, NO_FLAGS);
+                if (read_length <= empty_packet_size) {
+                    syslog("Error while receiving audio data, changing station");
+                    size_t next_index = (picked_index + 1) % stations.size();
+                    std::lock_guard<std::mutex> lock(stations_mutex);
+                    pick_station(next_index);
+                    continue;
+                }
 
                 memcpy(&session_id, buffer, sizeof(session_id_t));
                 memcpy(&packet_id, buffer + sizeof(session_id_t), sizeof(packet_id_t));
@@ -227,16 +255,20 @@ public:
         unsigned char IAC_WILL_SUPPRESS_GO_AHEAD[] = {255, 251, 3};
         ssize_t message_len = sizeof(IAC_WILL_ECHO) / sizeof(char);
         while (true) {
-            int res = poll(ui_fds, 1 + MAX_CONNECTIONS, -1);
+            int res = poll(ui_fds, 1 + MAX_CONNECTIONS, NO_TIMEOUT);
             if (res < 0) PRINT_ERRNO();
 
             // Accept new connections.
             if (ui_fds[0].revents & POLLIN) {
                 int client_fd = accept(ui_fds[0].fd, nullptr, nullptr);
-                if (client_fd < 0) continue;
+                if (client_fd < 0) {
+                    syslog("Error while accepting new connection");
+                    continue;
+                }
 
                 if (!send_init_message(client_fd, IAC_WILL_ECHO, message_len) ||
                     !send_init_message(client_fd, IAC_WILL_SUPPRESS_GO_AHEAD, message_len)) {
+                    syslog("Error while sending init message");
                     CHECK_ERRNO(close(client_fd));
                     continue;
                 }
@@ -256,13 +288,19 @@ public:
                         break;
                     }
                 }
-                if (!accepted) CHECK_ERRNO(close(client_fd));
+                if (!accepted) {
+                    syslog("Too many connections, closing new one");
+                    CHECK_ERRNO(close(client_fd));
+                }
             }
 
             // Handle messages from clients.
             for (int i = 1; i < 1 + MAX_CONNECTIONS; ++i) {
-                if (ui_fds[i].fd == -1) continue;
-                if (ui_fds[i].revents & POLLIN) {
+                if (ui_fds[i].fd > 0 && ui_fds[i].revents & POLLIN) {
+                    /*
+                     * Autor: Paweł Parys.
+                     * Jeśli to UI, to możemy rozłączyć.
+                     */
                     size_t read_length = read(ui_fds[i].fd, ui_buffer, UI_BUF_SIZE - 1);
                     if (read_length == 0) {
                         syslog("Client disconnected");
@@ -297,6 +335,7 @@ public:
         const auto lookup_msg_len = strlen(LOOKUP);
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(LOOKUP_TIME_MS));
+            // Send lookup message, ignore errors.
             sendto(radio_fds[0].fd, LOOKUP, lookup_msg_len, NO_FLAGS,
                    (struct sockaddr *) &discovery_address, discovery_address_len);
         }
@@ -307,12 +346,12 @@ public:
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(params.rtime));
             auto missed_ids = packets_buffer.get_missed_ids();
-            if (missed_ids.empty()) continue;
+            if (missed_ids.empty() || picked_station == stations.end()) continue;
 
-            // Send request for missed packets.
+            // Send request for missed packets, ignore errors.
             auto request_msg = get_request_str(missed_ids, request_msg_prefix);
-            sendto(radio_fds[0].fd, request_msg.c_str(), request_msg.size(), NO_FLAGS,
-                   (struct sockaddr *) &discovery_address, discovery_address_len);
+            sendto(radio_fds[0].fd, request_msg.data(), request_msg.size(), NO_FLAGS,
+                   (struct sockaddr *) &picked_station->address, picked_station->address_length);
         }
     }
 

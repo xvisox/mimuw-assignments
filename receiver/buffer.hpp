@@ -17,11 +17,15 @@ private:
     packet_id_t max_printed_id; // Max printed packet id.
     missed_ids_t missed_ids;    // Set of missed packet ids.
 
-    void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
-        if (session.session_id >= session_id && session.is_initialized()) return;
+    void clean() {
         data.clear();
         packets.clear();
         missed_ids.clear();
+    }
+
+    void setup_if_necessary(packet_id_t id, session_id_t session_id, packet_size_t audio_data_size) {
+        if (session.session_id >= session_id && session.is_initialized()) return;
+        clean();
         // Initialize the session.
         session.state = SessionState::IN_PROGRESS;
         session.session_id = session_id;
@@ -76,12 +80,12 @@ public:
     explicit Buffer(buffer_size_t buffer_size) : capacity(0), buffer_size(buffer_size), data(),
                                                  packets(), BYTE_0(0), max_printed_id(0) {}
 
-    void add_packet(std::optional<byte_vector_t> &packet_data_opt, size_t audio_data_size,
+    void add_packet(std::optional<byte_vector_t> &packet_data_opt, packet_size_t audio_data_size,
                     packet_id_t id, session_id_t session_id) {
 
         // Add the packet to the buffer.
         std::lock_guard<std::mutex> lock(mutex);
-        setup_if_necessary(id, session_id, (packet_size_t) audio_data_size);
+        setup_if_necessary(id, session_id, audio_data_size);
         // Ignore packets from previous sessions and ignore already printed packets.
         if (session_id < session.session_id || id <= max_printed_id) return;
 
@@ -127,6 +131,7 @@ public:
     void clear() {
         std::lock_guard<std::mutex> lock(mutex);
         session.state = SessionState::NOT_INITIALIZED;
+        clean();
     }
 
     missed_ids_t get_missed_ids() {

@@ -47,14 +47,8 @@ inline static void create_membership(struct pollfd *pfd, const char *mcast_addr,
     pfd->revents = 0;
 }
 
-inline static size_t read_message(int socket_fd, byte_t *buffer, size_t max_length, packet_size_t empty_packet_size) {
-    ssize_t read_length;
-    while ((read_length = recv(socket_fd, buffer, max_length, NO_FLAGS)) <= empty_packet_size);
-    // if (read_length < 0) PRINT_ERRNO();
-    return (size_t) read_length;
-}
-
-inline static std::optional<Station> get_station(const std::string &reply) {
+inline static std::optional<Station> get_station(const std::string &reply,
+                                                 struct sockaddr_in sender_address, socklen_t sender_address_len) {
     std::vector<std::string> parsable;
     boost::split(parsable, reply, boost::is_any_of(" "));
     if (parsable.size() < 4) {
@@ -85,7 +79,10 @@ inline static std::optional<Station> get_station(const std::string &reply) {
         name += parsable[i];
     }
 
-    return Station(parsable[1], name, static_cast<port_t>(control_port));
+    Station station(parsable[1], name, static_cast<port_t>(control_port));
+    station.address_length = sender_address_len;
+    station.address = sender_address;
+    return station;
 }
 
 inline static std::string get_request_str(missed_ids_t &missed_ids, std::string &prefix) {
@@ -117,7 +114,7 @@ inline static socket_t open_tcp_listener_socket(port_t port) {
 
 inline static bool send_init_message(socket_t client_fd, unsigned char msg[], ssize_t init_msg_len) {
     ssize_t len = write(client_fd, msg, init_msg_len);
-    return len == init_msg_len;
+    return (len == init_msg_len);
 }
 
 inline static bool clear_terminal(socket_t client_fd) {
@@ -142,8 +139,7 @@ inline static std::string get_menu(std::set<Station> &stations, size_t picked_in
 }
 
 inline static bool send_menu(socket_t client_fd, std::string &menu) {
-    clear_terminal(client_fd);
-    return write(client_fd, menu.c_str(), menu.size()) >= 0;
+    return clear_terminal(client_fd) && write(client_fd, menu.c_str(), menu.size()) >= 0;
 }
 
 inline static bool isUp(size_t length, const char buffer[]) {

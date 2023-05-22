@@ -21,5 +21,6 @@
 #define MAX_CONNECTIONS 20
 #define QUEUE_LEN 5
 #define UI_BUF_SIZE (1024)
+#define NO_TIMEOUT (-1)
 
 #endif // CONST_H
