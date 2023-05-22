@@ -22,10 +22,6 @@ public:
                                                                           last_response(std::time(nullptr)),
                                                                           address(), address_length(0) {}
 
-    friend bool operator==(const Station &x, const Station &y) {
-        return x.mcast_addr == y.mcast_addr && x.name == y.name;
-    }
-
     [[nodiscard]] bool is_expired() const {
         return std::time(nullptr) - this->last_response > LOOKUP_EXPIRE_TIME_S;
     }
@@ -35,7 +31,11 @@ public:
     }
 
     friend std::strong_ordering operator<=>(const Station &x, const Station &y) {
-        return x.name <=> y.name;
+        if (x.name == y.name) {
+            return x.mcast_addr <=> y.mcast_addr;
+        } else {
+            return x.name <=> y.name;
+        }
     }
 };
 
