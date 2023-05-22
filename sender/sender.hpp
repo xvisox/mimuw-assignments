@@ -112,7 +112,8 @@ public:
             for (packet_id_t missed_packet: missed_packets) {
                 try {
                     byte_vector_t packet = cache.pop(missed_packet);
-                    send_packet(multicast_socket_fd, packet.data(), packet.size());
+                    syslog("Retransmitting packet %lu", missed_packet);
+                    send_packet(multicast_socket_fd, packet.data(), (packet_size_t) packet.size());
                 } catch (std::out_of_range &e) {
                     continue;
                 }

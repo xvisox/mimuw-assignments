@@ -15,6 +15,7 @@ private:
     packet_id_deque_t packets;  // Identifiers of above packets.
     packet_id_t BYTE_0;         // First byte number received.
     packet_id_t max_printed_id; // Max printed packet id.
+    packet_id_t max_received_id;// Max received packet id.
     missed_ids_t missed_ids;    // Set of missed packet ids.
 
     void clean() {
@@ -33,6 +34,7 @@ private:
         // Initialize the buffer.
         BYTE_0 = id;
         max_printed_id = id;
+        max_received_id = id;
         capacity = (buffer_size / session.packet_size);
     }
 
@@ -52,16 +54,13 @@ private:
     }
 
     void append(std::optional<byte_vector_t> &packet_data, packet_id_t id) {
-        if (data.empty()) {
-            data.push_back(std::move(packet_data));
-            packets.push_back(id);
-            return;
-        }
         // Add dummy packets if necessary.
-        for (packet_id_t missed_packet = packets.back() + session.packet_size;
+        packet_id_t start_id = packets.empty() ? max_received_id : packets.back();
+        for (packet_id_t missed_packet = start_id + session.packet_size;
              missed_packet < id;
              missed_packet += session.packet_size) {
             prevent_overflow();
+            syslog("Missing packet: %d", missed_packet);
             data.emplace_back(std::nullopt);
             packets.push_back(missed_packet);
             missed_ids.insert(missed_packet);
@@ -78,7 +77,8 @@ private:
 
 public:
     explicit Buffer(buffer_size_t buffer_size) : capacity(0), buffer_size(buffer_size), data(),
-                                                 packets(), BYTE_0(0), max_printed_id(0) {}
+                                                 packets(), BYTE_0(0), max_printed_id(0), max_received_id(0),
+                                                 missed_ids() {}
 
     void add_packet(std::optional<byte_vector_t> &packet_data_opt, packet_size_t audio_data_size,
                     packet_id_t id, session_id_t session_id) {
@@ -109,6 +109,7 @@ public:
             // Received packet is too old, ignore it.
             return;
         }
+        max_received_id = std::max(max_received_id, id);
     }
 
     std::optional<byte_vector_t> read() {

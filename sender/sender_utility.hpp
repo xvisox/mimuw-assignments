@@ -16,18 +16,18 @@
 #include "../utils/const.h"
 #include "../utils/types.h"
 
+/*
+ * Autor: Paweł Parys
+ * Błąd w send można zignorować (najlepiej pisząc w komentarzu, że ignorujemy)
+ */
 inline static void send_packet(socket_t socket_fd, byte_t *packet, packet_size_t packet_size) {
-    errno = 0;
-    while (send(socket_fd, packet, packet_size, NO_FLAGS) < 0);
-    // if (sent_length < 0) PRINT_ERRNO();
+    send(socket_fd, packet, packet_size, NO_FLAGS);
 }
 
 inline static void send_reply(socket_t socket_fd, const std::string &reply,
                               struct sockaddr_in *receiver_address, socklen_t address_length) {
-    errno = 0;
-    while (sendto(socket_fd, reply.c_str(), reply.size(), NO_FLAGS,
-                  (struct sockaddr *) receiver_address, address_length) < 0);
-    // if (sent_length < 0) PRINT_ERRNO();
+    sendto(socket_fd, reply.c_str(), reply.size(), NO_FLAGS,
+           (struct sockaddr *) receiver_address, address_length);
 }
 
 inline static std::vector<packet_id_t> parse_rexmit(byte_t *buffer, ssize_t length) {

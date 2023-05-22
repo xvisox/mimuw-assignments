@@ -211,7 +211,6 @@ public:
                 }
 
                 buffer[read_length] = '\0';
-                syslog("Discovered station %s", buffer);
                 // Parse message to station info.
                 auto station_opt = get_station(buffer, sender_address, sender_address_len);
                 if (station_opt.has_value()) {
@@ -229,8 +228,8 @@ public:
                 ssize_t read_length = recv(radio_fds[1].fd, buffer, BSIZE, NO_FLAGS);
                 if (read_length <= empty_packet_size) {
                     syslog("Error while receiving audio data, changing station");
-                    size_t next_index = (picked_index + 1) % stations.size();
                     std::lock_guard<std::mutex> lock(stations_mutex);
+                    size_t next_index = (picked_index + 1) % stations.size();
                     pick_station(next_index);
                     continue;
                 }
@@ -350,6 +349,7 @@ public:
 
             // Send request for missed packets, ignore errors.
             auto request_msg = get_request_str(missed_ids, request_msg_prefix);
+            syslog("Sending request: %s", request_msg.c_str());
             sendto(radio_fds[0].fd, request_msg.data(), request_msg.size(), NO_FLAGS,
                    (struct sockaddr *) &picked_station->address, picked_station->address_length);
         }
