@@ -60,7 +60,11 @@ private:
     }
 
     void pick_best_station() {
-        if (!pick_favourite_station()) pick_station(0);
+        if (params.name == NO_NAME) {
+            pick_station(0);
+        } else {
+            pick_favourite_station();
+        }
     }
 
     size_t update_index() {
@@ -83,6 +87,7 @@ private:
         while (station != stations.end()) {
             if (station->is_expired()) {
                 if (picked_station == station) {
+                    drop_membership(&radio_fds[1].fd, &multicast_request);
                     picked_station = stations.end();
                     picked_expired = true;
                 }
@@ -109,23 +114,23 @@ private:
         // If the station is already in the list, update it.
         auto it = stations.find(station);
         if (it != stations.end()) {
-            syslog("Station: %s updated", station.name.c_str());
             if (picked_station == it) {
+                syslog("Picked station: %s updated", station.name.c_str());
                 stations.erase(it);
                 picked_station = stations.insert(station).first;
             } else {
+                syslog("Station: %s updated", station.name.c_str());
                 stations.erase(it);
                 stations.insert(station);
             }
             return;
         }
+
         syslog("Station: %s added", station.name.c_str());
         stations.insert(station);
-        // If this is the first station, pick it.
+        // Decide if the new station should be picked.
         if (picked_station == stations.end()) {
-            pick_station(0);
-        } else if (station.has_name(params.name)) {
-            pick_favourite_station();
+            pick_best_station();
         } else {
             picked_index = update_index();
         }
@@ -261,7 +266,7 @@ public:
         packet_id_t packet_id;
 
         while (true) {
-            int res = poll(radio_fds, 2, LOOKUP_TIME_MS);
+            int res = poll(radio_fds, 2, RTIME);
             if (res < 0) PRINT_ERRNO();
             else {
                 std::lock_guard<std::mutex> lock(stations_mutex);

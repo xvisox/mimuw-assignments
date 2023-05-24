@@ -8,6 +8,7 @@
 #define FSIZE 131072
 #define BSIZE 65536
 #define RTIME 250
+#define NO_NAME "-1"
 #define DEFAULT_NAME "Nienazwany Nadajnik"
 #define DISCOVER_ADDR "255.255.255.255"
 #define LOOKUP "ZERO_SEVEN_COME_IN"

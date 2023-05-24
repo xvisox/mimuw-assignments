@@ -50,7 +50,7 @@ ReceiverParameters parse(int argc, const char **argv) {
             (",U", po::value<s_port_t>()->default_value(UI_PORT), "set the user interface port")
             (",b", po::value<buffer_size_t>()->default_value(BSIZE), "set the buffer size")
             (",R", po::value<milliseconds_t>()->default_value(RTIME), "set the retransmission time")
-            (",n", po::value<std::string>()->default_value(DEFAULT_NAME), "set the name of the sender station");
+            (",n", po::value<std::string>()->default_value(NO_NAME), "set the name of the sender station");
 
     ReceiverParameters params{};
     try {
