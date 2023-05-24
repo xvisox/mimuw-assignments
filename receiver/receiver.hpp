@@ -140,6 +140,79 @@ private:
         }
     }
 
+    void accept_new_connection() {
+        // These variables will be used to send the init message,
+        // and they are static to avoid allocating them on the stack every time.
+        static unsigned char IAC_WILL_ECHO[] = {255, 251, 1};
+        static unsigned char IAC_WILL_SUPPRESS_GO_AHEAD[] = {255, 251, 3};
+        static ssize_t message_len = sizeof(IAC_WILL_ECHO) / sizeof(char);
+
+        int client_fd = accept(ui_fds[0].fd, nullptr, nullptr);
+        if (client_fd < 0) {
+            syslog("Error while accepting new connection");
+            return;
+        }
+
+        if (!send_init_message(client_fd, IAC_WILL_ECHO, message_len) ||
+            !send_init_message(client_fd, IAC_WILL_SUPPRESS_GO_AHEAD, message_len)) {
+            syslog("Error while sending init message");
+            CHECK_ERRNO(close(client_fd));
+            return;
+        }
+
+        // Add the client to the list.
+        bool accepted = false;
+        for (int i = 1; i < 1 + MAX_CONNECTIONS; ++i) {
+            if (ui_fds[i].fd == -1) {
+                ui_fds[i].fd = client_fd;
+                ui_fds[i].events = POLLIN;
+                {
+                    std::lock_guard<std::mutex> lock(stations_mutex);
+                    std::string menu = get_menu(stations, picked_index);
+                    send_menu(client_fd, menu);
+                    accepted = true;
+                }
+                break;
+            }
+        }
+        if (!accepted) {
+            syslog("Too many connections, closing new one");
+            CHECK_ERRNO(close(client_fd));
+        }
+    }
+
+    void handle_client_message(int i) {
+        /*
+         * Autor: Paweł Parys.
+         * Jeśli to UI, to możemy rozłączyć.
+         */
+        size_t read_length = read(ui_fds[i].fd, ui_buffer, UI_BUF_SIZE);
+        if (read_length == 0) {
+            syslog("Client disconnected");
+            CHECK_ERRNO(close(ui_fds[i].fd));
+            ui_fds[i].fd = -1;
+            return;
+        }
+
+        // If there are no stations, ignore the message.
+        if (stations.empty()) return;
+
+        std::lock_guard<std::mutex> lock(stations_mutex);
+        size_t index = MAX_CONNECTIONS + 1;
+        if (isUp(read_length, ui_buffer)) {
+            index = (picked_index + stations.size() - 1) % stations.size();
+        } else if (isDown(read_length, ui_buffer)) {
+            index = (picked_index + 1) % stations.size();
+        } else if (isQuit(read_length, ui_buffer)) {
+            CHECK_ERRNO(close(ui_fds[i].fd));
+            ui_fds[i].fd = -1;
+        }
+
+        if (index == MAX_CONNECTIONS + 1) return;
+        pick_station(index);
+        notify_all();
+    }
+
 public:
     explicit Receiver(ReceiverParameters &params) : params(params), buffer(), ui_buffer(),
                                                     packets_buffer(params.buffer_size),
@@ -251,88 +324,26 @@ public:
     }
 
     [[noreturn]] void ui_controller() {
-        unsigned char IAC_WILL_ECHO[] = {255, 251, 1};
-        unsigned char IAC_WILL_SUPPRESS_GO_AHEAD[] = {255, 251, 3};
-        ssize_t message_len = sizeof(IAC_WILL_ECHO) / sizeof(char);
         while (true) {
             int res = poll(ui_fds, 1 + MAX_CONNECTIONS, NO_TIMEOUT);
             if (res < 0) PRINT_ERRNO();
 
             // Accept new connections.
             if (ui_fds[0].revents & POLLIN) {
-                int client_fd = accept(ui_fds[0].fd, nullptr, nullptr);
-                if (client_fd < 0) {
-                    syslog("Error while accepting new connection");
-                    continue;
-                }
-
-                if (!send_init_message(client_fd, IAC_WILL_ECHO, message_len) ||
-                    !send_init_message(client_fd, IAC_WILL_SUPPRESS_GO_AHEAD, message_len)) {
-                    syslog("Error while sending init message");
-                    CHECK_ERRNO(close(client_fd));
-                    continue;
-                }
-
-                // Add the client to the list.
-                bool accepted = false;
-                for (int i = 1; i < 1 + MAX_CONNECTIONS; ++i) {
-                    if (ui_fds[i].fd == -1) {
-                        ui_fds[i].fd = client_fd;
-                        ui_fds[i].events = POLLIN;
-                        {
-                            std::lock_guard<std::mutex> lock(stations_mutex);
-                            std::string menu = get_menu(stations, picked_index);
-                            send_menu(client_fd, menu);
-                            accepted = true;
-                        }
-                        break;
-                    }
-                }
-                if (!accepted) {
-                    syslog("Too many connections, closing new one");
-                    CHECK_ERRNO(close(client_fd));
-                }
+                accept_new_connection();
             }
 
             // Handle messages from clients.
             for (int i = 1; i < 1 + MAX_CONNECTIONS; ++i) {
                 if (ui_fds[i].fd > 0 && ui_fds[i].revents & POLLIN) {
-                    /*
-                     * Autor: Paweł Parys.
-                     * Jeśli to UI, to możemy rozłączyć.
-                     */
-                    size_t read_length = read(ui_fds[i].fd, ui_buffer, UI_BUF_SIZE);
-                    if (read_length == 0) {
-                        syslog("Client disconnected");
-                        CHECK_ERRNO(close(ui_fds[i].fd));
-                        ui_fds[i].fd = -1;
-                        continue;
-                    }
-
-                    // If there are no stations, ignore the message.
-                    if (stations.empty()) continue;
-
-                    std::lock_guard<std::mutex> lock(stations_mutex);
-                    size_t index = MAX_CONNECTIONS + 1;
-                    if (isUp(read_length, ui_buffer)) {
-                        index = (picked_index + stations.size() - 1) % stations.size();
-                    } else if (isDown(read_length, ui_buffer)) {
-                        index = (picked_index + 1) % stations.size();
-                    } else if (isQuit(read_length, ui_buffer)) {
-                        CHECK_ERRNO(close(ui_fds[i].fd));
-                        ui_fds[i].fd = -1;
-                    }
-
-                    if (index == MAX_CONNECTIONS + 1) continue;
-                    pick_station(index);
-                    notify_all();
+                    handle_client_message(i);
                 }
             }
         }
     }
 
     [[noreturn]] void discovery_controller() {
-        const auto lookup_msg_len = strlen(LOOKUP);
+        auto lookup_msg_len = strlen(LOOKUP);
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(LOOKUP_TIME_MS));
             // Send lookup message, ignore errors.

@@ -123,7 +123,7 @@ inline static bool clear_terminal(socket_t client_fd) {
 }
 
 inline static std::string get_menu(std::set<Station> &stations, size_t picked_index) {
-    std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
+    static std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
     size_t i = 0;
     for (auto &station: stations) {
         if (picked_index == i) {

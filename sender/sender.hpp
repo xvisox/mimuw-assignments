@@ -23,9 +23,9 @@ private:
 
     std::string get_reply_str() const {
         std::string reply = std::string(REPLY) + " ";
-        reply += params.mcast_addr + " ";
-        reply += std::to_string(params.data_port) + " ";
-        reply += params.name;
+        reply.append(params.mcast_addr + " ");
+        reply.append(std::to_string(params.data_port) + " ");
+        reply.append(params.name);
         return reply;
     }
 
