@@ -36,6 +36,9 @@ static void validate(const ReceiverParameters &params) {
     if (params.name.empty() || params.name.size() > 64) {
         fatal("Name must be between 1 and 64 characters long");
     }
+    syslog("Receiver parameters: %s %s %d %d %ld %ld",
+           params.discover_addr.c_str(), params.name.c_str(), params.control_port, params.ui_port,
+           params.buffer_size, params.rtime);
 }
 
 ReceiverParameters parse(int argc, const char **argv) {

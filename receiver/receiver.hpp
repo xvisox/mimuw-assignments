@@ -16,13 +16,13 @@ private:
     using stations_iterator_t = stations_t::iterator;
 
     ReceiverParameters params;
-    byte_t buffer[BSIZE];                       // The buffer will store raw data.
+    byte_t buffer[BSIZE + 1];                   // The buffer will store raw data.
+    byte_t ui_buffer[UI_BUF_SIZE + 1];          // Smaller buffer for UI messages.
     Buffer packets_buffer;                      // The buffer will store the packets to be printed.
     struct sockaddr_in discovery_address;       // The address of the discovery socket.
     size_t discovery_address_len;               // The length of the discovery socket address.
     struct pollfd radio_fds[2];                 // The file descriptors of discovery and radio socket.
-    struct pollfd ui_fds[1 + MAX_CONNECTIONS];  // The file descriptors of the UI sockets.
-    byte_t ui_buffer[UI_BUF_SIZE];              // Smaller buffer for UI messages.
+    struct pollfd ui_fds[MAX_CONNECTIONS + 1];  // The file descriptors of the UI sockets.
     stations_t stations;                        // The set of stations.
     struct ip_mreq multicast_request;           // The multicast request for joining the group.
     stations_iterator_t picked_station;         // Currently picked radio station.
@@ -141,9 +141,10 @@ private:
     }
 
 public:
-    explicit Receiver(ReceiverParameters &params) : params(params), buffer(), packets_buffer(params.buffer_size),
+    explicit Receiver(ReceiverParameters &params) : params(params), buffer(), ui_buffer(),
+                                                    packets_buffer(params.buffer_size),
                                                     discovery_address(), discovery_address_len(0),
-                                                    radio_fds(), ui_fds(), ui_buffer(), stations(),
+                                                    radio_fds(), ui_fds(), stations(),
                                                     multicast_request(), picked_station(stations.end()),
                                                     stations_mutex(), picked_index(0) {
         // Initialize structures for sending control packets.
@@ -300,7 +301,7 @@ public:
                      * Autor: Paweł Parys.
                      * Jeśli to UI, to możemy rozłączyć.
                      */
-                    size_t read_length = read(ui_fds[i].fd, ui_buffer, UI_BUF_SIZE - 1);
+                    size_t read_length = read(ui_fds[i].fd, ui_buffer, UI_BUF_SIZE);
                     if (read_length == 0) {
                         syslog("Client disconnected");
                         CHECK_ERRNO(close(ui_fds[i].fd));

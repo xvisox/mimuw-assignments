@@ -42,10 +42,10 @@ inline static std::vector<packet_id_t> parse_rexmit(byte_t *buffer, ssize_t leng
         packet_id_t missed_id;
         try {
             missed_id = stoll(*it);
-        } catch (std::invalid_argument &e) {
-            continue;
-        } catch (std::out_of_range &e) {
-            continue;
+        } catch (...) {
+            syslog("parse_rexmit: Invalid retransmission request.");
+            packets.clear();
+            return packets;
         }
         packets.push_back(missed_id);
     }

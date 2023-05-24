@@ -96,11 +96,12 @@ public:
 
             if (!strncmp(buffer, LOOKUP, lookup_msg_len)) {
                 send_reply(listener_socket_fd, reply, &receiver_address, address_length);
-            }
-
-            if (!strncmp(buffer, REXMIT, rexmit_msg_len)) {
+            } else if (!strncmp(buffer, REXMIT, rexmit_msg_len)) {
                 std::vector<packet_id_t> missed_packets = parse_rexmit(buffer, received_bytes);
                 missed.push_all(missed_packets);
+            } else {
+                buffer[received_bytes] = '\0';
+                syslog("Unknown control message: %s", buffer);
             }
         }
     }

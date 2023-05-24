@@ -118,7 +118,14 @@ public:
             return std::nullopt;
 
         if (data.empty() || !data.front().has_value()) {
-            // Not the best idea, but it would be compatible with the task.
+            /*
+             * Autor: Paweł Parys
+             * Parę osób pytało, czy można w taki, czy inny drobny sposób odstąpić od sposobu odtwarzania
+             * opisanego w zadaniu, "bo jak coś się zmieni, to będzie lepiej grało".
+             * Przyjmijmy więc, że można, jeśli wychodzi państwu, że tak będzie lepiej działało.
+             */
+            // This causes buffer under-runs, but it would be compatible with the task.
+            // I will leave it here for now.
             // session.state = SessionState::NOT_INITIALIZED;
             return std::nullopt;
         }
