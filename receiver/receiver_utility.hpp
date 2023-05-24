@@ -87,8 +87,11 @@ inline static std::optional<Station> get_station(const std::string &reply,
 
 inline static std::string get_request_str(missed_ids_t &missed_ids, std::string &prefix) {
     std::string request_str = prefix;
+    size_t i = 0, size = missed_ids.size();
     for (auto &id: missed_ids) {
-        request_str += std::to_string(id) + ',';
+        request_str += std::to_string(id);
+        if (++i == size) break;
+        request_str += ",";
     }
     return (request_str + '\0');
 }

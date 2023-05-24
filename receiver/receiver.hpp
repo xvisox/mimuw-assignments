@@ -360,9 +360,9 @@ public:
             if (missed_ids.empty() || picked_station == stations.end()) continue;
 
             // Send request for missed packets, ignore errors.
-            std::string request = get_request_str(missed_ids, request_msg);
-            syslog("Sending request: %s", request_msg.c_str());
-            sendto(radio_fds[0].fd, request_msg.data(), request_msg.size(), NO_FLAGS,
+            std::string request_str = get_request_str(missed_ids, request_msg);
+            syslog("Sending request: %s", request_str.c_str());
+            sendto(radio_fds[0].fd, request_str.data(), request_str.size(), NO_FLAGS,
                    (struct sockaddr *) &picked_station->address, picked_station->address_length);
         }
     }
