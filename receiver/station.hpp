@@ -30,12 +30,18 @@ public:
         return this->name == desired_name;
     }
 
+    /*
+     * Autor: Paweł Parys.
+     * Tym, niemniej przyjmijmy, że jeśli dwa nadajniki mają tę samą nazwę,
+     * mcast_addr i data_port, to w odbiorcy można je utożsamić.
+     */
     friend std::strong_ordering operator<=>(const Station &x, const Station &y) {
-        if (x.name == y.name) {
-            return x.mcast_addr <=> y.mcast_addr;
-        } else {
-            return x.name <=> y.name;
-        }
+        if (x.name == y.name && x.mcast_addr == y.mcast_addr && x.data_port == y.data_port)
+            return std::strong_ordering::equal;
+
+        if (x.name != y.name) return x.name <=> y.name;
+        if (x.mcast_addr != y.mcast_addr) return x.mcast_addr <=> y.mcast_addr;
+        return x.data_port <=> y.data_port;
     }
 };
 

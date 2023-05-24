@@ -22,10 +22,10 @@ private:
     byte_t buffer[CTRL_BUF_SIZE + 1];
 
     std::string get_reply_str() const {
-        std::string reply = std::string(REPLY) + " ";
-        reply.append(params.mcast_addr + " ");
-        reply.append(std::to_string(params.data_port) + " ");
-        reply.append(params.name);
+        std::string reply = std::string(REPLY) + ' ';
+        reply.append(params.mcast_addr + ' ');
+        reply.append(std::to_string(params.data_port) + ' ');
+        reply.append(params.name + '\0');
         return reply;
     }
 

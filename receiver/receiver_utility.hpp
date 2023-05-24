@@ -88,9 +88,9 @@ inline static std::optional<Station> get_station(const std::string &reply,
 inline static std::string get_request_str(missed_ids_t &missed_ids, std::string &prefix) {
     std::string request_str = prefix;
     for (auto &id: missed_ids) {
-        request_str += std::to_string(id) + ",";
+        request_str += std::to_string(id) + ',';
     }
-    return request_str;
+    return (request_str + '\0');
 }
 
 inline static socket_t open_tcp_listener_socket(port_t port) {
@@ -123,7 +123,7 @@ inline static bool clear_terminal(socket_t client_fd) {
 }
 
 inline static std::string get_menu(std::set<Station> &stations, size_t picked_index) {
-    static std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
+    std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
     size_t i = 0;
     for (auto &station: stations) {
         if (picked_index == i) {

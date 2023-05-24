@@ -284,8 +284,8 @@ public:
                     continue;
                 }
 
-                buffer[read_length] = '\0';
                 // Parse message to station info.
+                buffer[read_length] = '\0';
                 auto station_opt = get_station(buffer, sender_address, sender_address_len);
                 if (station_opt.has_value()) {
                     std::lock_guard<std::mutex> lock(stations_mutex);
@@ -343,24 +343,24 @@ public:
     }
 
     [[noreturn]] void discovery_controller() {
-        auto lookup_msg_len = strlen(LOOKUP);
+        std::string lookup_msg = std::string(LOOKUP) + '\0';
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(LOOKUP_TIME_MS));
             // Send lookup message, ignore errors.
-            sendto(radio_fds[0].fd, LOOKUP, lookup_msg_len, NO_FLAGS,
+            sendto(radio_fds[0].fd, lookup_msg.c_str(), lookup_msg.size(), NO_FLAGS,
                    (struct sockaddr *) &discovery_address, discovery_address_len);
         }
     }
 
     [[noreturn]] void requests_controller() {
-        std::string request_msg_prefix = std::string(REXMIT) + " ";
+        std::string request_msg = std::string(REXMIT) + ' ';
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(params.rtime));
             auto missed_ids = packets_buffer.get_missed_ids();
             if (missed_ids.empty() || picked_station == stations.end()) continue;
 
             // Send request for missed packets, ignore errors.
-            auto request_msg = get_request_str(missed_ids, request_msg_prefix);
+            std::string request = get_request_str(missed_ids, request_msg);
             syslog("Sending request: %s", request_msg.c_str());
             sendto(radio_fds[0].fd, request_msg.data(), request_msg.size(), NO_FLAGS,
                    (struct sockaddr *) &picked_station->address, picked_station->address_length);
