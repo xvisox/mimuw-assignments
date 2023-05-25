@@ -68,16 +68,18 @@ private:
     }
 
     size_t update_index() {
-        if (picked_station == stations.end()) return 0;
+        if (picked_station == stations.end())
+            return SIZE_MAX;
 
         auto station = stations.begin();
         size_t index = 0;
         while (station != stations.end()) {
-            if (station == picked_station) return index;
+            if (station == picked_station)
+                return index;
             station++;
             index++;
         }
-        return 0;
+        return SIZE_MAX;
     }
 
     void remove_expired_stations_and_pick() {
