@@ -313,6 +313,7 @@ public:
                     std::lock_guard<std::mutex> lock(stations_mutex);
                     size_t next_index = (picked_index + 1) % stations.size();
                     pick_station(next_index);
+                    notify_all();
                     continue;
                 }
 
