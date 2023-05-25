@@ -88,6 +88,7 @@ private:
             if (station->is_expired()) {
                 if (picked_station == station) {
                     drop_membership(&radio_fds[1].fd, &multicast_request);
+                    picked_index = SIZE_MAX;
                     picked_station = stations.end();
                     picked_expired = true;
                 }
@@ -203,17 +204,17 @@ private:
         if (stations.empty()) return;
 
         std::lock_guard<std::mutex> lock(stations_mutex);
-        size_t index = MAX_CONNECTIONS + 1;
+        size_t index = SIZE_MAX;
         if (isUp(read_length, ui_buffer)) {
-            index = (picked_index + stations.size() - 1) % stations.size();
+            index = picked_station == stations.end() ? 0 : (picked_index + stations.size() - 1) % stations.size();
         } else if (isDown(read_length, ui_buffer)) {
-            index = (picked_index + 1) % stations.size();
+            index = picked_station == stations.end() ? 0 : (picked_index + 1) % stations.size();
         } else if (isQuit(read_length, ui_buffer)) {
             CHECK_ERRNO(close(ui_fds[i].fd));
             ui_fds[i].fd = -1;
         }
 
-        if (index == MAX_CONNECTIONS + 1) return;
+        if (index == SIZE_MAX) return;
         pick_station(index);
         notify_all();
     }
@@ -224,7 +225,7 @@ public:
                                                     discovery_address(), discovery_address_len(0),
                                                     radio_fds(), ui_fds(), stations(),
                                                     multicast_request(), picked_station(stations.end()),
-                                                    stations_mutex(), picked_index(0) {
+                                                    stations_mutex(), picked_index(SIZE_MAX) {
         // Initialize structures for sending control packets.
         discovery_address = get_remote_address(params.discover_addr.c_str(), params.control_port, false);
         discovery_address_len = sizeof(discovery_address);
