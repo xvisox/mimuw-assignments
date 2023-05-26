@@ -56,27 +56,33 @@ inline static std::optional<Station> get_station(const std::string &reply,
         return std::nullopt;
     }
 
-    struct in_addr addr{};
-    if (inet_aton(parsable[1].c_str(), &addr) == 0) {
+    // Validate multicast address.
+    struct in_addr address{};
+    if (inet_aton(parsable[1].c_str(), &address) == 0) {
         syslog("get_station: Invalid multicast addr.");
         return std::nullopt;
     }
 
+    // Validate control port.
     int control_port;
     try {
         control_port = std::stoi(parsable[2]);
     } catch (...) {
         control_port = -1;
     }
-
     if (control_port < 1 || control_port > UINT16_MAX) {
         syslog("get_station: Invalid ctrl port.");
         return std::nullopt;
     }
 
+    // Validate station name.
     std::string name;
     for (size_t i = 3; i != parsable.size(); ++i) {
         name += parsable[i];
+    }
+    if (name.empty() || name.size() > 64) {
+        syslog("get_station: Invalid name.");
+        return std::nullopt;
     }
 
     Station station(parsable[1], name, static_cast<port_t>(control_port));
