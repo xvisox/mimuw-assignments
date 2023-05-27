@@ -70,7 +70,7 @@ inline static std::optional<Station> get_station(const std::string &reply,
     } catch (...) {
         control_port = -1;
     }
-    if (control_port < 1 || control_port > UINT16_MAX) {
+    if (control_port <= 1024 || control_port > UINT16_MAX) {
         syslog("get_station: Invalid control port.");
         return std::nullopt;
     }
