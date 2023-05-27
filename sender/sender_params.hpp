@@ -21,8 +21,8 @@ struct SenderParameters {
 namespace po = boost::program_options;
 
 static void validate_port(s_port_t port) {
-    if (port <= 1024 || port > UINT16_MAX) {
-        fatal("Port must be between 1025 and 65535");
+    if (port < 1024 || port > UINT16_MAX) {
+        fatal("Port must be between 1024 and 65535");
     }
 }
 
