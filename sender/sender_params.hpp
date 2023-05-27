@@ -40,6 +40,11 @@ static void validate(const SenderParameters &params) {
     if (params.name.empty() || params.name.size() > 64) {
         fatal("Name must be between 1 and 64 characters long");
     }
+    for (char c: params.name) {
+        if (c < 32 || c > 127) {
+            fatal("Name must contain only ASCII characters from 32 to 127");
+        }
+    }
     syslog("Sender parameters: %s %s %d %d %ld %ld %ld",
            params.mcast_addr.c_str(), params.name.c_str(), params.data_port, params.control_port,
            params.psize, params.fsize, params.rtime);

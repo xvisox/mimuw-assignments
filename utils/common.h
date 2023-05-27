@@ -61,11 +61,11 @@ inline static struct sockaddr_in get_remote_address(char const *host, port_t por
     remote_address.sin_family = AF_INET;
     remote_address.sin_port = htons(port);
 
-    if (check_multicast && !IN_MULTICAST(ntohl(inet_addr(host))))
-        fatal("Given parameter is not a multicast address");
-
-    if (inet_aton(host, &remote_address.sin_addr) == 0)
+    if (inet_pton(AF_INET, host, &remote_address.sin_addr) != 1)
         fatal("Failed to convert address to binary form");
+
+    if (check_multicast && !IN_MULTICAST(ntohl(remote_address.sin_addr.s_addr)))
+        fatal("Given parameter is not a multicast address");
 
     return remote_address;
 }

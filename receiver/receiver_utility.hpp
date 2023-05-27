@@ -58,8 +58,8 @@ inline static std::optional<Station> get_station(const std::string &reply,
 
     // Validate multicast address.
     struct in_addr address{};
-    if (inet_aton(parsable[1].c_str(), &address) == 0) {
-        syslog("get_station: Invalid multicast addr.");
+    if (inet_pton(AF_INET, parsable[1].c_str(), &address) != 1 || !IN_MULTICAST(ntohl(address.s_addr))) {
+        syslog("get_station: Invalid multicast address.");
         return std::nullopt;
     }
 
@@ -71,18 +71,22 @@ inline static std::optional<Station> get_station(const std::string &reply,
         control_port = -1;
     }
     if (control_port < 1 || control_port > UINT16_MAX) {
-        syslog("get_station: Invalid ctrl port.");
+        syslog("get_station: Invalid control port.");
         return std::nullopt;
     }
 
     // Validate station name.
     std::string name;
-    for (size_t i = 3; i != parsable.size(); ++i) {
-        name += parsable[i];
-    }
+    for (size_t i = 3; i != parsable.size(); ++i) name += parsable[i];
     if (name.empty() || name.size() > 64) {
         syslog("get_station: Invalid name.");
         return std::nullopt;
+    }
+    for (char c: name) {
+        if (c < 32 || c > 127) {
+            syslog("get_station: Invalid ASCII character in name.");
+            return std::nullopt;
+        }
     }
 
     Station station(parsable[1], name, static_cast<port_t>(control_port));
