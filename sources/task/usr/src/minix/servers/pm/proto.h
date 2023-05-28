@@ -51,6 +51,8 @@ int do_getrusage(void);
 void sched_init(void);
 int sched_start_user(endpoint_t ep, struct mproc *rmp);
 int sched_nice(struct mproc *rmp, int nice);
+// hm438596
+int do_sched_deadline(void);
 
 /* profile.c */
 int do_sprofile(void);

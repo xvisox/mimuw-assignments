@@ -4,7 +4,8 @@
 .PATH: ${ARCHDIR}/misc ${.CURDIR}/misc
 
 # constructor
-SRCS+=	initfini.c
+# hm438596
+SRCS+=	initfini.c sched_deadline.c
 
 # for -fstack-protector
 SRCS+=	stack_protector.c

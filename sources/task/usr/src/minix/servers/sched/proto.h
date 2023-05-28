@@ -8,6 +8,8 @@ int main(void);
 void setreply(int proc_nr, int result);
 
 /* schedule.c */
+// hm438596
+int do_deadline_scheduling(message *m_ptr);
 int do_noquantum(message *m_ptr);
 int do_start_scheduling(message *m_ptr);
 int do_stop_scheduling(message *m_ptr);

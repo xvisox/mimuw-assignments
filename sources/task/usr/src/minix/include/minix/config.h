@@ -95,4 +95,8 @@
 #define NR_PCIBUS 40
 #define NR_PCIDEV 50
 
+// hm438596
+#define DEADLINE_Q 8
+#define PENALTY_Q 14
+
 #endif /* _CONFIG_H */

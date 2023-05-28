@@ -6,12 +6,22 @@
 #include <minix/const.h>
 #include <sys/signal.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 /*==========================================================================* 
  * Types relating to messages. 						    *
  *==========================================================================*/ 
 
 #define M_PATH_STRING_MAX  40
+
+// hm438596
+typedef struct {
+    int64_t deadline;
+    int64_t estimate;
+    bool kill;
+    uint8_t padding[39];
+} mess_sched_deadline;
+_ASSERT_MSG_SIZE(mess_sched_deadline);
 
 typedef struct {
 	uint8_t data[56];
@@ -2027,6 +2037,8 @@ typedef struct {
 	endpoint_t m_source;		/* who sent the message */
 	int m_type;			/* what kind of message is it */
 	union {
+        mess_sched_deadline m_sched; // hm438596
+
 		mess_u8			m_u8;
 		mess_u16		m_u16;
 		mess_u32		m_u32;
@@ -2260,6 +2272,12 @@ typedef struct {
 typedef int _ASSERT_message[/* CONSTCOND */sizeof(message) == 64 ? 1 : -1];
 
 /* The following defines provide names for useful members. */
+
+// hm438596
+#define m_sched_deadline m_sched.deadline
+#define m_sched_estimate m_sched.estimate
+#define m_sched_kill m_sched.kill
+
 #define m1_i1  m_m1.m1i1
 #define m1_i2  m_m1.m1i2
 #define m1_i3  m_m1.m1i3

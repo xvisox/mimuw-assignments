@@ -14,6 +14,9 @@
 #include <minix/timers.h>
 #include "kernel/proc.h"
 
+// hm438596
+#include <stdio.h>
+
 /*===========================================================================*
  *				init_scheduling				     *
  *===========================================================================*/
@@ -109,4 +112,15 @@ int sched_nice(struct mproc *rmp, int nice)
 	}
 
 	return (OK);
+}
+
+/*===========================================================================*
+ *				do_sched_deadline, hm438596				     *
+ *===========================================================================*/
+int do_sched_deadline(void) {
+    int64_t deadline = m_in.m_sched_deadline;
+    int64_t estimate = m_in.m_sched_estimate;
+    bool kill = m_in.m_sched_kill;
+    printf("PM: do_sched_deadline: deadline=%lld, estimate=%lld, kill=%d\n", deadline, estimate, kill);
+    return (OK);
 }

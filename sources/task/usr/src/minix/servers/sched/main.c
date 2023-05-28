@@ -70,6 +70,10 @@ int main(void)
 		case SCHEDULING_SET_NICE:
 			result = do_nice(&m_in);
 			break;
+        // hm438596
+        case SCHEDULING_SET_DEADLINE:
+            result = do_deadline_scheduling(&m_in);
+            break;
 		case SCHEDULING_NO_QUANTUM:
 			/* This message was sent from the kernel, don't reply */
 			if (IPC_STATUS_FLAGS_TEST(ipc_status,

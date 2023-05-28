@@ -143,6 +143,8 @@ int	 tcsetpgrp(int, pid_t);
 __aconst char *ttyname(int);
 int	 unlink(const char *);
 ssize_t	 write(int, const void *, size_t);
+// hm438596
+int sched_deadline(int64_t, int64_t, bool);
 
 
 /*
