@@ -85,6 +85,20 @@ static void pick_cpu(struct schedproc * proc)
 #endif
 }
 
+// hm438596
+int64_t get_now() {
+    int rv;
+    clock_t realtime, ticks;
+    time_t boottime;
+    if ((rv = getuptime(&ticks, &realtime, &boottime)) != OK) {
+        printf("SCHED: WARNING: getuptime failed: %d\n", rv);
+        return rv;
+    }
+    int64_t sec = (boottime + realtime / sys_hz());
+    int64_t nano_sec = ((realtime % sys_hz()) * 1000000000LL / sys_hz());
+    return sec * 1000LL + nano_sec / 1000000LL;
+}
+
 /*===========================================================================*
  *				do_noquantum				     *
  *===========================================================================*/
@@ -420,13 +434,7 @@ int do_deadline_scheduling(message *m_ptr) {
     bool kill = m_ptr->m_sched_kill;
 
     /* Get current time to check if the deadline is in the past */
-    clock_t realtime, ticks;
-    time_t boottime;
-    if ((rv = getuptime(&ticks, &realtime, &boottime)) != OK) {
-        printf("SCHED: WARNING: getuptime failed: %d\n", rv);
-        return rv;
-    }
-    int64_t now = (boottime + realtime / sys_hz()) * 1000;
+    int64_t now = get_now();
     printf("SCHED: now = %lld\n", now);
 
     /* Check if the deadline can be met */
