@@ -136,18 +136,20 @@ inline static bool clear_terminal(socket_t client_fd) {
 }
 
 inline static std::string get_menu(std::set<Station> &stations, size_t picked_index) {
-    std::string data("-----------------------\r\nRadio SIK\r\n-----------------------\r\n");
+    std::string data;
+    data.append("------------------------------------------------------------------------\r\n");
+    data.append(" SIK Radio\r\n");
+    data.append("------------------------------------------------------------------------\r\n\r\n");
     size_t i = 0;
     for (auto &station: stations) {
         if (picked_index == i) {
-            data.append(" >");
-        } else {
-            data.append("  ");
+            data.append(" > ");
         }
         data.append(station.name);
-        data.append("\r\n");
+        data.append("\r\n\r\n");
         i++;
     }
+    data.append("------------------------------------------------------------------------");
     return data;
 }
 
