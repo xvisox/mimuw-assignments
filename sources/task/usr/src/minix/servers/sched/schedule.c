@@ -106,6 +106,18 @@ int do_noquantum(message *m_ptr)
 		rmp->priority += 1; /* lower priority */
         if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 	}
+    if (rmp->priority == DEADLINE_Q) {
+        printf("Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
+        rmp->used_time += rmp->time_slice;
+        if (rmp->used_time > rmp->estimate) {
+            printf("Process %d has exceeded its deadline, flag = %d\n", rmp->endpoint, rmp->kill);
+            if (!rmp->kill) {
+                rmp->priority = PENALTY_Q;
+            } else {
+                return sys_kill(rmp->endpoint, SIGKILL);
+            }
+        }
+    }
 
 	if ((rv = schedule_process_local(rmp)) != OK) {
 		return rv;
@@ -288,6 +300,9 @@ int do_nice(message *m_ptr)
 	old_q     = rmp->priority;
 	old_max_q = rmp->max_priority;
 
+    if (new_q == DEADLINE_Q) new_q += 1;
+    if (old_q == DEADLINE_Q) return EINVAL;
+
 	/* Update the proc entry and reschedule the process */
 	rmp->max_priority = rmp->priority = new_q;
 
@@ -367,9 +382,9 @@ static void balance_queues(minix_timer_t *tp)
 
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
-			if (rmp->priority > rmp->max_priority) {
+            // hm438596
+			if (rmp->priority > rmp->max_priority && rmp->priority != DEADLINE_Q) {
 				rmp->priority -= 1; /* increase priority */
-                // hm438596
                 if (rmp->priority == DEADLINE_Q) rmp->priority -= 1;
 				schedule_process_local(rmp);
 			}
@@ -427,17 +442,24 @@ int do_deadline_scheduling(message *m_ptr) {
     }
 
     /* Check if the process is already in the deadline queue */
-    if (old_q == DEADLINE_Q) {
+    if (old_q == DEADLINE_Q && deadline != -1) {
         printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
         return EPERM;
+    }
     /* Check if process can abort deadline scheduling */
-    } else if (deadline == -1) {
+    if (old_q != DEADLINE_Q && deadline == -1) {
         printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
         return EPERM;
     }
 
     /* Update the proc entry and reschedule the process */
-    rmp->priority = DEADLINE_Q;
+    if (deadline == -1) {
+        printf("SCHED: process %d aborts deadline scheduling\n", rmp->endpoint);
+        rmp->priority = rmp->previous_priority;
+    } else {
+        printf("SCHED: process %d starts deadline scheduling\n", rmp->endpoint);
+        rmp->priority = DEADLINE_Q;
+    }
     rmp->deadline = deadline;
     rmp->estimate = estimate;
     rmp->kill = kill;
