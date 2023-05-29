@@ -103,7 +103,7 @@ inline static std::string get_request_str(missed_ids_t &missed_ids, std::string 
         if (++i == size) break;
         request_str += ",";
     }
-    return (request_str + '\0');
+    return (request_str + '\n');
 }
 
 inline static socket_t open_tcp_listener_socket(port_t port) {

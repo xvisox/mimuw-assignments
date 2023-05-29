@@ -287,13 +287,17 @@ public:
                 socklen_t sender_address_len = sizeof(sender_address);
                 ssize_t read_length = recvfrom(radio_fds[0].fd, buffer, BSIZE, NO_FLAGS,
                                                (sockaddr *) &sender_address, &sender_address_len);
-                if (read_length < 0) {
+                if (read_length <= 0) {
                     syslog("Error while receiving discovery message");
+                    continue;
+                }
+                if (buffer[read_length - 1] != '\n') {
+                    syslog("Received control message without a newline character");
                     continue;
                 }
 
                 // Parse message to station info.
-                buffer[read_length] = '\0';
+                buffer[read_length - 1] = '\0';
                 auto station_opt = get_station(buffer, sender_address, sender_address_len);
                 if (station_opt.has_value()) {
                     std::lock_guard<std::mutex> lock(stations_mutex);
@@ -352,7 +356,7 @@ public:
     }
 
     [[noreturn]] void discovery_controller() {
-        std::string lookup_msg = std::string(LOOKUP) + '\0';
+        std::string lookup_msg = std::string(LOOKUP) + '\n';
         while (true) {
             std::this_thread::sleep_for(std::chrono::milliseconds(LOOKUP_TIME_MS));
             // Send lookup message, ignore errors.

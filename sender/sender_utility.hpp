@@ -30,10 +30,8 @@ inline static void send_reply(socket_t socket_fd, const std::string &reply,
            (struct sockaddr *) receiver_address, address_length);
 }
 
-inline static std::vector<packet_id_t> parse_rexmit(byte_t *buffer, ssize_t length) {
-    buffer[length] = '\0';
+inline static std::vector<packet_id_t> parse_rexmit(byte_t *buffer) {
     std::string str(reinterpret_cast<char *>(buffer));
-
     std::vector<std::string> parsable;
     boost::split(parsable, str, boost::is_any_of(", "));
 

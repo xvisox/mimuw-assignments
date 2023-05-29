@@ -25,7 +25,7 @@ private:
         std::string reply = std::string(REPLY) + ' ';
         reply.append(params.mcast_addr + ' ');
         reply.append(std::to_string(params.data_port) + ' ');
-        reply.append(params.name + '\0');
+        reply.append(params.name + '\n');
         return reply;
     }
 
@@ -92,15 +92,23 @@ public:
         while (true) {
             ssize_t received_bytes = recvfrom(listener_socket_fd, buffer, CTRL_BUF_SIZE, NO_FLAGS,
                                               (struct sockaddr *) &receiver_address, &address_length);
-            if (received_bytes < 0) continue;
+            if (received_bytes <= 0) {
+                syslog("Error while receiving control message");
+                continue;
+            }
+            if (buffer[received_bytes - 1] != '\n') {
+                syslog("Received control message without a newline character");
+                continue;
+            }
 
+            // Change the last newline character to the null character.
+            buffer[received_bytes - 1] = '\0';
             if (!strncmp(buffer, LOOKUP, lookup_msg_len)) {
                 send_reply(listener_socket_fd, reply, &receiver_address, address_length);
             } else if (!strncmp(buffer, REXMIT, rexmit_msg_len)) {
-                std::vector<packet_id_t> missed_packets = parse_rexmit(buffer, received_bytes);
+                std::vector<packet_id_t> missed_packets = parse_rexmit(buffer);
                 missed.push_all(missed_packets);
             } else {
-                buffer[received_bytes] = '\0';
                 syslog("Unknown control message: %s", buffer);
             }
         }
