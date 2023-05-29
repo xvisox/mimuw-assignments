@@ -29,10 +29,10 @@ int do_schedule(struct proc * caller, message * m_ptr)
 	cpu = m_ptr->m_lsys_krn_schedule.cpu;
 
     if (priority == DEADLINE_Q) {
-        int64_t deadline = m_ptr->m_lsys_krn_schedule.deadline;
-        int64_t estimate = m_ptr->m_lsys_krn_schedule.estimate;
-        bool kill = m_ptr->m_lsys_krn_schedule.kill;
-        printf("KERNEL: do_schedule: deadline=%lld, estimate=%lld, kill=%d\n", deadline, estimate, kill);
+        p->deadline = m_ptr->m_lsys_krn_schedule.deadline;
+        p->estimate = m_ptr->m_lsys_krn_schedule.estimate;
+        p->kill = m_ptr->m_lsys_krn_schedule.kill;
+        printf("KERNEL: do_schedule: deadline=%lld, estimate=%lld, kill=%d\n", p->deadline, p->estimate, p->kill);
     }
 
 	return sched_proc(p, priority, quantum, cpu);

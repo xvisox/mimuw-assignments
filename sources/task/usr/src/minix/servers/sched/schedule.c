@@ -321,8 +321,12 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
 	else
 		new_cpu = -1;
 
+    // hm438596
+    int64_t new_deadline = rmp->deadline;
+    int64_t new_estimate = rmp->estimate;
+    bool new_kill = rmp->kill;
 	if ((err = sys_schedule(rmp->endpoint, new_prio,
-		new_quantum, new_cpu, 0, 0, 0)) != OK) {
+		new_quantum, new_cpu, new_deadline, new_estimate, new_kill)) != OK) {
 		printf("PM: An error occurred when trying to schedule %d: %d\n",
 		rmp->endpoint, err);
 	}
@@ -376,7 +380,7 @@ int do_deadline_scheduling(message *m_ptr) {
     struct schedproc *rmp;
     int rv;
     int proc_nr_n;
-    unsigned new_q, old_q, old_max_q;
+    unsigned old_q;
 
     /* check who can send you requests */
     if (!accept_message(m_ptr))
@@ -388,27 +392,22 @@ int do_deadline_scheduling(message *m_ptr) {
     }
 
     rmp = &schedproc[proc_nr_n];
-    // hm438596: set the new priority to the deadline queues
-    new_q = DEADLINE_Q;
-    if (new_q >= NR_SCHED_QUEUES) {
-        return EINVAL;
+    old_q = rmp->priority;
+    if (old_q == DEADLINE_Q) {
+        printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
+        return EPERM;
     }
 
-    /* Store old values, in case we need to roll back the changes */
-    old_q     = rmp->priority;
-    old_max_q = rmp->max_priority;
-
     /* Update the proc entry and reschedule the process */
-    rmp->max_priority = rmp->priority = new_q;
-
-    int new_quantum = rmp->time_slice, new_cpu = rmp->cpu;
-    int64_t deadline = m_ptr->m_sched_deadline;
-    int64_t estimate = m_ptr->m_sched_estimate;
-    bool kill = m_ptr->m_sched_kill;
-    if ((rv = sys_schedule(rmp->endpoint, new_q, new_quantum, new_cpu, deadline, estimate, kill)) != OK) {
+    rmp->priority = DEADLINE_Q;
+    rmp->deadline = m_ptr->m_sched_deadline;
+    rmp->estimate = m_ptr->m_sched_estimate;
+    rmp->kill = m_ptr->m_sched_kill;
+    rmp->previous_priority = old_q;
+    rmp->used_time = 0;
+    if ((rv = schedule_process_local(rmp)) != OK) {
         printf("SCHED: An error occurred when trying to schedule %d: %d\n", rmp->endpoint, rv);
         rmp->priority     = old_q;
-        rmp->max_priority = old_max_q;
     }
 
     return rv;

@@ -131,6 +131,10 @@ struct proc {
 #if DEBUG_TRACE
   int p_schedules;
 #endif
+    // hm438596
+    int64_t deadline;       /* deadline for the process */
+    int64_t estimate;       /* estimate for the process */
+    bool kill;              /* kill the process if it misses its estimate */
 };
 
 #endif /* __ASSEMBLY__ */
