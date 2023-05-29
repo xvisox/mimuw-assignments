@@ -128,7 +128,7 @@ int do_sched_deadline(void) {
 
     m_in.m_sched_endpoint = mp->mp_endpoint;
     if ((rv = _syscall(SCHED_PROC_NR, SCHEDULING_SET_DEADLINE, &m_in))) {
-        printf("PM: do_sched_deadline: _syscall failed: %d\n", rv);
+        rv = -errno;
         return rv;
     }
 

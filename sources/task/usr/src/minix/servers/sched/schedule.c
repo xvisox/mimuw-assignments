@@ -100,9 +100,11 @@ int do_noquantum(message *m_ptr)
 		return EBADEPT;
 	}
 
+    // hm438596
 	rmp = &schedproc[proc_nr_n];
-	if (rmp->priority < MIN_USER_Q) {
+	if (rmp->priority < MIN_USER_Q && rmp->priority != DEADLINE_Q) {
 		rmp->priority += 1; /* lower priority */
+        if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 	}
 
 	if ((rv = schedule_process_local(rmp)) != OK) {
@@ -217,6 +219,9 @@ int do_start_scheduling(message *m_ptr)
 		/* not reachable */
 		assert(0);
 	}
+
+    // hm438596
+    if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 
 	/* Take over scheduling the process. The kernel reply message populates
 	 * the processes current priority and its time slice */
@@ -364,6 +369,8 @@ static void balance_queues(minix_timer_t *tp)
 		if (rmp->flags & IN_USE) {
 			if (rmp->priority > rmp->max_priority) {
 				rmp->priority -= 1; /* increase priority */
+                // hm438596
+                if (rmp->priority == DEADLINE_Q) rmp->priority -= 1;
 				schedule_process_local(rmp);
 			}
 		}
@@ -382,7 +389,7 @@ int do_deadline_scheduling(message *m_ptr) {
     int proc_nr_n;
     unsigned old_q;
 
-    /* check who can send you requests */
+    /* Check who can send you requests */
     if (!accept_message(m_ptr))
         return EPERM;
 
@@ -391,23 +398,54 @@ int do_deadline_scheduling(message *m_ptr) {
         return EBADEPT;
     }
 
+    /* Save variables for later */
     rmp = &schedproc[proc_nr_n];
     old_q = rmp->priority;
+    int64_t deadline = m_ptr->m_sched_deadline, estimate = m_ptr->m_sched_estimate;
+    bool kill = m_ptr->m_sched_kill;
+
+    /* Get current time to check if the deadline is in the past */
+    clock_t realtime, ticks;
+    time_t boottime;
+    if ((rv = getuptime(&ticks, &realtime, &boottime)) != OK) {
+        printf("SCHED: WARNING: getuptime failed: %d\n", rv);
+        return rv;
+    }
+    int64_t now = (boottime + realtime / sys_hz()) * 1000;
+    printf("SCHED: now = %lld\n", now);
+
+    /* Check if the deadline can be met */
+    if (now + estimate > deadline && deadline != -1) {
+        printf("SCHED: WARNING: wrong deadline, cannot schedule process\n");
+        return EINVAL;
+    }
+
+    /* Check if the estimate is valid */
+    if (estimate < 0) {
+        printf("SCHED: WARNING: wrong estimate, cannot schedule process\n");
+        return EINVAL;
+    }
+
+    /* Check if the process is already in the deadline queue */
     if (old_q == DEADLINE_Q) {
         printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
+        return EPERM;
+    /* Check if process can abort deadline scheduling */
+    } else if (deadline == -1) {
+        printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
         return EPERM;
     }
 
     /* Update the proc entry and reschedule the process */
     rmp->priority = DEADLINE_Q;
-    rmp->deadline = m_ptr->m_sched_deadline;
-    rmp->estimate = m_ptr->m_sched_estimate;
-    rmp->kill = m_ptr->m_sched_kill;
+    rmp->deadline = deadline;
+    rmp->estimate = estimate;
+    rmp->kill = kill;
     rmp->previous_priority = old_q;
     rmp->used_time = 0;
     if ((rv = schedule_process_local(rmp)) != OK) {
         printf("SCHED: An error occurred when trying to schedule %d: %d\n", rmp->endpoint, rv);
-        rmp->priority     = old_q;
+        rmp->priority = old_q;
     }
 
     return rv;
