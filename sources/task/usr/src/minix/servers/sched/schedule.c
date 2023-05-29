@@ -13,6 +13,8 @@
 #include <minix/com.h>
 #include <machine/archtypes.h>
 #include "kernel/proc.h" /* for queue constants */
+#include <stdbool.h>
+#include <stdio.h>
 
 static minix_timer_t sched_timer;
 static unsigned balance_timeout;
@@ -320,7 +322,7 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
 		new_cpu = -1;
 
 	if ((err = sys_schedule(rmp->endpoint, new_prio,
-		new_quantum, new_cpu)) != OK) {
+		new_quantum, new_cpu, 0, 0, 0)) != OK) {
 		printf("PM: An error occurred when trying to schedule %d: %d\n",
 		rmp->endpoint, err);
 	}
@@ -364,4 +366,50 @@ static void balance_queues(minix_timer_t *tp)
 	}
 
 	set_timer(&sched_timer, balance_timeout, balance_queues, 0);
+}
+
+/*===========================================================================*
+ *				do_deadline_scheduling, hm438596				     *
+ *===========================================================================*/
+int do_deadline_scheduling(message *m_ptr) {
+    printf("SCHED: do_deadline_scheduling called\n");
+    struct schedproc *rmp;
+    int rv;
+    int proc_nr_n;
+    unsigned new_q, old_q, old_max_q;
+
+    /* check who can send you requests */
+    if (!accept_message(m_ptr))
+        return EPERM;
+
+    if (sched_isokendpt(m_ptr->m_sched_endpoint, &proc_nr_n) != OK) {
+        printf("SCHED: WARNING: got an invalid endpoint in OoQ msg %d\n", m_ptr->m_sched_endpoint);
+        return EBADEPT;
+    }
+
+    rmp = &schedproc[proc_nr_n];
+    // hm438596: set the new priority to the deadline queues
+    new_q = DEADLINE_Q;
+    if (new_q >= NR_SCHED_QUEUES) {
+        return EINVAL;
+    }
+
+    /* Store old values, in case we need to roll back the changes */
+    old_q     = rmp->priority;
+    old_max_q = rmp->max_priority;
+
+    /* Update the proc entry and reschedule the process */
+    rmp->max_priority = rmp->priority = new_q;
+
+    int new_quantum = rmp->time_slice, new_cpu = rmp->cpu;
+    int64_t deadline = m_ptr->m_sched_deadline;
+    int64_t estimate = m_ptr->m_sched_estimate;
+    bool kill = m_ptr->m_sched_kill;
+    if ((rv = sys_schedule(rmp->endpoint, new_q, new_quantum, new_cpu, deadline, estimate, kill)) != OK) {
+        printf("SCHED: An error occurred when trying to schedule %d: %d\n", rmp->endpoint, rv);
+        rmp->priority     = old_q;
+        rmp->max_priority = old_max_q;
+    }
+
+    return rv;
 }

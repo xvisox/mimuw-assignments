@@ -1,9 +1,12 @@
 #include "syslib.h"
+#include <sys/types.h>
+#include <stdbool.h>
 
 int sys_schedule(endpoint_t proc_ep,
 			int priority,
 			int quantum,
-			int cpu)
+			int cpu,
+            int64_t deadline, int64_t estimate, bool kill)
 {
 	message m;
 
@@ -11,5 +14,8 @@ int sys_schedule(endpoint_t proc_ep,
 	m.m_lsys_krn_schedule.priority = priority;
 	m.m_lsys_krn_schedule.quantum  = quantum;
 	m.m_lsys_krn_schedule.cpu = cpu;
+    m.m_lsys_krn_schedule.deadline = deadline;
+    m.m_lsys_krn_schedule.estimate = estimate;
+    m.m_lsys_krn_schedule.kill = kill;
 	return(_kernel_call(SYS_SCHEDULE, &m));
 }

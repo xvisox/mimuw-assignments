@@ -1,9 +1,12 @@
 #include "kernel/system.h"
 #include <minix/endpoint.h>
 #include "kernel/clock.h"
+#include <sys/types.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 /*===========================================================================*
- *				do_schedule				     *
+ *				do_schedule, hm438596				     *
  *===========================================================================*/
 int do_schedule(struct proc * caller, message * m_ptr)
 {
@@ -24,6 +27,13 @@ int do_schedule(struct proc * caller, message * m_ptr)
 	priority = m_ptr->m_lsys_krn_schedule.priority;
 	quantum = m_ptr->m_lsys_krn_schedule.quantum;
 	cpu = m_ptr->m_lsys_krn_schedule.cpu;
+
+    if (priority == DEADLINE_Q) {
+        int64_t deadline = m_ptr->m_lsys_krn_schedule.deadline;
+        int64_t estimate = m_ptr->m_lsys_krn_schedule.estimate;
+        bool kill = m_ptr->m_lsys_krn_schedule.kill;
+        printf("KERNEL: do_schedule: deadline=%lld, estimate=%lld, kill=%d\n", deadline, estimate, kill);
+    }
 
 	return sched_proc(p, priority, quantum, cpu);
 }

@@ -118,9 +118,19 @@ int sched_nice(struct mproc *rmp, int nice)
  *				do_sched_deadline, hm438596				     *
  *===========================================================================*/
 int do_sched_deadline(void) {
-    int64_t deadline = m_in.m_sched_deadline;
-    int64_t estimate = m_in.m_sched_estimate;
-    bool kill = m_in.m_sched_kill;
-    printf("PM: do_sched_deadline: deadline=%lld, estimate=%lld, kill=%d\n", deadline, estimate, kill);
+    int rv;
+
+    /* If the kernel is the scheduler, we don't allow messing with the
+	 * priority. If you want to control process priority, assign the process
+	 * to a user-space scheduler */
+    if (mp->mp_scheduler == KERNEL || mp->mp_scheduler == NONE)
+        return (EINVAL);
+
+    m_in.m_sched_endpoint = mp->mp_endpoint;
+    if ((rv = _syscall(SCHED_PROC_NR, SCHEDULING_SET_DEADLINE, &m_in))) {
+        printf("PM: do_sched_deadline: _syscall failed: %d\n", rv);
+        return rv;
+    }
+
     return (OK);
 }

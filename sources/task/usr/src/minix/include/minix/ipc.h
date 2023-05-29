@@ -19,7 +19,8 @@ typedef struct {
     int64_t deadline;
     int64_t estimate;
     bool kill;
-    uint8_t padding[39];
+    endpoint_t endpoint;
+    uint8_t padding[31];
 } mess_sched_deadline;
 _ASSERT_MSG_SIZE(mess_sched_deadline);
 
@@ -999,7 +1000,12 @@ typedef struct {
 	int priority;
 	int cpu;
 
-	uint8_t padding[40];
+    // hm438596
+    int64_t deadline;
+    int64_t estimate;
+    bool kill;
+
+	uint8_t padding[23];
 } mess_lsys_krn_schedule;
 _ASSERT_MSG_SIZE(mess_lsys_krn_schedule);
 
@@ -2277,6 +2283,7 @@ typedef int _ASSERT_message[/* CONSTCOND */sizeof(message) == 64 ? 1 : -1];
 #define m_sched_deadline m_sched.deadline
 #define m_sched_estimate m_sched.estimate
 #define m_sched_kill m_sched.kill
+#define m_sched_endpoint m_sched.endpoint
 
 #define m1_i1  m_m1.m1i1
 #define m1_i2  m_m1.m1i2
