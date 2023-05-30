@@ -446,17 +446,7 @@ int do_deadline_scheduling(message *m_ptr) {
 
     /* Get current time to check if the deadline is in the past */
     int64_t now = get_now();
-    printf("SCHED: now = %lld\n", now);
-
-    /* Check if deadline is in the past */
-    if (now > deadline) {
-        printf("SCHED: WARNING: deadline is in the past, cannot schedule process\n");
-        if (old_q == DEADLINE_Q) {
-            rmp->priority = rmp->previous_priority;
-            schedule_process_local(rmp);
-        }
-        return OK;
-    }
+    printf("SCHED: current time = %lld\n", now);
 
     /* Check if the deadline can be met */
     if (now + estimate > deadline && deadline != -1) {
@@ -475,10 +465,19 @@ int do_deadline_scheduling(message *m_ptr) {
         printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
         return EPERM;
     }
+
     /* Check if process can abort deadline scheduling */
     if (old_q != DEADLINE_Q && deadline == -1) {
         printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
         return EPERM;
+    }
+
+    /* Check if deadline is in the past */
+    if (now > deadline && deadline != -1) {
+        printf("SCHED: WARNING: deadline is in the past, cannot schedule process\n");
+        if (old_q != DEADLINE_Q) return OK;
+        rmp->priority = rmp->previous_priority;
+        return schedule_process_local(rmp);
     }
 
     /* Update the proc entry and reschedule the process */
@@ -489,6 +488,7 @@ int do_deadline_scheduling(message *m_ptr) {
         printf("SCHED: process %d starts deadline scheduling\n", rmp->endpoint);
         rmp->priority = DEADLINE_Q;
     }
+
     rmp->deadline = deadline;
     rmp->estimate = estimate;
     rmp->kill = kill;
