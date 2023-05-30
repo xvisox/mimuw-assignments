@@ -123,13 +123,20 @@ int do_noquantum(message *m_ptr)
     if (rmp->priority == DEADLINE_Q) {
         printf("Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
         rmp->used_time += rmp->time_slice;
+        /* Check if the process has exceeded its estimate running time */
         if (rmp->used_time > rmp->estimate) {
-            printf("Process %d has exceeded its deadline, flag = %d\n", rmp->endpoint, rmp->kill);
+            printf("Process %d has exceeded its estimate running time, flag = %d\n", rmp->endpoint, rmp->kill);
             if (!rmp->kill) {
                 rmp->priority = PENALTY_Q;
             } else {
                 return sys_kill(rmp->endpoint, SIGKILL);
             }
+        }
+        /* Check if the process has exceeded its deadline */
+        int64_t now = get_now();
+        if (now > rmp->deadline) {
+            printf("Process %d has exceeded its deadline\n", rmp->endpoint);
+            rmp->priority = rmp->previous_priority;
         }
     }
 
@@ -239,15 +246,18 @@ int do_start_scheduling(message *m_ptr)
 
 		rmp->priority = schedproc[parent_nr_n].priority;
 		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+        // hm438596
+        rmp->deadline = schedproc[parent_nr_n].deadline;
+        rmp->estimate = schedproc[parent_nr_n].estimate;
+        rmp->kill = schedproc[parent_nr_n].kill;
+        rmp->used_time = schedproc[parent_nr_n].used_time;
+        rmp->previous_priority = schedproc[parent_nr_n].previous_priority;
 		break;
 		
 	default: 
 		/* not reachable */
 		assert(0);
 	}
-
-    // hm438596
-    if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 
 	/* Take over scheduling the process. The kernel reply message populates
 	 * the processes current priority and its time slice */
@@ -314,6 +324,7 @@ int do_nice(message *m_ptr)
 	old_q     = rmp->priority;
 	old_max_q = rmp->max_priority;
 
+    // hm438596
     if (new_q == DEADLINE_Q) new_q += 1;
     if (old_q == DEADLINE_Q) return EINVAL;
 
@@ -436,6 +447,16 @@ int do_deadline_scheduling(message *m_ptr) {
     /* Get current time to check if the deadline is in the past */
     int64_t now = get_now();
     printf("SCHED: now = %lld\n", now);
+
+    /* Check if deadline is in the past */
+    if (now > deadline) {
+        printf("SCHED: WARNING: deadline is in the past, cannot schedule process\n");
+        if (old_q == DEADLINE_Q) {
+            rmp->priority = rmp->previous_priority;
+            schedule_process_local(rmp);
+        }
+        return OK;
+    }
 
     /* Check if the deadline can be met */
     if (now + estimate > deadline && deadline != -1) {
