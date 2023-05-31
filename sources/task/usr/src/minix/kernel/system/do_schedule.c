@@ -31,8 +31,7 @@ int do_schedule(struct proc * caller, message * m_ptr)
     if (priority == DEADLINE_Q) {
         p->deadline = m_ptr->m_lsys_krn_schedule.deadline;
         p->estimate = m_ptr->m_lsys_krn_schedule.estimate;
-        p->kill = m_ptr->m_lsys_krn_schedule.kill;
-        printf("KERNEL: do_schedule: deadline=%lld, estimate=%lld, kill=%d\n", p->deadline, p->estimate, p->kill);
+        printf("KERNEL: do_schedule: deadline=%lld, estimate=%lld\n", p->deadline, p->estimate);
     }
 
 	return sched_proc(p, priority, quantum, cpu);

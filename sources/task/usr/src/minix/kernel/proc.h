@@ -132,9 +132,11 @@ struct proc {
   int p_schedules;
 #endif
     // hm438596
+    struct proc *p_prevready;/* previous process in the queue */
     int64_t deadline;       /* deadline for the process */
     int64_t estimate;       /* estimate for the process */
-    bool kill;              /* kill the process if it misses its estimate */
+    int64_t estimate_end;   /* predicted termination time */
+    bool can_meet_deadline; /* can the process meet its deadline? */
 };
 
 #endif /* __ASSEMBLY__ */

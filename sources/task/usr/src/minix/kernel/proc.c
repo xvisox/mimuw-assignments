@@ -1557,12 +1557,58 @@ void enqueue(
   if (!rdy_head[q]) {		/* add to empty queue */
       rdy_head[q] = rdy_tail[q] = rp; 		/* create a new queue */
       rp->p_nextready = NULL;		/* mark new end */
+      rp->p_prevready = NULL;
   } 
   else {					/* add to tail of queue */
       if (q == DEADLINE_Q) {
-          rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */
-          rdy_tail[q] = rp;				/* set new queue tail */
-          rp->p_nextready = NULL;		/* mark new end */
+          int64_t begin = get_now();
+          struct proc *prev = NULL;
+          for (struct proc *p = rdy_head[q]; p; p = p->p_nextready) {
+              p->estimate_end = begin + p->estimate;
+              p->can_meet_deadline = p->estimate_end <= p->deadline;
+              begin += p->estimate;
+              p->p_prevready = prev;
+              prev = p;
+          }
+
+          bool should_insert = true;
+          struct proc *primary = NULL, *last = prev;
+          if (last->estimate_end + rp->estimate <= rp->deadline) {
+              primary = last;
+              rdy_tail[q]->p_nextready = rp;
+              rdy_tail[q] = rp;
+              rp->p_nextready = NULL;
+              should_insert = false;
+          }
+
+          for (struct proc *p = last; p && !primary; p = p->p_prevready) {
+              if (p->can_meet_deadline && p->estimate_end + rp->estimate > p->deadline)
+                  break;
+              if (!p->p_prevready || p->p_prevready->estimate_end + rp->estimate <= rp->deadline)
+                  primary = p;
+          }
+
+          for (struct proc *p = last; p && !primary; p = p->p_prevready) {
+              if (p->can_meet_deadline && p->estimate_end + rp->estimate > p->deadline)
+                  break;
+              if (p->p_prevready->estimate <= rp->estimate && rp->estimate <= p->estimate)
+                  primary = p;
+          }
+
+          if (!primary) {
+              rdy_tail[q]->p_nextready = rp;
+              rdy_tail[q] = rp;
+              rp->p_nextready = NULL;
+          } else if (should_insert) {
+              if (primary->p_prevready) {
+                  primary->p_prevready->p_nextready = rp;
+                  rp->p_nextready = primary;
+              } else {
+                  rdy_head[q] = rp;
+                  rp->p_prevready = NULL;
+                  rp->p_nextready = primary;
+              }
+          }
       } else {
           rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */
           rdy_tail[q] = rp;				/* set new queue tail */
