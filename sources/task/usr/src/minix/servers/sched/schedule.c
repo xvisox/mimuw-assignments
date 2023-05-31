@@ -121,11 +121,11 @@ int do_noquantum(message *m_ptr)
         if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 	}
     if (rmp->priority == DEADLINE_Q) {
-        printf("Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
-        rmp->used_time += rmp->time_slice;
+        printf("SCHED: Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
         /* Check if the process has exceeded its estimate running time */
-        if (rmp->used_time > rmp->estimate) {
-            printf("Process %d has exceeded its estimate running time, flag = %d\n", rmp->endpoint, rmp->kill);
+        rmp->used_time += rmp->time_slice;
+        if (rmp->used_time >= rmp->estimate) {
+            printf("SCHED: Process %d has exceeded its estimate running time, flag = %d\n", rmp->endpoint, rmp->kill);
             if (!rmp->kill) {
                 rmp->priority = PENALTY_Q;
             } else {
@@ -135,7 +135,7 @@ int do_noquantum(message *m_ptr)
         /* Check if the process has exceeded its deadline */
         int64_t now = get_now();
         if (now > rmp->deadline) {
-            printf("Process %d has exceeded its deadline\n", rmp->endpoint);
+            printf("SCHED: Process %d has exceeded its deadline\n", rmp->endpoint);
             rmp->priority = rmp->previous_priority;
         }
     }
@@ -368,7 +368,7 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
 
     // hm438596
     int64_t new_deadline = rmp->deadline;
-    int64_t new_estimate = rmp->estimate;
+    int64_t new_estimate = (rmp->estimate - rmp->used_time);
     bool new_kill = rmp->kill;
 	if ((err = sys_schedule(rmp->endpoint, new_prio,
 		new_quantum, new_cpu, new_deadline, new_estimate, new_kill)) != OK) {
@@ -423,7 +423,7 @@ static void balance_queues(minix_timer_t *tp)
  *				do_deadline_scheduling, hm438596				     *
  *===========================================================================*/
 int do_deadline_scheduling(message *m_ptr) {
-    printf("SCHED: do_deadline_scheduling called\n");
+    printf("SCHED: ===== do_deadline_scheduling called ===== \n");
     struct schedproc *rmp;
     int rv;
     int proc_nr_n;
@@ -455,7 +455,7 @@ int do_deadline_scheduling(message *m_ptr) {
     }
 
     /* Check if the estimate is valid */
-    if (estimate < 0) {
+    if (estimate <= 0) {
         printf("SCHED: WARNING: wrong estimate, cannot schedule process\n");
         return EINVAL;
     }

@@ -1520,6 +1520,14 @@ asyn_error:
   return(OK);
 }
 
+// hm438596
+int64_t get_now() {
+    clock_t realtime = get_realtime();
+    int64_t sec = (boottime + realtime / system_hz);
+    int64_t nano_sec = ((realtime % system_hz) * 1000000000LL / system_hz);
+    return sec * 1000LL + nano_sec / 1000000LL;
+}
+
 /*===========================================================================*
  *				enqueue					     * 
  *===========================================================================*/
@@ -1551,9 +1559,15 @@ void enqueue(
       rp->p_nextready = NULL;		/* mark new end */
   } 
   else {					/* add to tail of queue */
-      rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */	
-      rdy_tail[q] = rp;				/* set new queue tail */
-      rp->p_nextready = NULL;		/* mark new end */
+      if (q == DEADLINE_Q) {
+          rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */
+          rdy_tail[q] = rp;				/* set new queue tail */
+          rp->p_nextready = NULL;		/* mark new end */
+      } else {
+          rdy_tail[q]->p_nextready = rp;		/* chain tail of queue */
+          rdy_tail[q] = rp;				/* set new queue tail */
+          rp->p_nextready = NULL;		/* mark new end */
+      }
   }
 
   if (cpuid == rp->p_cpu) {
