@@ -369,9 +369,8 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
     // hm438596
     int64_t new_deadline = rmp->deadline;
     int64_t new_estimate = (rmp->estimate - rmp->used_time);
-    bool new_kill = rmp->kill;
 	if ((err = sys_schedule(rmp->endpoint, new_prio,
-		new_quantum, new_cpu, new_deadline, new_estimate, new_kill)) != OK) {
+		new_quantum, new_cpu, new_deadline, new_estimate)) != OK) {
 		printf("PM: An error occurred when trying to schedule %d: %d\n",
 		rmp->endpoint, err);
 	}
@@ -470,14 +469,6 @@ int do_deadline_scheduling(message *m_ptr) {
     if (old_q != DEADLINE_Q && deadline == -1) {
         printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
         return EPERM;
-    }
-
-    /* Check if deadline is in the past */
-    if (now > deadline && deadline != -1) {
-        printf("SCHED: WARNING: deadline is in the past, cannot schedule process\n");
-        if (old_q != DEADLINE_Q) return OK;
-        rmp->priority = rmp->previous_priority;
-        return schedule_process_local(rmp);
     }
 
     /* Update the proc entry and reschedule the process */

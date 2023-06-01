@@ -1003,9 +1003,8 @@ typedef struct {
     // hm438596
     int64_t deadline;
     int64_t estimate;
-    bool kill;
 
-	uint8_t padding[23];
+	uint8_t padding[24];
 } mess_lsys_krn_schedule;
 _ASSERT_MSG_SIZE(mess_lsys_krn_schedule);
 
