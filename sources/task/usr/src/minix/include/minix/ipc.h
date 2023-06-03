@@ -20,7 +20,7 @@ typedef struct {
     int64_t estimate;
     bool kill;
     endpoint_t endpoint;
-    uint8_t padding[31];
+    uint8_t padding[32];
 } mess_sched_deadline;
 _ASSERT_MSG_SIZE(mess_sched_deadline);
 

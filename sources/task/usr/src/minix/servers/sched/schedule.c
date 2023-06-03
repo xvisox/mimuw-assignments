@@ -121,11 +121,11 @@ int do_noquantum(message *m_ptr)
         if (rmp->priority == DEADLINE_Q) rmp->priority += 1;
 	}
     if (rmp->priority == DEADLINE_Q) {
-        printf("SCHED: Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
+        // printf("SCHED: Process %d has used up its time slice = %u\n", rmp->endpoint, rmp->time_slice);
         /* Check if the process has exceeded its estimate running time */
         rmp->used_time += rmp->time_slice;
         if (rmp->used_time >= rmp->estimate) {
-            printf("SCHED: Process %d has exceeded its estimate running time, flag = %d\n", rmp->endpoint, rmp->kill);
+            // printf("SCHED: Process %d has exceeded its estimate running time, flag = %d\n", rmp->endpoint, rmp->kill);
             if (!rmp->kill) {
                 rmp->priority = PENALTY_Q;
             } else {
@@ -135,7 +135,7 @@ int do_noquantum(message *m_ptr)
         /* Check if the process has exceeded its deadline */
         int64_t now = get_now();
         if (now > rmp->deadline) {
-            printf("SCHED: Process %d has exceeded its deadline\n", rmp->endpoint);
+            // printf("SCHED: Process %d has exceeded its deadline\n", rmp->endpoint);
             rmp->priority = rmp->previous_priority;
         }
     }
@@ -422,7 +422,7 @@ static void balance_queues(minix_timer_t *tp)
  *				do_deadline_scheduling, hm438596				     *
  *===========================================================================*/
 int do_deadline_scheduling(message *m_ptr) {
-    printf("SCHED: ===== do_deadline_scheduling called ===== \n");
+    // printf("SCHED: ===== do_deadline_scheduling called ===== \n");
     struct schedproc *rmp;
     int rv;
     int proc_nr_n;
@@ -445,38 +445,38 @@ int do_deadline_scheduling(message *m_ptr) {
 
     /* Get current time to check if the deadline is in the past */
     int64_t now = get_now();
-    printf("SCHED: current time = %lld\n", now);
+    // printf("SCHED: current time = %lld\n", now);
 
     /* Check if the deadline can be met */
     if (now + estimate > deadline && deadline != -1) {
-        printf("SCHED: WARNING: wrong deadline, cannot schedule process\n");
+        // printf("SCHED: WARNING: wrong deadline, cannot schedule process\n");
         return EINVAL;
     }
 
     /* Check if the estimate is valid */
     if (estimate <= 0) {
-        printf("SCHED: WARNING: wrong estimate, cannot schedule process\n");
+        // printf("SCHED: WARNING: wrong estimate, cannot schedule process\n");
         return EINVAL;
     }
 
     /* Check if the process is already in the deadline queue */
     if (old_q == DEADLINE_Q && deadline != -1) {
-        printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
+        // printf("SCHED: WARNING: process %d is already in deadline queue\n", rmp->endpoint);
         return EPERM;
     }
 
     /* Check if process can abort deadline scheduling */
     if (old_q != DEADLINE_Q && deadline == -1) {
-        printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
+        // printf("SCHED: WARNING: process %d can't abort deadline scheduling\n", rmp->endpoint);
         return EPERM;
     }
 
     /* Update the proc entry and reschedule the process */
     if (deadline == -1) {
-        printf("SCHED: process %d aborts deadline scheduling\n", rmp->endpoint);
+        // printf("SCHED: process %d aborts deadline scheduling\n", rmp->endpoint);
         rmp->priority = rmp->previous_priority;
     } else {
-        printf("SCHED: process %d starts deadline scheduling\n", rmp->endpoint);
+        // printf("SCHED: process %d starts deadline scheduling\n", rmp->endpoint);
         rmp->priority = DEADLINE_Q;
     }
 
