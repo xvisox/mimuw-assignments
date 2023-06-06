@@ -25,5 +25,5 @@ img_dir="$(realpath ${dir}/../images)"
 cd "${img_dir}" || fail "could not cd to /images dir"
 
 rm -f "minix.img"
-qemu-img create -f qcow2 -o backing_file="${img_dir}/base_image/minix.img" minix.img || fail "could not create image"
+qemu-img create -f qcow2 -F raw -o backing_file="${img_dir}/base_image/minix.img" minix.img || fail "could not create image"
 echo "new image created"

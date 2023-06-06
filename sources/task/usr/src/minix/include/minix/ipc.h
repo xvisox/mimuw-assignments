@@ -842,6 +842,16 @@ typedef struct {
 _ASSERT_MSG_SIZE(mess_lc_vfs_umount);
 
 typedef struct {
+    int fd;
+    vir_bytes name;
+    size_t len;
+    int flags;
+
+    uint8_t padding[40];
+} mess_lc_vfs_exclusive;
+_ASSERT_MSG_SIZE(mess_lc_vfs_exclusive);
+
+typedef struct {
 	void		*addr;
 	uint8_t		padding[52];
 } mess_lc_vm_brk;
@@ -2121,6 +2131,7 @@ typedef struct {
 		mess_lc_vfs_truncate	m_lc_vfs_truncate;
 		mess_lc_vfs_umask	m_lc_vfs_umask;
 		mess_lc_vfs_umount	m_lc_vfs_umount;
+        mess_lc_vfs_exclusive	m_lc_vfs_exclusive;
 		mess_lc_vm_brk		m_lc_vm_brk;
 		mess_lc_vm_getphys	m_lc_vm_getphys;
 		mess_lc_vm_rusage	m_lc_vm_rusage;
