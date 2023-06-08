@@ -101,6 +101,11 @@ int actual_read_write_peek(struct fproc *rfp, int rw_flag, int io_fd,
 	return(err_code);
 
   assert(f->filp_count > 0);
+  struct vnode *vp = f->filp_vno;
+  if (check_exclusive(vp) != OK) {
+    unlock_filp(f);
+    return(EACCES);
+  }
 
   if (((f->filp_mode) & (ro ? R_BIT : W_BIT)) == 0) {
 	unlock_filp(f);

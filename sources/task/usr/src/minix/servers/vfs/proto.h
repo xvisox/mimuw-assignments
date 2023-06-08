@@ -78,7 +78,7 @@ void unlock_filps(struct filp *filp1, struct filp *filp2);
 void invalidate_filp(struct filp *);
 void invalidate_filp_by_endpt(endpoint_t proc_e);
 void invalidate_filp_by_char_major(devmajor_t major);
-void close_filp(struct filp *fp);
+void close_filp(struct filp *fp, int fd);
 int do_copyfd(void);
 
 /* fscall.c */
@@ -352,5 +352,7 @@ void worker_set_proc(struct fproc *rfp);
 /* exclusive.c */
 int do_exclusive(void);
 int do_fexclusive(void);
+int check_exclusive(struct vnode *vp);
+int remove_exclusive(struct vnode *vp, int fd);
 
 #endif

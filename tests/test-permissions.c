@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 int main(int argc, char *argv[]) {
     message m;
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
     fd = open(argv[1], O_WRONLY | O_CREAT | O_EXCL, 0777);
     printf("Wynik open create: %d, errno: %d\n", fd, errno);
 
-    // TODO: VFS_READ/WRITE/FTRUNCATE NA KOŃCU
+    // (!!!) VFS_READ/WRITE/FTRUNCATE NA KOŃCU
 
     printf("VFS_TRUNCATE:\n");
     errno = 0;
@@ -55,6 +56,38 @@ int main(int argc, char *argv[]) {
     printf("VFS_UNLINK:\n");
     ret = unlink(argv[1]);
     printf("Wynik unlink: %d, errno: %d\n", ret, errno);
+
+    // Coverage:
+    // VFS_OPEN      (x)
+    // VFS_CREATE    (x)
+    // VFS_READ      (v)
+    // VFS_WRITE     (v)
+    // VFS_TRUNCATE  (x)
+    // VFS_FTRUNCATE (v)
+    // VFS_RENAME    (x)
+    // VFS_UNLINK    (x)
+    printf("Odblokuj plik i naciśnij cokolwiek...\n");
+    getchar();
+
+    fd = open(argv[1], O_RDWR);
+    printf("Wynik open: %d, errno: %d\n", fd, errno);
+    assert(fd >= 0);
+
+    printf("Zablokuj plik i naciśnij cokolwiek...\n");
+    getchar();
+
+    printf("VFS_READ:\n");
+    char buf[1024];
+    ret = read(fd, buf, sizeof(buf));
+    printf("Wynik read: %d, errno: %d\n", ret, errno);
+
+    printf("VFS_WRITE:\n");
+    ret = write(fd, buf, sizeof(buf));
+    printf("Wynik write: %d, errno: %d\n", ret, errno);
+
+    printf("VFS_FTRUNCATE:\n");
+    ret = ftruncate(fd, 2115);
+    printf("Wynik ftruncate: %d, errno: %d\n", ret, errno);
 
     // Zakończ.
     return ret != 0;

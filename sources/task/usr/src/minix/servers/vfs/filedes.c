@@ -344,8 +344,9 @@ struct filp *filp2;
 /*===========================================================================*
  *				close_filp				     *
  *===========================================================================*/
-void close_filp(f)
+void close_filp(f, fd)
 struct filp *f;
+int fd;
 {
 /* Close a file. Will also unlock filp when done */
 
@@ -397,6 +398,7 @@ struct filp *f;
 		truncate_vnode(vp, vp->v_size);
 	}
 
+    remove_exclusive(vp, fd);
 	unlock_vnode(f->filp_vno);
 	put_vnode(f->filp_vno);
 	f->filp_vno = NULL;

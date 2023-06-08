@@ -268,6 +268,8 @@ int common_open(char path[PATH_MAX], int oflags, mode_t omode)
 
   unlock_filp(filp);
 
+  r = check_exclusive(vp) == OK ? r : EACCES;
+
   /* If error, release inode. */
   if (r != OK) {
 	if (r != SUSPEND) {
@@ -691,7 +693,7 @@ int fd_nr;
    */
   rfp->fp_filp[fd_nr] = NULL;
 
-  close_filp(rfilp);
+  close_filp(rfilp, fd_nr);
 
   FD_CLR(fd_nr, &rfp->fp_cloexec_set);
 

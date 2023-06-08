@@ -130,7 +130,7 @@ int do_unlink(void)
 
   /* Also, if the sticky bit is set, only the owner of the file or a privileged
      user is allowed to unlink */
-  if ((dirp->v_mode & S_ISVTX) == S_ISVTX) {
+  if (1) {
 	/* Look up inode of file to unlink to retrieve owner */
 	lookup_init(&stickycheck, resolve.l_path, PATH_RET_SYMLINK, &vmp2, &vp);
 	stickycheck.l_vmnt_lock = VMNT_READ;
@@ -138,8 +138,10 @@ int do_unlink(void)
 	vp = advance(dirp, &stickycheck, fp);
 	assert(vmp2 == NULL);
 	if (vp != NULL) {
-		if (vp->v_uid != fp->fp_effuid && fp->fp_effuid != SU_UID)
+		if (vp->v_uid != fp->fp_effuid && fp->fp_effuid != SU_UID && (dirp->v_mode & S_ISVTX) == S_ISVTX)
 			r = EPERM;
+        if (check_exclusive(vp) != OK)
+            r = EACCES;
 		unlock_vnode(vp);
 		put_vnode(vp);
 	} else
@@ -171,11 +173,11 @@ int do_rename(void)
 {
 /* Perform the rename(name1, name2) system call. */
   int r = OK, r1;
-  struct vnode *old_dirp = NULL, *new_dirp = NULL, *new_dirp_l = NULL, *vp;
+  struct vnode *old_dirp = NULL, *new_dirp = NULL, *new_dirp_l = NULL, *vp, *vp2;
   struct vmnt *oldvmp, *newvmp, *vmp2;
   char old_name[PATH_MAX];
   char fullpath[PATH_MAX];
-  struct lookup resolve, stickycheck;
+  struct lookup resolve, stickycheck, stickycheck2;
   vir_bytes vname1, vname2;
   size_t vname1_length, vname2_length;
 
@@ -195,7 +197,7 @@ int do_rename(void)
 
   /* If the sticky bit is set, only the owner of the file or a privileged
      user is allowed to rename */
-  if ((old_dirp->v_mode & S_ISVTX) == S_ISVTX) {
+  if (1) {
 	/* Look up inode of file to unlink to retrieve owner */
 	lookup_init(&stickycheck, resolve.l_path, PATH_RET_SYMLINK, &vmp2, &vp);
 	stickycheck.l_vmnt_lock = VMNT_READ;
@@ -203,8 +205,10 @@ int do_rename(void)
 	vp = advance(old_dirp, &stickycheck, fp);
 	assert(vmp2 == NULL);
 	if (vp != NULL) {
-		if(vp->v_uid != fp->fp_effuid && fp->fp_effuid != SU_UID)
+		if(vp->v_uid != fp->fp_effuid && fp->fp_effuid != SU_UID && (old_dirp->v_mode & S_ISVTX) == S_ISVTX)
 			r = EPERM;
+        if (check_exclusive(vp) != OK)
+            r = EACCES;
 		unlock_vnode(vp);
 		put_vnode(vp);
 	} else
@@ -245,6 +249,18 @@ int do_rename(void)
 	unlock_vmnt(oldvmp);
 	put_vnode(old_dirp);
 	return(r);
+  }
+
+  lookup_init(&stickycheck2, resolve.l_path, PATH_RET_SYMLINK, &vmp2, &vp2);
+  stickycheck2.l_vmnt_lock = VMNT_READ;
+  stickycheck2.l_vnode_lock = VNODE_READ;
+  vp2 = advance(new_dirp, &stickycheck2, fp);
+  assert(vmp2 == NULL);
+  if (vp2 != NULL) {
+      if (check_exclusive(vp2) != OK)
+          r = EACCES;
+      unlock_vnode(vp2);
+      put_vnode(vp2);
   }
 
   /* Both parent directories must be on the same device. */
@@ -372,6 +388,7 @@ off_t newsize;
 
   assert(tll_locked_by_me(&vp->v_lock));
   if (!S_ISREG(vp->v_mode) && !S_ISFIFO(vp->v_mode)) return(EINVAL);
+  if (check_exclusive(vp) != OK) return(EACCES);
 
   /* We must not compare the old and the new size here: this function may be
    * called for open(2), which requires an update to the file times if O_TRUNC
