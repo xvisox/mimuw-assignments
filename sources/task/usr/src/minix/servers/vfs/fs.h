@@ -35,5 +35,6 @@
 #include "type.h"
 #include "vmnt.h"
 #include "fproc.h"
+#include "exclusive.h"
 
 #endif
