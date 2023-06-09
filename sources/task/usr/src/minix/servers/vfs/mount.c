@@ -491,6 +491,15 @@ int unmount(
 	return(EBUSY);    /* can't umount a busy file system */
   }
 
+  for (int i = 0; i < NR_EXCLUSIVE; i++) {
+      struct exclusive *e = &exclusive_files[i];
+      if (e->e_inode_nr == 0) continue;
+
+      if (e->e_dev == dev) {
+          e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = 0;
+      }
+  }
+
   /* This FS will now disappear, so stop listing it in statistics. */
   vmp->m_flags &= ~VMNT_CANSTAT;
 

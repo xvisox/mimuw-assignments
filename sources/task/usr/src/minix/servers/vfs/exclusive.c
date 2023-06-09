@@ -25,14 +25,14 @@ int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
     for (int i = 0; i < NR_EXCLUSIVE; i++) {
         struct exclusive *e = &exclusive_files[i];
         if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr && e->e_fd == fd) {
-            e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = 0;
+            e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = 0;
             return (OK);
         }
     }
     return (OK);
 }
 
-int do_lock(ino_t inode_nr, endpoint_t fs_e, int fd, bool no_others) {
+int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) {
     // Check if the file is opened by another user.
     for (int i = 0; i < NR_PROCS && no_others; i++) {
         struct fproc *proc = &fproc[i];
@@ -62,6 +62,7 @@ int do_lock(ino_t inode_nr, endpoint_t fs_e, int fd, bool no_others) {
             e->e_fs_e = fs_e;
             e->e_fd = fd;
             e->e_uid = fp->fp_realuid;
+            e->e_dev = dev;
             return (OK);
         }
     }
@@ -75,7 +76,7 @@ int do_unlock(ino_t inode_nr, endpoint_t fs_e, uid_t owner_uid, bool force) {
         struct exclusive *e = &exclusive_files[i];
         if (e->e_inode_nr == inode_nr && e->e_fs_e == fs_e) {
             if (e->e_uid == caller_uid || (force && (SU_UID == caller_uid || owner_uid == caller_uid))) {
-                e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = 0;
+                e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = 0;
                 return (OK);
             } else {
                 return (EPERM);
@@ -100,9 +101,9 @@ int do_fexclusive(void) {
 
     switch (flags) {
         case EXCL_LOCK:
-            return do_lock(v->v_inode_nr, v->v_fs_e, fd, false);
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, false);
         case EXCL_LOCK_NO_OTHERS:
-            return do_lock(v->v_inode_nr, v->v_fs_e, fd, true);
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, true);
         case EXCL_UNLOCK:
             return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, false);
         case EXCL_UNLOCK_FORCE:
@@ -143,9 +144,9 @@ int do_exclusive(void) {
 
     switch (flags) {
         case EXCL_LOCK:
-            return do_lock(v->v_inode_nr, v->v_fs_e, fd, false);
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, false);
         case EXCL_LOCK_NO_OTHERS:
-            return do_lock(v->v_inode_nr, v->v_fs_e, fd, true);
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, true);
         case EXCL_UNLOCK:
             return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, false);
         case EXCL_UNLOCK_FORCE:
