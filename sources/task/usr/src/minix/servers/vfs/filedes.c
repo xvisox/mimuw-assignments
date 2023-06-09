@@ -359,6 +359,7 @@ int fd;
   assert(tll_islocked(&f->filp_vno->v_lock));
 
   vp = f->filp_vno;
+  remove_exclusive(vp, fd);
 
   if (f->filp_count - 1 == 0 && f->filp_mode != FILP_CLOSED) {
 	/* Check to see if the file is special. */
@@ -398,7 +399,6 @@ int fd;
 		truncate_vnode(vp, vp->v_size);
 	}
 
-    remove_exclusive(vp, fd);
 	unlock_vnode(f->filp_vno);
 	put_vnode(f->filp_vno);
 	f->filp_vno = NULL;

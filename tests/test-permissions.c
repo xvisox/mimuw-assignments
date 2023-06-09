@@ -89,6 +89,18 @@ int main(int argc, char *argv[]) {
     ret = ftruncate(fd, 2115);
     printf("Wynik ftruncate: %d, errno: %d\n", ret, errno);
 
+    ret = open("pliczek.c", O_RDONLY);
+    assert(ret >= 0);
+    printf("Otwarłem pliczek.c, spróbuj go zablokować i naciśnij coś...\n");
+    getchar();
+
+    printf("Spróbuję odblokować pliczek.c...\n");
+    m.m_lc_vfs_exclusive.fd = ret;
+    m.m_lc_vfs_exclusive.flags = EXCL_UNLOCK_FORCE;
+    minix_rs_lookup("vfs", &vfs_ep);
+    ret = _syscall(vfs_ep, VFS_FEXCLUSIVE, &m);
+    printf("Wynik VFS_FEXCLUSIVE: %d, errno: %d\n", ret, errno);
+
     // Zakończ.
     return ret != 0;
 }
