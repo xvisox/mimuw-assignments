@@ -132,6 +132,10 @@ int do_exclusive(void) {
     if (vmp) unlock_vmnt(vmp);
     put_vnode(v);
 
+    if (forbidden(fp, v, R_BIT) == EACCES &&
+        forbidden(fp, v, W_BIT) == EACCES) {
+        return (EACCES);
+    }
     if (!S_ISREG(v->v_mode)) {
         return (EFTYPE);
     }
