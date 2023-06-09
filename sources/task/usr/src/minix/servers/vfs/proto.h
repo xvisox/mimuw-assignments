@@ -352,7 +352,7 @@ void worker_set_proc(struct fproc *rfp);
 /* exclusive.c */
 int do_exclusive(void);
 int do_fexclusive(void);
-int check_exclusive(struct vnode *vp);
-int remove_exclusive(struct vnode *vp, int fd);
+int check_exclusive(ino_t inode_nr, endpoint_t fs_e);
+int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd);
 
 #endif

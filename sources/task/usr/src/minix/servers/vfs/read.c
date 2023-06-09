@@ -102,7 +102,7 @@ int actual_read_write_peek(struct fproc *rfp, int rw_flag, int io_fd,
 
   assert(f->filp_count > 0);
   struct vnode *vp = f->filp_vno;
-  if (check_exclusive(vp) != OK) {
+  if (check_exclusive(vp->v_inode_nr, vp->v_fs_e) != OK) {
     unlock_filp(f);
     return(EACCES);
   }

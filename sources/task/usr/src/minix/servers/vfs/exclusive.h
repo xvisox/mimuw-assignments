@@ -3,7 +3,8 @@
 
 EXTERN struct exclusive {
     uid_t e_uid;              /* id of the lock owner */
-    struct vnode* e_vnode;    /* exclusive vnode */
+    ino_t e_inode_nr;         /* inode number on its (minor) device */
+    endpoint_t e_fs_e;        /* FS process' endpoint number */
     int e_fd;                 /* file descriptor associated with vnode, -1 if exclusive by name */
 } exclusive_files[NR_EXCLUSIVE];
 

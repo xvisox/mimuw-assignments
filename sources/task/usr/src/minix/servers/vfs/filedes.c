@@ -359,7 +359,7 @@ int fd;
   assert(tll_islocked(&f->filp_vno->v_lock));
 
   vp = f->filp_vno;
-  remove_exclusive(vp, fd);
+  remove_exclusive(vp->v_inode_nr, vp->v_fs_e, fd);
 
   if (f->filp_count - 1 == 0 && f->filp_mode != FILP_CLOSED) {
 	/* Check to see if the file is special. */

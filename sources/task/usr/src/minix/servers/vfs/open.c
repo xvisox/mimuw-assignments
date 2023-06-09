@@ -268,7 +268,7 @@ int common_open(char path[PATH_MAX], int oflags, mode_t omode)
 
   unlock_filp(filp);
 
-  r = check_exclusive(vp) == OK ? r : EACCES;
+  r = check_exclusive(vp->v_inode_nr, vp->v_fs_e) == OK ? r : EACCES;
 
   /* If error, release inode. */
   if (r != OK) {
