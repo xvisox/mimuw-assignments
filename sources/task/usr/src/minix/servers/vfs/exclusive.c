@@ -97,7 +97,7 @@ int do_fexclusive(void) {
     int flags = job_m_in.m_lc_vfs_exclusive.flags;
 
     struct filp *f = get_filp(fd, VNODE_NONE);
-    if (f == NULL || (f->filp_mode != R_BIT && f->filp_mode != W_BIT)) {
+    if (f == NULL || !(f->filp_mode & (R_BIT | W_BIT))) {
         return (EBADF);
     }
     struct vnode *v = f->filp_vno;

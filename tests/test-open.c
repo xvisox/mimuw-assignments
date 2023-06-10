@@ -4,6 +4,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+void reset_errno() {
+    errno = 0;
+}
+
 int main(int argc, char *argv[]) {
     message m;
     endpoint_t vfs_ep;
@@ -21,11 +25,13 @@ int main(int argc, char *argv[]) {
     m.m_lc_vfs_exclusive.fd = fd;
     m.m_lc_vfs_exclusive.flags = EXCL_LOCK_NO_OTHERS;
     minix_rs_lookup("vfs", &vfs_ep);
+    reset_errno();
     ret = _syscall(vfs_ep, VFS_FEXCLUSIVE, &m);
     printf("Wynik VFS_FEXCLUSIVE: %d, errno: %d\n", ret, errno);
 
     m.m_lc_vfs_exclusive.fd = fd;
     m.m_lc_vfs_exclusive.flags = EXCL_LOCK;
+    reset_errno();
     ret = _syscall(vfs_ep, VFS_FEXCLUSIVE, &m);
     printf("Wynik VFS_FEXCLUSIVE: %d, errno: %d\n", ret, errno);
 

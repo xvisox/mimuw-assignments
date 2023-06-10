@@ -7,6 +7,10 @@
 #include <errno.h>
 #include <assert.h>
 
+void reset_errno() {
+    errno = 0;
+}
+
 int main(int argc, char *argv[]) {
     message m;
     endpoint_t vfs_ep;
@@ -31,29 +35,34 @@ int main(int argc, char *argv[]) {
     // VFS_UNLINK    (v)
     printf("Testuje dostępności pliku...\n");
     printf("VFS_OPEN:\n");
+    reset_errno();
     fd = open(argv[1], O_RDONLY);
     printf("Wynik open: %d, errno: %d\n", fd, errno);
 
     printf("VFS_CREATE:\n");
+    reset_errno();
     fd = open(argv[1], O_WRONLY | O_CREAT | O_EXCL, 0777);
     printf("Wynik open create: %d, errno: %d\n", fd, errno);
 
     // (!!!) VFS_READ/WRITE/FTRUNCATE NA KOŃCU
 
     printf("VFS_TRUNCATE:\n");
-    errno = 0;
+    reset_errno();
     ret = truncate(argv[1], 2115);
     printf("Wynik truncate: %d, errno: %d\n", ret, errno);
 
     printf("VFS_RENAME v1:\n");
+    reset_errno();
     ret = rename(argv[1], "nowy.c");
     printf("Wynik rename: %d, errno: %d\n", ret, errno);
 
     printf("VFS_RENAME v2:\n");
+    reset_errno();
     ret = rename("nowy.c", argv[1]);
     printf("Wynik rename: %d, errno: %d\n", ret, errno);
 
     printf("VFS_UNLINK:\n");
+    reset_errno();
     ret = unlink(argv[1]);
     printf("Wynik unlink: %d, errno: %d\n", ret, errno);
 
@@ -70,6 +79,7 @@ int main(int argc, char *argv[]) {
     getchar();
 
     fd = open(argv[1], O_RDWR);
+    reset_errno();
     printf("Wynik open: %d, errno: %d\n", fd, errno);
     assert(fd >= 0);
 
@@ -78,14 +88,17 @@ int main(int argc, char *argv[]) {
 
     printf("VFS_READ:\n");
     char buf[1024];
+    reset_errno();
     ret = read(fd, buf, sizeof(buf));
     printf("Wynik read: %d, errno: %d\n", ret, errno);
 
     printf("VFS_WRITE:\n");
+    reset_errno();
     ret = write(fd, buf, sizeof(buf));
     printf("Wynik write: %d, errno: %d\n", ret, errno);
 
     printf("VFS_FTRUNCATE:\n");
+    reset_errno();
     ret = ftruncate(fd, 2115);
     printf("Wynik ftruncate: %d, errno: %d\n", ret, errno);
 
@@ -98,6 +111,7 @@ int main(int argc, char *argv[]) {
     m.m_lc_vfs_exclusive.fd = ret;
     m.m_lc_vfs_exclusive.flags = EXCL_UNLOCK_FORCE;
     minix_rs_lookup("vfs", &vfs_ep);
+    reset_errno();
     ret = _syscall(vfs_ep, VFS_FEXCLUSIVE, &m);
     printf("Wynik VFS_FEXCLUSIVE: %d, errno: %d\n", ret, errno);
 
