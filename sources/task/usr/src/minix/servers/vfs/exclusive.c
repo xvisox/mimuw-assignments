@@ -4,8 +4,16 @@
 #include "path.h"
 #include <fcntl.h>
 #include <stdbool.h>
-// FIXME: remove this include
-#include <stdio.h>
+
+void mark_unlink(ino_t inode_nr, endpoint_t fs_e) {
+    for (int i = 0; i < NR_EXCLUSIVE; i++) {
+        struct exclusive *e = &exclusive_files[i];
+        if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr) {
+            e->e_unlink = true;
+            return;
+        }
+    }
+}
 
 int check_exclusive(ino_t inode_nr, endpoint_t fs_e) {
     for (int i = 0; i < NR_EXCLUSIVE; i++) {
@@ -25,11 +33,12 @@ int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
     for (int i = 0; i < NR_EXCLUSIVE; i++) {
         struct exclusive *e = &exclusive_files[i];
         if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr && e->e_fd == fd) {
-            e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = 0;
+            if (e->e_fd == -1 && !e->e_unlink) return (EPERM);
+            e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
             return (OK);
         }
     }
-    return (OK);
+    return (ENOENT);
 }
 
 int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) {
@@ -63,6 +72,7 @@ int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) 
             e->e_fd = fd;
             e->e_uid = fp->fp_realuid;
             e->e_dev = dev;
+            e->e_unlink = false;
             return (OK);
         }
     }
@@ -76,7 +86,7 @@ int do_unlock(ino_t inode_nr, endpoint_t fs_e, uid_t owner_uid, bool force) {
         struct exclusive *e = &exclusive_files[i];
         if (e->e_inode_nr == inode_nr && e->e_fs_e == fs_e) {
             if (e->e_uid == caller_uid || (force && (SU_UID == caller_uid || owner_uid == caller_uid))) {
-                e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = 0;
+                e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
                 return (OK);
             } else {
                 return (EPERM);

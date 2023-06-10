@@ -354,5 +354,6 @@ int do_exclusive(void);
 int do_fexclusive(void);
 int check_exclusive(ino_t inode_nr, endpoint_t fs_e);
 int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd);
+void mark_unlink(ino_t inode_nr, endpoint_t fs_e);
 
 #endif
