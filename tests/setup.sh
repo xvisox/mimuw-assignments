@@ -5,6 +5,7 @@ make test-exclusive-unlock
 make test-fexclusive
 make test-permissions
 make test-open
+make test-open-and-read
 touch nowy.c
 touch pliczek.c
 chmod ugo+rwx *

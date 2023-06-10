@@ -5,40 +5,32 @@
 #include <fcntl.h>
 #include <stdbool.h>
 
-void mark_unlink(ino_t inode_nr, endpoint_t fs_e) {
+struct exclusive *find_exclusive(ino_t inode_nr, endpoint_t fs_e) {
     for (int i = 0; i < NR_EXCLUSIVE; i++) {
         struct exclusive *e = &exclusive_files[i];
-        if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr) {
-            e->e_unlink = true;
-            return;
-        }
+        if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr) return e;
     }
+    return NULL;
+}
+
+void mark_unlink(ino_t inode_nr, endpoint_t fs_e) {
+    struct exclusive *e = find_exclusive(inode_nr, fs_e);
+    if (e) e->e_unlink = true;
 }
 
 int check_exclusive(ino_t inode_nr, endpoint_t fs_e) {
-    for (int i = 0; i < NR_EXCLUSIVE; i++) {
-        struct exclusive *e = &exclusive_files[i];
-        if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr) {
-            if (e->e_uid != fp->fp_realuid) {
-                return (EACCES);
-            } else {
-                return (OK);
-            }
-        }
-    }
-    return (OK);
+    struct exclusive *e = find_exclusive(inode_nr, fs_e);
+    if (!e) return (OK);
+    return e->e_uid == fp->fp_realuid ? (OK) : (EACCES);
 }
 
 int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
-    for (int i = 0; i < NR_EXCLUSIVE; i++) {
-        struct exclusive *e = &exclusive_files[i];
-        if (e->e_fs_e == fs_e && e->e_inode_nr == inode_nr && e->e_fd == fd) {
-            if (e->e_fd == -1 && !e->e_unlink) return (EPERM);
-            e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
-            return (OK);
-        }
-    }
-    return (ENOENT);
+    struct exclusive *e = find_exclusive(inode_nr, fs_e);
+    if (!e) return (ENOENT);
+    // If the file is being unlinked, we can remove the exclusive lock (see mark_unlink).
+    if ((e->e_fd == -1 && !e->e_unlink) || e->e_fd != fd) return (EPERM);
+    e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
+    return (OK);
 }
 
 int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) {
@@ -57,12 +49,7 @@ int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) 
         }
     }
     // Check if the file is already locked.
-    for (int i = 0; i < NR_EXCLUSIVE; i++) {
-        struct exclusive *e = &exclusive_files[i];
-        if (e->e_inode_nr == inode_nr && e->e_fs_e == fs_e) {
-            return (EALREADY);
-        }
-    }
+    if (find_exclusive(inode_nr, fs_e)) return (EALREADY);
     // Find a free slot.
     for (int i = 0; i < NR_EXCLUSIVE; i++) {
         struct exclusive *e = &exclusive_files[i];
@@ -81,17 +68,26 @@ int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) 
 
 int do_unlock(ino_t inode_nr, endpoint_t fs_e, uid_t owner_uid, bool force) {
     uid_t caller_uid = fp->fp_realuid;
-    // Find the lock.
-    for (int i = 0; i < NR_EXCLUSIVE; i++) {
-        struct exclusive *e = &exclusive_files[i];
-        if (e->e_inode_nr == inode_nr && e->e_fs_e == fs_e) {
-            if (e->e_uid == caller_uid || (force && (SU_UID == caller_uid || owner_uid == caller_uid))) {
-                e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
-                return (OK);
-            } else {
-                return (EPERM);
-            }
-        }
+    struct exclusive *e = find_exclusive(inode_nr, fs_e);
+    if (!e) return (EINVAL);
+    if (e->e_uid == caller_uid || (force && (SU_UID == caller_uid || owner_uid == caller_uid))) {
+        e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
+        return (OK);
+    } else {
+        return (EPERM);
+    }
+}
+
+int do_work(int flags, struct vnode *v, int fd) {
+    switch (flags) {
+        case EXCL_LOCK:
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, false);
+        case EXCL_LOCK_NO_OTHERS:
+            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, true);
+        case EXCL_UNLOCK:
+            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, false);
+        case EXCL_UNLOCK_FORCE:
+            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, true);
     }
     return (EINVAL);
 }
@@ -109,23 +105,12 @@ int do_fexclusive(void) {
         return (EFTYPE);
     }
 
-    switch (flags) {
-        case EXCL_LOCK:
-            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, false);
-        case EXCL_LOCK_NO_OTHERS:
-            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, true);
-        case EXCL_UNLOCK:
-            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, false);
-        case EXCL_UNLOCK_FORCE:
-            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, true);
-    }
-
-    return (EINVAL);
+    return do_work(flags, v, fd);
 }
 
 int do_exclusive(void) {
     vir_bytes name = job_m_in.m_lc_vfs_exclusive.name;
-    size_t len = job_m_in.m_lc_vfs_exclusive.len;
+    size_t length = job_m_in.m_lc_vfs_exclusive.len;
     int flags = job_m_in.m_lc_vfs_exclusive.flags;
     int fd = -1;
 
@@ -137,7 +122,7 @@ int do_exclusive(void) {
     lookup_init(&resolve, fullpath, 0, &vmp, &v);
     resolve.l_vmnt_lock = VMNT_READ;
     resolve.l_vnode_lock = VNODE_READ;
-    if (fetch_name(name, len, fullpath) != OK) return (err_code);
+    if (fetch_name(name, length, fullpath) != OK) return (err_code);
     if ((v = eat_path(&resolve, fp)) == NULL) return (err_code);
 
     unlock_vnode(v);
@@ -152,16 +137,5 @@ int do_exclusive(void) {
         return (EFTYPE);
     }
 
-    switch (flags) {
-        case EXCL_LOCK:
-            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, false);
-        case EXCL_LOCK_NO_OTHERS:
-            return do_lock(v->v_inode_nr, v->v_fs_e, v->v_dev, fd, true);
-        case EXCL_UNLOCK:
-            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, false);
-        case EXCL_UNLOCK_FORCE:
-            return do_unlock(v->v_inode_nr, v->v_fs_e, v->v_uid, true);
-    }
-
-    return (EINVAL);
+    return do_work(flags, v, fd);
 }
