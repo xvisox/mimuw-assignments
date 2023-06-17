@@ -13,11 +13,6 @@ struct exclusive *find_exclusive(ino_t inode_nr, endpoint_t fs_e) {
     return NULL;
 }
 
-void mark_unlink(ino_t inode_nr, endpoint_t fs_e) {
-    struct exclusive *e = find_exclusive(inode_nr, fs_e);
-    if (e) e->e_unlink = true;
-}
-
 int check_exclusive(ino_t inode_nr, endpoint_t fs_e) {
     struct exclusive *e = find_exclusive(inode_nr, fs_e);
     if (!e) return (OK);
@@ -30,10 +25,20 @@ int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
 
     if (e->e_fd == -1) {
         if (!e->e_unlink) return (EPERM);
-    } else if (e->e_fd != fd || e->e_uid != fp->fp_realuid) return (EPERM);
+    } else {
+        if (e->e_fd != fd || e->e_uid != fp->fp_realuid) return (EPERM);
+    }
 
     e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
     return (OK);
+}
+
+void mark_unlink(ino_t inode_nr, endpoint_t fs_e, int ref_count) {
+    struct exclusive *e = find_exclusive(inode_nr, fs_e);
+    if (!e) return;
+
+    e->e_unlink = true;
+    if (ref_count == 1) remove_exclusive(inode_nr, fs_e, -1);
 }
 
 int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) {
