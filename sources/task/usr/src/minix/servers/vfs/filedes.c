@@ -400,8 +400,7 @@ int fd;
 	}
 
     /* Will remove exclusiveness if we unlinked the file before */
-    if (f->filp_vno->v_ref_count == 1)
-        remove_exclusive(vp->v_inode_nr, vp->v_fs_e, -1);
+    if (f->filp_vno->v_ref_count == 1) remove_exclusive(vp->v_inode_nr, vp->v_fs_e, -1);
 	unlock_vnode(f->filp_vno);
 	put_vnode(f->filp_vno);
 	f->filp_vno = NULL;

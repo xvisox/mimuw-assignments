@@ -21,12 +21,12 @@ int check_exclusive(ino_t inode_nr, endpoint_t fs_e) {
 
 int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
     struct exclusive *e = find_exclusive(inode_nr, fs_e);
-    if (!e) return (ENOENT);
+    if (!e || e->e_fd != fd) return (ENOENT);
 
     if (e->e_fd == -1) {
         if (!e->e_unlink) return (EPERM);
     } else {
-        if (e->e_fd != fd || e->e_uid != fp->fp_realuid) return (EPERM);
+        if (e->e_uid != fp->fp_realuid) return (EPERM);
     }
 
     e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
@@ -101,6 +101,10 @@ int do_work(int flags, struct vnode *v, int fd) {
     return (EINVAL);
 }
 
+bool is_lock(int flags) {
+    return flags == EXCL_LOCK || flags == EXCL_LOCK_NO_OTHERS;
+}
+
 int do_fexclusive(void) {
     int fd = job_m_in.m_lc_vfs_exclusive.fd;
     int flags = job_m_in.m_lc_vfs_exclusive.flags;
@@ -109,13 +113,14 @@ int do_fexclusive(void) {
     if (f == NULL) return (EBADF);
 
     int rv = (OK);
-    if (!(f->filp_mode & (R_BIT | W_BIT))) {
-        rv = (EBADF);
-    }
-
     struct vnode *v = f->filp_vno;
-    if (!S_ISREG(v->v_mode)) {
-        rv = (EFTYPE);
+    if (is_lock(flags)) {
+        if (!(f->filp_mode & (R_BIT | W_BIT))) {
+            rv = (EBADF);
+        }
+        if (!S_ISREG(v->v_mode)) {
+            rv = (EFTYPE);
+        }
     }
 
     rv = (rv == OK) ? do_work(flags, v, fd) : rv;
@@ -141,13 +146,14 @@ int do_exclusive(void) {
     if ((v = eat_path(&resolve, fp)) == NULL) return (err_code);
 
     int rv = (OK);
-    if (forbidden(fp, v, R_BIT) == EACCES &&
-        forbidden(fp, v, W_BIT) == EACCES) {
-        rv = (EACCES);
-    }
-
-    if (!S_ISREG(v->v_mode)) {
-        rv = (EFTYPE);
+    if (is_lock(flags)) {
+        if (forbidden(fp, v, R_BIT) == EACCES &&
+            forbidden(fp, v, W_BIT) == EACCES) {
+            rv = (EACCES);
+        }
+        if (!S_ISREG(v->v_mode)) {
+            rv = (EFTYPE);
+        }
     }
 
     rv = (rv == OK) ? do_work(flags, v, fd) : rv;
