@@ -493,7 +493,7 @@ int unmount(
 
   for (int i = 0; i < NR_EXCLUSIVE; i++) {
       struct exclusive *e = &exclusive_files[i];
-      if (e->e_inode_nr == 0) continue;
+      if (e->e_inode_nr == 0 && e->e_fs_e == 0) continue;
 
       if (e->e_dev == dev) {
           e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
