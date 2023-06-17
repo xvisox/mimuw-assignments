@@ -27,8 +27,9 @@ int check_exclusive(ino_t inode_nr, endpoint_t fs_e) {
 int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
     struct exclusive *e = find_exclusive(inode_nr, fs_e);
     if (!e) return (ENOENT);
-    // If the file is being unlinked, we can remove the exclusive lock (see mark_unlink).
-    if ((e->e_fd == -1 && !e->e_unlink) || e->e_fd != fd) return (EPERM);
+    if (e->e_fd == -1) {
+        if (!e->e_unlink) return (EPERM);
+    } else if (e->e_fd != fd || e->e_uid != fp->fp_realuid) return (EPERM);
     e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
     return (OK);
 }
@@ -96,16 +97,22 @@ int do_fexclusive(void) {
     int fd = job_m_in.m_lc_vfs_exclusive.fd;
     int flags = job_m_in.m_lc_vfs_exclusive.flags;
 
-    struct filp *f = get_filp(fd, VNODE_NONE);
-    if (f == NULL || !(f->filp_mode & (R_BIT | W_BIT))) {
-        return (EBADF);
-    }
-    struct vnode *v = f->filp_vno;
-    if (!S_ISREG(v->v_mode)) {
-        return (EFTYPE);
+    struct filp *f = get_filp(fd, VNODE_READ);
+    if (f == NULL) return (EBADF);
+
+    int rv = (OK);
+    if (!(f->filp_mode & (R_BIT | W_BIT))) {
+        rv = (EBADF);
     }
 
-    return do_work(flags, v, fd);
+    struct vnode *v = f->filp_vno;
+    if (!S_ISREG(v->v_mode)) {
+        rv = (EFTYPE);
+    }
+
+    rv = (rv == OK) ? do_work(flags, v, fd) : rv;
+    unlock_filp(f);
+    return (rv);
 }
 
 int do_exclusive(void) {
@@ -125,17 +132,18 @@ int do_exclusive(void) {
     if (fetch_name(name, length, fullpath) != OK) return (err_code);
     if ((v = eat_path(&resolve, fp)) == NULL) return (err_code);
 
+    int rv = (OK);
+    if (forbidden(fp, v, R_BIT) == EACCES &&
+        forbidden(fp, v, W_BIT) == EACCES) {
+        rv = (EACCES);
+    }
+    if (!S_ISREG(v->v_mode)) {
+        rv = (EFTYPE);
+    }
+
+    rv = (rv == OK) ? do_work(flags, v, fd) : rv;
     unlock_vnode(v);
     if (vmp) unlock_vmnt(vmp);
     put_vnode(v);
-
-    if (forbidden(fp, v, R_BIT) == EACCES &&
-        forbidden(fp, v, W_BIT) == EACCES) {
-        return (EACCES);
-    }
-    if (!S_ISREG(v->v_mode)) {
-        return (EFTYPE);
-    }
-
-    return do_work(flags, v, fd);
+    return (rv);
 }
