@@ -26,7 +26,7 @@ int remove_exclusive(ino_t inode_nr, endpoint_t fs_e, int fd) {
     if (e->e_fd == -1) {
         if (!e->e_unlink) return (EPERM);
     } else {
-        if (e->e_uid != fp->fp_realuid) return (EPERM);
+        if (e->e_uid != fp->fp_realuid || e->e_pid != fp->fp_pid) return (EPERM);
     }
 
     e->e_inode_nr = e->e_fs_e = e->e_fd = e->e_uid = e->e_dev = e->e_unlink = 0;
@@ -68,6 +68,7 @@ int do_lock(ino_t inode_nr, endpoint_t fs_e, dev_t dev, int fd, bool no_others) 
             e->e_uid = fp->fp_realuid;
             e->e_dev = dev;
             e->e_unlink = false;
+            e->e_pid = fp->fp_pid;
             return (OK);
         }
     }
