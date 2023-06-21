@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   back:
-    build: ./backend
+    build: backend
     ports:
       - "8080:8080"
     environment:
@@ -14,7 +14,7 @@ services:
       - mysql-server
 
   front:
-    build: ./frontend
+    build: frontend
     ports:
       - "4200:4200"
     depends_on:
