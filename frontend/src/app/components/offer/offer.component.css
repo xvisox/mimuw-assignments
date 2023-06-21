@@ -1,0 +1,27 @@
+.date-input-container {
+  font-family: "Sora", Sans-serif, serif;
+  display: flex;
+  justify-content: space-between;
+}
+
+.error-container {
+  display: flex;
+  justify-content: flex-end;
+  color: red;
+}
+
+.show-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-width {
+  width: 560px;
+}
+
+.search-field {
+  width: 100%;
+  height: 100%;
+}

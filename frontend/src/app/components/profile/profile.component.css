@@ -1,0 +1,31 @@
+.user-info {
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.icon-w {
+  width: 30px;
+}
+
+.gold {
+  color: gold;
+}
+
+.platinum {
+  color: #b9f2ff;
+}
+
+.bronze {
+  color: #cd7f32;
+}
+
+.silver {
+  color: #c0c0c0;
+}
