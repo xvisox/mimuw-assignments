@@ -3,4 +3,4 @@ project(ASD)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ASD Templates/strongly.cpp)
+add_executable(ASD ../asd/Templates/strongly.cpp)
