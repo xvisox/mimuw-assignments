@@ -1,6 +1,6 @@
 ## OOP - [Object-oriented programming](https://usosweb.mimuw.edu.pl/kontroler.php?_action=katalog2%2Fprzedmioty%2FpokazPrzedmiot&prz_kod=1000-212bPO&lang=en)
 
-_lab_: [Michał Kutwin](https://usosweb.mimuw.edu.pl/kontroler.php?_action=katalog2/przedmioty/pokazZajecia&zaj_cyk_id=461247&gr_nr=3)
+_lab_: [Michał Kutwin](https://usosweb.mimuw.edu.pl/kontroler.php?_action=katalog2/osoby/pokazOsobe&os_id=69412)
 
 ---
 
