@@ -1,0 +1,145 @@
+{% extends "compiler/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="grid-item choose-file">
+        <button class="btn btn-outline-light w-100" onclick="saveFileIdToForm('-1', 'Root')"
+                data-bs-toggle="modal" data-bs-target="#exampleModal" style="height: 40px">
+            <i class="fa fa-folder-open-o" aria-hidden="true" style="margin-right: 5px"></i>Root directory
+        </button>
+        <div class="directory-structure" id="tree">
+            {% include "compiler/directories.html" %}
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Upload file to chosen directory:</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="create-tab" data-bs-toggle="tab"
+                                        data-bs-target="#create" type="button" role="tab" aria-controls="create"
+                                        aria-selected="true">Create directory
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload"
+                                        type="button" role="tab" aria-controls="upload" aria-selected="false">
+                                    Upload file
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade p-2 show active" id="create" role="tabpanel"
+                                 aria-labelledby="create-tab">
+                                <form method="post" id="create-directory-form">
+                                    {% csrf_token %}
+                                    {{ directoryForm.name }}
+                                    {{ directoryForm.description }}
+                                    {{ directoryForm.parent }}
+                                </form>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                        onclick="createDirectory()" id="create-btn">
+                                    Create
+                                </button>
+                            </div>
+                            <div class="tab-pane fade p-2" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                                <form method="post" id="upload-form">
+                                    {% csrf_token %}
+                                    {{ fileForm.file }}
+                                    {{ fileForm.description }}
+                                    {{ fileForm.parent }}
+                                </form>
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                                        onclick="uploadFile()" id="upload-btn">
+                                    Upload
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                                onclick="deleteFile()" id="delete-btn">
+                            Delete
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid-item program-content">
+        <div class="editor-panel">
+            <form method="post" id="sections-form" class="panel-component">
+                {% csrf_token %}
+                {{ sectionsForm.start }}
+                {{ sectionsForm.end }}
+                {{ sectionsForm.sectionType }}
+            </form>
+            <button class="btn btn-primary panel-component" onclick="changeSections()">Change selected</button>
+            <button class="btn btn-success panel-component" onclick="compileFile()">Compile</button>
+            <button class="btn btn-danger panel-component" onclick="deleteChosenFile()">Delete</button>
+        </div>
+        <textarea id="editor"></textarea>
+    </div>
+    <div class="grid-item code-fragment">
+        <div class="mb-0 h-100 w-100 overflow-auto" id="output"></div>
+    </div>
+    <div class="grid-item compile-options">
+        <div class="d-flex align-items-start">
+            <div class="nav flex-column nav-pills me-3 ml-0" id="v-pills-tab" role="tablist"
+                 aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-processor-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-processor" type="button" role="tab" aria-controls="v-pills-processor"
+                        aria-selected="true">Processor
+                </button>
+                <button class="nav-link" id="v-pills-optimization-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-optimization" type="button" role="tab"
+                        aria-controls="v-pills-optimization"
+                        aria-selected="false">Optimization
+                </button>
+                <button class="nav-link" id="v-pills-standard-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-standard" type="button" role="tab" aria-controls="v-pills-standard"
+                        aria-selected="false">Standard
+                </button>
+                <button class="nav-link" id="v-pills-options-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-options" type="button" role="tab" aria-controls="v-pills-options"
+                        aria-selected="false">Options
+                </button>
+            </div>
+            <form method="post" id="compile-form">
+                {% csrf_token %}
+                <div class="tab-content compile-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-processor" role="tabpanel"
+                         aria-labelledby="v-pills-processor-tab">
+                        Choose processor for compilation.
+                        {{ form.processor }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-optimization" role="tabpanel"
+                         aria-labelledby="v-pills-optimization-tab">
+                        Choose optimizations for compilation (multiple choice).
+                        {{ form.optimization }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-standard" role="tabpanel"
+                         aria-labelledby="v-pills-standard-tab">
+                        Choose standard for compilation.
+                        {{ form.standard }}
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-options" role="tabpanel"
+                         aria-labelledby="v-pills-options-tab">
+                        Choose options for your processor, options for other processors will be omitted.
+                        <div class="form-group">
+                            {{ form.options_AVR }}
+                            {{ form.options_MCS51 }}
+                            {{ form.options_Z80 }}
+                            {{ form.options_STM8 }}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

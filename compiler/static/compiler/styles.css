@@ -1,0 +1,289 @@
+@import 'https://appsforoffice.microsoft.com/fabric/1.0/fabric.min.css';
+@import 'https://appsforoffice.microsoft.com/fabric/1.0/fabric.components.min.css';
+
+:root {
+    --color-nav: #111111;
+    --color-sidebar: #232323;
+    --color-footer: #343434;
+    --color-tab: 122, 122, 122;
+    --color-nav-element: #7a7a7a;
+    --color-text: white;
+    --color-text-neg: black;
+    --color-editor: #545050;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+/* Grid style */
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+        "navbar"
+        "program-content"
+        "choose-file"
+        "compile-options"
+        "code-fragment";
+}
+
+/* Navbar style */
+.navbar {
+    grid-area: navbar;
+    background-color: var(--color-nav);
+    color: var(--color-text);
+    font-size: 22px;
+    min-height: 70px;
+}
+
+/* Choose file style */
+.choose-file {
+    grid-area: choose-file;
+    background-color: var(--color-sidebar);
+}
+
+/* Program content style */
+.program-content {
+    grid-area: program-content;
+    height: 100%;
+    background-color: var(--color-editor);
+    color: var(--color-text);
+}
+
+/* Editor style */
+#editor {
+    color: var(--color-text);
+    background-color: var(--color-editor);
+    overflow: auto;
+    height: calc(100% - 50px);
+    width: 100%;
+    outline: none;
+    resize: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+    font-family: monospace;
+}
+
+/* Code fragment style */
+.code-fragment {
+    height: 20vh;
+    grid-area: code-fragment;
+    background-color: var(--color-sidebar);
+    border-top: 5px solid var(--color-nav);
+    color: var(--color-text);
+    overflow: auto;
+    font-size: 16px;
+}
+
+/* Compile options style */
+.compile-options {
+    grid-area: compile-options;
+    background-color: var(--color-footer);
+    border-top: 5px solid var(--color-nav);
+    padding: 10px;
+}
+
+.compile-content {
+    color: var(--color-text);
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.nav-pills .nav-link {
+    color: var(--color-text);
+}
+
+.nav-pills .nav-link:hover {
+    opacity: 0.5;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--color-nav-element);
+    color: var(--color-text-neg);
+}
+
+body.light {
+    --color-nav: #6c757d;
+    --color-sidebar: #adb5bd;
+    --color-footer: #dee2e6;
+    --color-tab: 73, 80, 87;
+    --color-nav-element: #6c757d;
+    --color-text: black;
+    --color-text-neg: white;
+    --color-editor: #f8f9fa;
+}
+
+.theme-switch-wrapper {
+    position: absolute;
+    right: 20px;
+}
+
+/* Toggle switch style */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-footer);
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: var(--color-footer);
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--color-footer);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.directory-structure {
+    font-size: 20px;
+    margin-top: 5px;
+    color: var(--color-text);
+}
+
+.dir-element a {
+    text-decoration: none;
+}
+
+.dir-element a:hover {
+    color: inherit;
+    opacity: 0.6;
+}
+
+.dir-name {
+    color: var(--color-text);
+}
+
+.src-files ul li::marker {
+    content: "\f016";
+    font-family: FontAwesome, serif;
+}
+
+.src-files ul li {
+    padding-left: 10px;
+}
+
+@media (min-width: 600px) {
+    .grid-container {
+        height: 100vh;
+        grid-template-columns: 20% 1fr 30%;
+        grid-template-rows: 70px 3fr 1fr;
+        grid-template-areas:
+            "navbar navbar navbar"
+            "choose-file program-content code-fragment"
+            "choose-file compile-options compile-options";
+    }
+
+    .code-fragment {
+        height: 100%;
+        border-left: 5px solid var(--color-nav);
+        border-top: none;
+    }
+
+    .choose-file {
+        border-right: 5px solid var(--color-nav);
+    }
+}
+
+li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.line {
+    color: inherit;
+    overflow: visible;
+    margin: 0;
+    min-width: 40vw;
+    cursor: pointer;
+    user-select: none;
+}
+
+.line:hover {
+    background-color: var(--color-footer);
+}
+
+.section-header:hover {
+    background-color: var(--color-editor);
+}
+
+.show-hide-btn {
+    width: 98%;
+}
+
+.form-control {
+    margin-bottom: 5px;
+}
+
+.editor-panel {
+    height: 40px;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.panel-component {
+    height: 100%;
+    margin-right: 10px;
+}
+
+.file {
+    text-decoration: none;
+    color: var(--color-text);
+}

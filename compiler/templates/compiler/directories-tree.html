@@ -1,0 +1,26 @@
+<li>
+    {% if dir.is_file %}
+        <i class="fa fa-file-o" aria-hidden="true"></i>
+    {% else %}
+        <i class="fa fa-folder-o" aria-hidden="true"></i>
+    {% endif %}
+    {% if dir.is_file %}
+        <a class="file" href="#" onclick="displayFileAndSaveId({{ dir.info.id }})">
+            {{ dir.info.name }}
+        </a>
+    {% else %}
+        <a class="file" href="#" onclick="saveFileIdToForm('{{ dir.info.id }}', '{{ dir.info.name }}')"
+           data-bs-toggle="modal" data-bs-target="#exampleModal">
+            {{ dir.info.name }}
+        </a>
+    {% endif %}
+    {% if dir.has_children %}
+        <ul>
+            {% for dirchild in dir.get_children %}
+                {% with dir=dirchild template_name="compiler/directories-tree.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>
