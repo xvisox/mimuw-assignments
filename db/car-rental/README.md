@@ -35,11 +35,7 @@ additional challenge was to secure it with JSON Web Token.
 
 ## Screenshots
 
-
-
-https://user-images.githubusercontent.com/43937184/221375468-42615a4a-fd15-48e4-8474-1a2992bafe6d.mp4
-
-
+[Deleted]
 
 ## Usage
 
