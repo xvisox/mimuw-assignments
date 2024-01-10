@@ -22,7 +22,7 @@ def bxor(b1, b2):  # use xor for bytes
 
 def send_config(r):
     r.sendline(index_number)
-    r.sendline(b"2")
+    r.sendline(b"1")
 
 
 def send_init(r):
@@ -31,17 +31,17 @@ def send_init(r):
 
 
 def conn():
-    r = process([exe.path, index_number])
-    # r = remote("bsk.bonus.re", 13337)
+    # r = process([exe.path, index_number])
+    r = remote("bsk.bonus.re", 13337)
     if args.GDB:
         gdb.attach(r)
-    # send_config(r)
+    send_config(r)
 
     dl = 14 * 8
     send_init(r)
     r.sendline(str(dl).encode())
     r.sendline(b"\0" * dl)
-    for _ in range(5):
+    for _ in range(5 + 9):
         __ = r.recvline()
     recv = r.recvn(dl)
 
