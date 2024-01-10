@@ -141,7 +141,7 @@ Składając te wszystkie puzzle - najpierw musimy wyciągnąć 14 * 8 bajtów ze
 bazowego `libc` oraz wyciągnięcie bajtów potrzebnych do xora, ponieważ nie jest to zwykłe "nadpisywanie" stosu a xor
 wykonywany na nim.
 Zatem, aby otrzymać oczekiwaną stałą w danym miejscu potrzebujemy także wiedzieć, co znajdowało się tam wcześniej
-(`prev ^ wanted ^ prev = wanted` i dokładnie to się dzieje w tym przypadku). Ma to jeszcze jedną dodatkową zaletę - nie
+(`prev ^ want ^ prev = want` i dokładnie to się dzieje w tym przypadku). Ma to jeszcze jedną dodatkową zaletę - nie
 musimy
 się bawić z wyciąganiem kanarka, ponieważ wystarczy go nie zamieniać. Następnie jak już mamy adres bazowy `libc` oraz
 potrzebne bajty,
