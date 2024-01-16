@@ -19,6 +19,7 @@ class SeegaGame(
         while (seegaController.isPhaseOne()) {
             repeat(2) {
                 retry {
+                    outputPrinter.printPlayerTurn(seegaController.currentColor)
                     val (col, row) = inputReader.readDeployCommand()
                     seegaController.executeDeploy(col, row)
                     outputPrinter.printBoard(board)

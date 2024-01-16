@@ -1,7 +1,11 @@
 package pl.edu.mimuw.seega
 
+import pl.edu.mimuw.seega.Constants.Companion.BLACK
+import pl.edu.mimuw.seega.Constants.Companion.WHITE
+
 class SeegaController(private val board: Board) {
-    private var currentColor: Char = Constants.WHITE
+    var currentColor: Char = WHITE
+        private set
 
     fun executeDeploy(col: Char, row: Int) {
         if (!board.isFieldInBounds(col, row)) throw Exception("Field is out of bounds.")
@@ -14,6 +18,6 @@ class SeegaController(private val board: Board) {
     fun isPhaseOne(): Boolean = board.size * board.size > board.pawns
 
     fun changeColor() {
-        currentColor = if (currentColor == Constants.WHITE) Constants.BLACK else Constants.WHITE
+        currentColor = if (currentColor == WHITE) BLACK else WHITE
     }
 }

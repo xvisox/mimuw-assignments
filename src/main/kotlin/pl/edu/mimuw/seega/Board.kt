@@ -1,5 +1,9 @@
 package pl.edu.mimuw.seega
 
+import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_INDENT
+import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_SPACING
+import pl.edu.mimuw.seega.Constants.Companion.ROW_INDENT
+
 class Board(val size: Int) {
     private val fields: Array<Array<Char>> = Array(size) { Array(size) { ' ' } }.also { it[size / 2][size / 2] = '*' }
 
@@ -22,9 +26,9 @@ class Board(val size: Int) {
     override fun toString(): String {
         val stringBuilder = StringBuilder()
 
-        stringBuilder.append(Constants.FIRST_ROW_INDENT)
+        stringBuilder.append(FIRST_ROW_INDENT)
         for (i in 0 until size) {
-            stringBuilder.append("${('a' + i)}${Constants.FIRST_ROW_SPACING}")
+            stringBuilder.append("${('a' + i)}${FIRST_ROW_SPACING}")
         }
 
         stringBuilder.appendRowSeparator(size)
@@ -40,6 +44,6 @@ class Board(val size: Int) {
     }
 
     private fun StringBuilder.appendRowSeparator(size: Int) {
-        append("\n" + Constants.ROW_INDENT + "+---".repeat(size) + "+\n")
+        append("\n" + ROW_INDENT + "+---".repeat(size) + "+\n")
     }
 }

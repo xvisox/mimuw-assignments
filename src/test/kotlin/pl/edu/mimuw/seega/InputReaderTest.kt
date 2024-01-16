@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Test
 import pl.edu.mimuw.seega.Constants.Companion.DEPLOY
+import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
+import pl.edu.mimuw.seega.Constants.Companion.MEDIUM_BOARD_SIZE
+import pl.edu.mimuw.seega.Constants.Companion.LARGE_BOARD_SIZE
 
 class InputReaderTest {
 
@@ -14,10 +17,10 @@ class InputReaderTest {
         val inputReader = InputReader()
 
         // when & then
-        withTextFromSystemIn("5", "7", "9").execute {
-            assertEquals(5, inputReader.readBoardSize())
-            assertEquals(7, inputReader.readBoardSize())
-            assertEquals(9, inputReader.readBoardSize())
+        withTextFromSystemIn("$SMALL_BOARD_SIZE", "$MEDIUM_BOARD_SIZE", "$LARGE_BOARD_SIZE").execute {
+            assertEquals(SMALL_BOARD_SIZE, inputReader.readBoardSize())
+            assertEquals(MEDIUM_BOARD_SIZE, inputReader.readBoardSize())
+            assertEquals(LARGE_BOARD_SIZE, inputReader.readBoardSize())
         }
     }
 
