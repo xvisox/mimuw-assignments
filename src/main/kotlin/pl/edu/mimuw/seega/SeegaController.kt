@@ -12,7 +12,9 @@ class SeegaController(
     fun executeDeploy(board: Board) {
         retry {
             inputReader.readDeployCommand().let {
-                if (!board.isFieldEmpty(it.first, it.second)) throw Exception("Field is not empty."); it
+                if (!board.isFieldInBounds(it.first, it.second)) throw Exception("Field is out of bounds.")
+                if (!board.isFieldEmpty(it.first, it.second)) throw Exception("Field is not empty.")
+                it
             }
         }.also { (col, row) ->
             board.placePawn(col, row, currentColor)

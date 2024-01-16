@@ -11,6 +11,10 @@ class Board(
         spaceLeft--
     }
 
+    fun isFieldInBounds(col: Char, row: Int): Boolean {
+        return col in 'a'..<'a' + size && row in 1..size
+    }
+
     fun isFieldEmpty(col: Char, row: Int): Boolean {
         return fields[row - 1][col - 'a'] == ' '
     }
