@@ -8,6 +8,7 @@ import pl.edu.mimuw.seega.Constants.Companion.DEPLOY
 import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.MEDIUM_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.LARGE_BOARD_SIZE
+import pl.edu.mimuw.seega.Constants.Companion.MOVE
 
 class InputReaderTest {
 
@@ -60,6 +61,36 @@ class InputReaderTest {
             "$DEPLOY a1 eee?", "$DEPLOY a1 a1", "$DEPLOY   a1"
         ).execute {
             repeat(9) { assertThrows<Exception> { inputReader.readDeployCommand() } }
+        }
+    }
+
+    @Test
+    fun `readMoveCommand with valid input should return correct Triple`() {
+        // given
+        val inputReader = InputReader()
+
+        // when & then
+        withTextFromSystemIn("$MOVE a1 up", "$MOVE b2 down", "$MOVE e5 left", "$MOVE z9 right").execute {
+            assertEquals(Triple('a', 1, Direction.UP), inputReader.readMoveCommand())
+            assertEquals(Triple('b', 2, Direction.DOWN), inputReader.readMoveCommand())
+            assertEquals(Triple('e', 5, Direction.LEFT), inputReader.readMoveCommand())
+            assertEquals(Triple('z', 9, Direction.RIGHT), inputReader.readMoveCommand())
+        }
+    }
+
+    @Test
+    fun `readMoveCommand with invalid input should throw Exception`() {
+        // given
+        val inputReader = InputReader()
+
+        // when & then
+        withTextFromSystemIn(
+            "invalid", "$MOVE a", "$MOVE 1",
+            "$MOVE a0", "$MOVE a10", "$MOVE a11",
+            "$MOVE a1 eee?", "$MOVE a1 a1", "$MOVE   a1",
+            "$MOVE a1 up down", "$MOVE a1 2 up", "$MOVE a1 up down left"
+        ).execute {
+            repeat(12) { assertThrows<Exception> { inputReader.readMoveCommand() } }
         }
     }
 }

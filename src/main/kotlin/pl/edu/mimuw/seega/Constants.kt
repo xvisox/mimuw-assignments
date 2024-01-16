@@ -12,7 +12,7 @@ class Constants {
         const val DEPLOY = "deploy"
         const val MOVE = "move"
         val DEPLOY_PATTERN = Regex("$DEPLOY [a-z][1-9]")
-        val MOVE_PATTERN = Regex("$MOVE [a-z][1-9] [a-z]{2}")
+        val MOVE_PATTERN = Regex("$MOVE [a-z][1-9] [a-z]{2,5}")
 
         const val SMALL_BOARD_SIZE = 5
         const val MEDIUM_BOARD_SIZE = 7

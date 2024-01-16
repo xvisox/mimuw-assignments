@@ -13,9 +13,13 @@ class SeegaController(private val board: Board) {
         board.placePawn(col, row, currentColor)
     }
 
-    fun executeMove(): Unit = TODO()
+    fun executeMove(col: Char, row: Int, direction: Direction): Boolean {
+        return false
+    }
 
     fun isPhaseOne(): Boolean = board.size * board.size > board.pawns
+
+    fun isPhaseTwo(): Boolean = true
 
     fun changeColor() {
         currentColor = if (currentColor == WHITE) BLACK else WHITE
