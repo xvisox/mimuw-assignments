@@ -11,11 +11,21 @@ class SeegaGame(
         outputPrinter.printWelcomeMessage()
 
         outputPrinter.printBoardSizePrompt()
-        val board = retry { Board(inputReader.readBoardSize()) }
-        outputPrinter.printBoard(board)
+        val board = chooseBoardPhase()
+        val seegaController = SeegaController(board)
 
         outputPrinter.printPhaseOnePrompt()
-        val seegaController = SeegaController(board)
+        gamePhaseOne(seegaController, board)
+
+        outputPrinter.printPhaseTwoPrompt()
+        gamePhaseTwo(seegaController, board)
+
+        outputPrinter.printGameFinishedMessage()
+    }
+
+    private fun chooseBoardPhase(): Board = retry { Board(inputReader.readBoardSize()) }
+
+    private fun gamePhaseOne(seegaController: SeegaController, board: Board) {
         while (seegaController.isPhaseOne()) {
             repeat(2) {
                 retry {
@@ -27,8 +37,9 @@ class SeegaGame(
             }
             seegaController.changeColor()
         }
-
-        outputPrinter.printGameFinishedMessage()
     }
 
+    private fun gamePhaseTwo(seegaController: SeegaController, board: Board) {
+
+    }
 }
