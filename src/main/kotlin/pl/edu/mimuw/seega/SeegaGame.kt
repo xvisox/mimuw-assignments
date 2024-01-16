@@ -1,7 +1,9 @@
 package pl.edu.mimuw.seega
 
+import pl.edu.mimuw.seega.Utils.Companion.retry
+
 class SeegaGame(
-    private val seegaController: SeegaController,
+    private val inputReader: InputReader,
     private val outputPrinter: OutputPrinter,
 ) {
 
@@ -9,14 +11,18 @@ class SeegaGame(
         outputPrinter.printWelcomeMessage()
 
         outputPrinter.printBoardSizePrompt()
-        val board = seegaController.createBoard()
+        val board = retry { Board(inputReader.readBoardSize()) }
         outputPrinter.printBoard(board)
 
         outputPrinter.printPhaseOnePrompt()
-        while (seegaController.isPhaseOne(board)) {
+        val seegaController = SeegaController(board)
+        while (seegaController.isPhaseOne()) {
             repeat(2) {
-                seegaController.executeDeploy(board)
-                outputPrinter.printBoard(board)
+                retry {
+                    val (col, row) = inputReader.readDeployCommand()
+                    seegaController.executeDeploy(col, row)
+                    outputPrinter.printBoard(board)
+                }
             }
             seegaController.changeColor()
         }

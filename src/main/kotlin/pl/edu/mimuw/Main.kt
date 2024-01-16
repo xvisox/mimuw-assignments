@@ -8,8 +8,7 @@ import pl.edu.mimuw.seega.SeegaGame
 fun main() {
     val inputReader = InputReader()
     val outputPrinter = OutputPrinter()
-    val seegaController = SeegaController(inputReader)
 
-    val game = SeegaGame(seegaController, outputPrinter)
+    val game = SeegaGame(inputReader, outputPrinter)
     game.run()
 }

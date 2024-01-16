@@ -1,26 +1,22 @@
 package pl.edu.mimuw.seega
 
-class Board(
-    private val size: Int,
-) {
+class Board(val size: Int) {
     private val fields: Array<Array<Char>> = Array(size) { Array(size) { ' ' } }.also { it[size / 2][size / 2] = '*' }
-    private var spaceLeft: Int = size * size - 1
+
+    var pawns: Int = 1
+        private set
 
     fun placePawn(col: Char, row: Int, color: Char) {
         fields[row - 1][col - 'a'] = color
-        spaceLeft--
-    }
-
-    fun isFieldInBounds(col: Char, row: Int): Boolean {
-        return col in 'a'..<'a' + size && row in 1..size
+        pawns++
     }
 
     fun isFieldEmpty(col: Char, row: Int): Boolean {
         return fields[row - 1][col - 'a'] == ' '
     }
 
-    fun isFull(): Boolean {
-        return spaceLeft == 0
+    fun isFieldInBounds(col: Char, row: Int): Boolean {
+        return col in 'a'..<'a' + size && row in 1..size
     }
 
     override fun toString(): String {

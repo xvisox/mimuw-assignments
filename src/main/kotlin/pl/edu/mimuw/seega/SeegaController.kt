@@ -1,29 +1,17 @@
 package pl.edu.mimuw.seega
 
-import pl.edu.mimuw.seega.Utils.Companion.retry
-
-class SeegaController(
-    private val inputReader: InputReader,
-) {
+class SeegaController(private val board: Board) {
     private var currentColor: Char = Constants.WHITE
 
-    fun createBoard(): Board = Board(retry { inputReader.readBoardSize() })
-
-    fun executeDeploy(board: Board) {
-        retry {
-            inputReader.readDeployCommand().let {
-                if (!board.isFieldInBounds(it.first, it.second)) throw Exception("Field is out of bounds.")
-                if (!board.isFieldEmpty(it.first, it.second)) throw Exception("Field is not empty.")
-                it
-            }
-        }.also { (col, row) ->
-            board.placePawn(col, row, currentColor)
-        }
+    fun executeDeploy(col: Char, row: Int) {
+        if (!board.isFieldInBounds(col, row)) throw Exception("Field is out of bounds.")
+        if (!board.isFieldEmpty(col, row)) throw Exception("Field is not empty.")
+        board.placePawn(col, row, currentColor)
     }
 
-    fun executeMove(board: Board): Unit = TODO()
+    fun executeMove(): Unit = TODO()
 
-    fun isPhaseOne(board: Board): Boolean = !board.isFull()
+    fun isPhaseOne(): Boolean = board.size * board.size > board.pawns
 
     fun changeColor() {
         currentColor = if (currentColor == Constants.WHITE) Constants.BLACK else Constants.WHITE
