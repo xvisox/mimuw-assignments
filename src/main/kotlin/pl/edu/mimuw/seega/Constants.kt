@@ -9,7 +9,9 @@ class Constants {
         const val BLACK = 'B'
         const val WHITE = 'W'
 
-        val DEPLOY_PATTERN = Regex("deploy [a-z][1-9]")
-        val MOVE_PATTERN = Regex("move [a-z][1-9] [a-z]{2}")
+        const val DEPLOY = "deploy"
+        const val MOVE = "move"
+        val DEPLOY_PATTERN = Regex("$DEPLOY [a-z][1-9]")
+        val MOVE_PATTERN = Regex("$MOVE [a-z][1-9] [a-z]{2}")
     }
 }

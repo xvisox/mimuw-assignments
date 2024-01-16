@@ -38,6 +38,8 @@ dependencies {
     testImplementation(Dependencies.Kotest.runner)
     testImplementation(Dependencies.Kotest.assertions)
     testImplementation(Dependencies.Kotest.property)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    testImplementation ("com.github.stefanbirkner:system-lambda:1.2.0")
 }
 
 tasks.test {
