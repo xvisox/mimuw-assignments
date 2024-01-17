@@ -26,7 +26,7 @@ class SeegaController(private val board: Board) {
 
         board.movePawnAndGetNewField(col, row, direction).also {
             val (newCol, newRow) = it
-            return board.takeOpponentPawnsAndGetResult(newCol, newRow)
+            return !board.takeOpponentPawnsAndGetResult(newCol, newRow)
         }
     }
 

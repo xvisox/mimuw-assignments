@@ -33,11 +33,10 @@ class Board(val size: Int) {
     }
 
     fun takeOpponentPawnsAndGetResult(newCol: Char, newRow: Int): Boolean {
-        val takenPawns = false
-        val fieldColor = fields[rowToIndex(newRow)][colToIndex(newCol)]
+        var takenPawns = false
 
         for (direction in Direction.entries) {
-            takenPawns or takeOpponentPawn(newCol, newRow, direction, fieldColor)
+            takenPawns = takenPawns or takeOpponentPawn(newCol, newRow, direction)
         }
 
         return takenPawns
@@ -49,6 +48,10 @@ class Board(val size: Int) {
 
     fun isFieldInBounds(col: Char, row: Int): Boolean {
         return col in 'a'..<'a' + size && row in 1..size
+    }
+
+    fun isMiddleField(col: Char, row: Int): Boolean {
+        return rowToIndex(row) == size / 2 && colToIndex(col) == size / 2
     }
 
     fun getFieldColor(col: Char, row: Int): Field {
@@ -75,15 +78,16 @@ class Board(val size: Int) {
         return stringBuilder.toString()
     }
 
-    private fun takeOpponentPawn(col: Char, row: Int, direction: Direction, fieldColor: Field): Boolean {
+    private fun takeOpponentPawn(col: Char, row: Int, direction: Direction): Boolean {
+        val fieldColor = fields[rowToIndex(row)][colToIndex(col)]
         val adjacentCol = col + direction.col
         val adjacentRow = row + direction.row
 
         val nextAdjacentCol = adjacentCol + direction.col
         val nextAdjacentRow = adjacentRow + direction.row
 
-        if (!isFieldInBounds(adjacentCol, adjacentRow) ||
-            fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] == fieldColor
+        if (!isFieldInBounds(adjacentCol, adjacentRow) || isMiddleField(adjacentCol, adjacentRow) ||
+            fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] != Field.getOppositeColor(fieldColor)
         )
             return false
 
