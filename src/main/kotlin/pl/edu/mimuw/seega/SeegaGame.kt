@@ -43,12 +43,12 @@ class SeegaGame(
 
     private fun gamePhaseTwo(seegaController: SeegaController, board: Board) {
         while (seegaController.isPhaseTwo()) {
-            val shouldChangeColor = retry {
+            val pawnsTaken = retry {
                 outputPrinter.printPlayerTurn(seegaController.currentPlayerColor)
                 val (col, row, direction) = inputReader.readMoveCommand()
                 seegaController.executeMove(col, row, direction).also { outputPrinter.printBoard(board) }
             }
-            if (shouldChangeColor) seegaController.changeColor()
+            if (!pawnsTaken) seegaController.changeColor()
         }
     }
 }
