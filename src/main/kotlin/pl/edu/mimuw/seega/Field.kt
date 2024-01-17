@@ -1,10 +1,10 @@
 package pl.edu.mimuw.seega
 
-enum class Field(val char: Char) {
-    EMPTY(' '),
-    WHITE('W'),
-    BLACK('B'),
-    STAR('*');
+enum class Field {
+    EMPTY,
+    WHITE,
+    BLACK,
+    STAR;
 
     companion object {
         fun getOppositeColor(color: Field): Field {
