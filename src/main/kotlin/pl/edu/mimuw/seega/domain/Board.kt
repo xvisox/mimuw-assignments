@@ -33,14 +33,15 @@ class Board(val size: Int) {
         return newCol to newRow
     }
 
-    fun takeOpponentPawnsAndGetResult(newCol: Char, newRow: Int): Boolean {
-        var takenPawns = false
+    fun takeOpponentsPawnsAndGetResult(newCol: Char, newRow: Int): List<Pair<Char, Int>> {
+        val pawnsTaken = mutableListOf<Pair<Char, Int>>()
 
         for (direction in Direction.entries) {
-            takenPawns = takenPawns or takeOpponentPawn(newCol, newRow, direction)
+            val pawnTaken = takeOpponentPawn(newCol, newRow, direction)
+            if (pawnTaken) pawnsTaken.add(newCol + direction.col to newRow + direction.row)
         }
 
-        return takenPawns
+        return pawnsTaken
     }
 
     fun isFieldEmpty(col: Char, row: Int): Boolean {
@@ -76,7 +77,7 @@ class Board(val size: Int) {
             stringBuilder.appendRowSeparator(size)
         }
 
-        return stringBuilder.toString()
+        return stringBuilder.removeSuffix("\n").toString()
     }
 
     private fun takeOpponentPawn(col: Char, row: Int, direction: Direction): Boolean {

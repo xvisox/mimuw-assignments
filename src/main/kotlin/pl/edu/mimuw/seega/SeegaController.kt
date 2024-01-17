@@ -21,7 +21,7 @@ class SeegaController(private val board: Board) {
         board.placePawn(col, row, currentPlayerColor)
     }
 
-    fun executeMove(col: Char, row: Int, direction: Direction): Boolean {
+    fun executeMove(col: Char, row: Int, direction: Direction): List<Pair<Char, Int>> {
         if (!board.isFieldInBounds(col, row))
             throw FieldOutOfBoundsException("Field is out of bounds.")
         if (!board.isFieldInBounds(col + direction.col, row + direction.row))
@@ -35,8 +35,8 @@ class SeegaController(private val board: Board) {
 
         board.movePawnAndGetNewField(col, row, direction).also {
             val (newCol, newRow) = it
-            val pawnsTaken = board.takeOpponentPawnsAndGetResult(newCol, newRow)
-            if (pawnsTaken) movesWithoutTaking = 0 else movesWithoutTaking++
+            val pawnsTaken = board.takeOpponentsPawnsAndGetResult(newCol, newRow)
+            if (pawnsTaken.isNotEmpty()) movesWithoutTaking = 0 else movesWithoutTaking++
             return pawnsTaken
         }
     }

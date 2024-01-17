@@ -51,4 +51,16 @@ class OutputPrinter {
         println("Phase 2: move your pawns on the board.")
     }
 
+    fun printProceedToNextPhasePrompt() {
+        println("Proceeding to the next phase.")
+    }
+
+    fun printPawnsTaken(pawnsTaken: List<Pair<Char, Int>>) {
+        if (pawnsTaken.isEmpty()) {
+            println("No pawns taken.")
+        } else {
+            print("Pawns taken from fields: ")
+            pawnsTaken.forEach { (col, row) -> print("$col$row ") }.also { println() }
+        }
+    }
 }

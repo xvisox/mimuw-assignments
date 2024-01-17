@@ -20,6 +20,7 @@ class SeegaGame(
         outputPrinter.printPhaseOnePrompt()
         gamePhaseOne(seegaController, board)
 
+        outputPrinter.printProceedToNextPhasePrompt()
         seegaController.proceedToNextPhase()
         outputPrinter.printBoard(board)
 
@@ -54,9 +55,12 @@ class SeegaGame(
             val pawnsTaken = retry {
                 outputPrinter.printPlayerTurn(seegaController.currentPlayerColor)
                 val (col, row, direction) = inputReader.readMoveCommand()
-                seegaController.executeMove(col, row, direction).also { outputPrinter.printBoard(board) }
+                seegaController.executeMove(col, row, direction).also {
+                    outputPrinter.printPawnsTaken(it)
+                    outputPrinter.printBoard(board)
+                }
             }
-            if (!pawnsTaken) seegaController.endPlayerTurn()
+            if (pawnsTaken.isEmpty()) seegaController.endPlayerTurn()
         }
     }
 }
