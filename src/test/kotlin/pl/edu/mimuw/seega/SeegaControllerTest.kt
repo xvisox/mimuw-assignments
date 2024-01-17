@@ -32,6 +32,7 @@ class SeegaControllerTest {
 
         // when & then
         assertThrows<FieldOutOfBoundsException> { seegaController.executeDeploy('a' + SMALL_BOARD_SIZE, 1) }
+        assertThrows<FieldOutOfBoundsException> { seegaController.executeDeploy('a', 1 + SMALL_BOARD_SIZE) }
     }
 
     @Test
@@ -50,11 +51,10 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        // executeDeploy() would throw an exception because
-        // the field in the middle isn't empty
         for (i in 1..SMALL_BOARD_SIZE) {
             for (j in 1..<SMALL_BOARD_SIZE) {
-                board.placePawn('a' + i - 1, j, Field.WHITE)
+                if (board.isMiddleField('a' + i - 1, j)) continue
+                seegaController.executeDeploy('a' + i - 1, j)
             }
         }
 
@@ -70,7 +70,8 @@ class SeegaControllerTest {
 
         for (i in 1..SMALL_BOARD_SIZE) {
             for (j in 1..SMALL_BOARD_SIZE) {
-                board.placePawn('a' + i - 1, j, Field.WHITE)
+                if (board.isMiddleField('a' + i - 1, j)) continue
+                seegaController.executeDeploy('a' + i - 1, j)
             }
         }
 
@@ -98,9 +99,9 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.WHITE)
-        board.placePawn('a', 2, Field.BLACK)
-        board.placePawn('b', 3, Field.WHITE)
+        seegaController.executeDeploy('a', 1)
+        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
 
         // when
         val pawnsTaken = seegaController.executeMove('b', 3, Direction.LEFT)
@@ -119,8 +120,8 @@ class SeegaControllerTest {
         val board = Board(5)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.WHITE)
-        board.placePawn('e', 5, Field.WHITE)
+        seegaController.executeDeploy('a', 1)
+        seegaController.executeDeploy('e', 5)
 
         // when & then
         assertThrows<FieldOutOfBoundsException> { seegaController.executeMove('a', 1, Direction.LEFT) }
@@ -145,8 +146,8 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.WHITE)
-        board.placePawn('a', 2, Field.BLACK)
+        seegaController.executeDeploy('a', 1)
+        seegaController.executeDeploy('a', 2)
 
         // when & then
         assertThrows<FieldEmptinessException> { seegaController.executeMove('a', 1, Direction.DOWN) }
@@ -158,7 +159,7 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.BLACK)
+        seegaController.executeDeploy('a', 1).also { seegaController.changeColor() }
 
         // when & then
         assertThrows<FieldPlayerMismatchException> { seegaController.executeMove('a', 1, Direction.DOWN) }
@@ -183,8 +184,8 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.WHITE)
-        board.placePawn('a', 2, Field.BLACK)
+        seegaController.executeDeploy('a', 1).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 2)
 
         // when
         val result = seegaController.isPhaseTwo()
@@ -199,12 +200,13 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        board.placePawn('a', 1, Field.WHITE)
-        board.placePawn('a', 2, Field.BLACK)
+        seegaController.executeDeploy('a', 1)
+        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
         assertTrue(seegaController.isPhaseTwo())
 
         // when
-        board.removePawn('a', 1)
+        seegaController.executeMove('b', 3, Direction.LEFT)
         val result = seegaController.isPhaseTwo()
 
         // then
