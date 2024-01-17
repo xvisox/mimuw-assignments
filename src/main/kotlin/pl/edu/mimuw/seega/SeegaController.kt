@@ -5,7 +5,8 @@ import pl.edu.mimuw.seega.exceptions.FieldOutOfBoundsException
 import pl.edu.mimuw.seega.exceptions.FieldPlayerMismatchException
 
 class SeegaController(private val board: Board) {
-    private var movesWithoutTaking: Int = 0
+    var movesWithoutTaking: Int = 0
+        private set
     var currentPlayerColor: PawnColor = PawnColor.WHITE
         private set
 

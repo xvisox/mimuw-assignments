@@ -1,6 +1,7 @@
 package pl.edu.mimuw.seega
 
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Test
@@ -211,5 +212,78 @@ class SeegaControllerTest {
 
         // then
         assertFalse(result)
+    }
+
+    @Test
+    fun `executeMove should increase movesWithoutTaking when no pawns are taken`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board).also { it.executeDeploy('a', 1) }
+
+        // when
+        seegaController.executeMove('a', 1, Direction.DOWN)
+        seegaController.executeMove('a', 2, Direction.DOWN)
+        seegaController.executeMove('a', 3, Direction.DOWN)
+
+        // then
+        assertEquals(3, seegaController.movesWithoutTaking)
+    }
+
+    @Test
+    fun `executeMove should reset movesWithoutTaking when pawns are taken`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        seegaController.executeDeploy('a', 1)
+        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
+
+        // when
+        seegaController.executeMove('b', 3, Direction.LEFT)
+
+        // then
+        assertEquals(0, seegaController.movesWithoutTaking)
+    }
+
+    @Test
+    fun `isPhaseTwo should return false when movesWithoutTaking reaches 20`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        seegaController.executeDeploy('e', 5).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 1)
+        repeat(10) {
+            seegaController.executeMove('a', 1, Direction.RIGHT)
+            seegaController.executeMove('b', 1, Direction.LEFT)
+        }
+
+        // when
+        val result = seegaController.isPhaseTwo()
+
+        // then
+        assertFalse(result)
+        assertEquals(20, seegaController.movesWithoutTaking)
+    }
+
+    @Test
+    fun `isPhaseTwo should return true when movesWithoutTaking is less than 20`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        seegaController.executeDeploy('e', 5).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 1)
+        repeat(9) {
+            seegaController.executeMove('a', 1, Direction.RIGHT)
+            seegaController.executeMove('b', 1, Direction.LEFT)
+        }
+
+        // when
+        val result = seegaController.isPhaseTwo()
+
+        // then
+        assertTrue(result)
     }
 }
