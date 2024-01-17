@@ -17,13 +17,16 @@ class SeegaGame(
         outputPrinter.printPhaseOnePrompt()
         gamePhaseOne(seegaController, board)
 
+        seegaController.proceedToNextPhase()
+        outputPrinter.printBoard(board)
+
         outputPrinter.printPhaseTwoPrompt()
         gamePhaseTwo(seegaController, board)
 
         outputPrinter.printGameFinishedMessage()
     }
 
-    private fun chooseBoardPhase(): Board = retry { Board(inputReader.readBoardSize()) }
+    private fun chooseBoardPhase(): Board = retry { Board(inputReader.readBoardSize()) }.also { outputPrinter.printBoard(it) }
 
     private fun gamePhaseOne(seegaController: SeegaController, board: Board) {
         while (seegaController.isPhaseOne()) {

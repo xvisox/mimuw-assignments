@@ -30,9 +30,13 @@ class SeegaController(private val board: Board) {
         }
     }
 
+    fun proceedToNextPhase() {
+        board.removePawn('a' + board.size / 2, board.size / 2 + 1)
+    }
+
     fun isPhaseOne(): Boolean = board.size * board.size > board.whitePawns + board.blackPawns + 1
 
-    fun isPhaseTwo(): Boolean = board.whitePawns == 0 || board.blackPawns == 0
+    fun isPhaseTwo(): Boolean = board.whitePawns != 0 || board.blackPawns != 0
 
     fun changeColor() {
         currentPlayerColor = Field.getOppositeColor(currentPlayerColor)

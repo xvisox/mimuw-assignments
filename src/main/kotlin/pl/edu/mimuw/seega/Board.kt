@@ -16,13 +16,19 @@ class Board(val size: Int) {
         changePawnsCount(fieldColor, 1)
     }
 
+    fun removePawn(col: Char, row: Int) {
+        val prevFieldColor = fields[rowToIndex(row)][colToIndex(col)]
+        fields[rowToIndex(row)][colToIndex(col)] = Field.EMPTY
+        changePawnsCount(prevFieldColor, -1)
+    }
+
     fun movePawnAndGetNewField(col: Char, row: Int, direction: Direction): Pair<Char, Int> {
         val fieldColor = fields[rowToIndex(row)][colToIndex(col)]
         val newCol = col + direction.col
         val newRow = row + direction.row
 
-        fields[rowToIndex(row)][colToIndex(col)] = Field.EMPTY
-        fields[rowToIndex(newRow)][colToIndex(newCol)] = fieldColor
+        removePawn(col, row)
+        placePawn(newCol, newRow, fieldColor)
         return newCol to newRow
     }
 
@@ -86,8 +92,7 @@ class Board(val size: Int) {
         )
             return false
 
-        fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] = Field.EMPTY
-        changePawnsCount(Field.getOppositeColor(fieldColor), -1)
+        removePawn(adjacentCol, adjacentRow)
         return true
     }
 
