@@ -29,7 +29,7 @@ class SeegaGame(
         while (seegaController.isPhaseOne()) {
             repeat(2) {
                 retry {
-                    outputPrinter.printPlayerTurn(seegaController.currentColor)
+                    outputPrinter.printPlayerTurn(seegaController.currentPlayerColor)
                     val (col, row) = inputReader.readDeployCommand()
                     seegaController.executeDeploy(col, row).also { outputPrinter.printBoard(board) }
                 }
@@ -41,7 +41,7 @@ class SeegaGame(
     private fun gamePhaseTwo(seegaController: SeegaController, board: Board) {
         while (seegaController.isPhaseTwo()) {
             val shouldChangeColor = retry {
-                outputPrinter.printPlayerTurn(seegaController.currentColor)
+                outputPrinter.printPlayerTurn(seegaController.currentPlayerColor)
                 val (col, row, direction) = inputReader.readMoveCommand()
                 seegaController.executeMove(col, row, direction).also { outputPrinter.printBoard(board) }
             }

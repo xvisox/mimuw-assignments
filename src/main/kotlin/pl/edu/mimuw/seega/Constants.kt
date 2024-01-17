@@ -8,6 +8,8 @@ class Constants {
 
         const val BLACK = 'B'
         const val WHITE = 'W'
+        const val EMPTY = ' '
+        const val STAR = '*'
 
         const val DEPLOY = "deploy"
         const val MOVE = "move"

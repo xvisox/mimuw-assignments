@@ -85,10 +85,10 @@ class SeegaControllerTest {
 
         // when & then
         seegaController.changeColor()
-        assert(seegaController.currentColor == BLACK)
+        assert(seegaController.currentPlayerColor == BLACK)
 
         seegaController.changeColor()
-        assert(seegaController.currentColor == WHITE)
+        assert(seegaController.currentPlayerColor == WHITE)
     }
 
 }
