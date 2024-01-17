@@ -1,8 +1,10 @@
-package pl.edu.mimuw.seega
+package pl.edu.mimuw.seega.io
 
+import pl.edu.mimuw.seega.domain.Board
 import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.MEDIUM_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.LARGE_BOARD_SIZE
+import pl.edu.mimuw.seega.domain.PawnColor
 
 class OutputPrinter {
 

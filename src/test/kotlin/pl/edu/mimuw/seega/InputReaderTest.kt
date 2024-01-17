@@ -9,6 +9,8 @@ import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.MEDIUM_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.LARGE_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.MOVE
+import pl.edu.mimuw.seega.domain.Direction
+import pl.edu.mimuw.seega.io.InputReader
 
 class InputReaderTest {
 

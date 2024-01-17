@@ -1,4 +1,4 @@
-package pl.edu.mimuw.seega
+package pl.edu.mimuw.seega.domain
 
 enum class PawnColor(private val symbol: Char) {
     EMPTY(' '),

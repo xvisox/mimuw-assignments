@@ -1,4 +1,4 @@
-package pl.edu.mimuw.seega
+package pl.edu.mimuw.seega.domain
 
 import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_INDENT
 import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_SPACING

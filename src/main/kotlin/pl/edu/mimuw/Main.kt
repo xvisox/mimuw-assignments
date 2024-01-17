@@ -1,8 +1,7 @@
 package pl.edu.mimuw
 
-import pl.edu.mimuw.seega.InputReader
-import pl.edu.mimuw.seega.OutputPrinter
-import pl.edu.mimuw.seega.SeegaController
+import pl.edu.mimuw.seega.io.InputReader
+import pl.edu.mimuw.seega.io.OutputPrinter
 import pl.edu.mimuw.seega.SeegaGame
 
 fun main() {

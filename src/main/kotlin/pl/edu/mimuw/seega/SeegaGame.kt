@@ -1,6 +1,9 @@
 package pl.edu.mimuw.seega
 
-import pl.edu.mimuw.seega.Utils.Companion.retry
+import pl.edu.mimuw.seega.utils.GeneralUtils.Companion.retry
+import pl.edu.mimuw.seega.domain.Board
+import pl.edu.mimuw.seega.io.InputReader
+import pl.edu.mimuw.seega.io.OutputPrinter
 
 class SeegaGame(
     private val inputReader: InputReader,

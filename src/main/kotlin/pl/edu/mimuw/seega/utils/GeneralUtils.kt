@@ -1,6 +1,6 @@
-package pl.edu.mimuw.seega
+package pl.edu.mimuw.seega.utils
 
-class Utils {
+class GeneralUtils {
     companion object {
         fun <T> retry(retries: Int = 5, block: () -> T): T {
             var attempt = 0

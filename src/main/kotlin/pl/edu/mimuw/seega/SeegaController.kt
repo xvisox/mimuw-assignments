@@ -1,5 +1,8 @@
 package pl.edu.mimuw.seega
 
+import pl.edu.mimuw.seega.domain.Board
+import pl.edu.mimuw.seega.domain.Direction
+import pl.edu.mimuw.seega.domain.PawnColor
 import pl.edu.mimuw.seega.exceptions.FieldEmptinessException
 import pl.edu.mimuw.seega.exceptions.FieldOutOfBoundsException
 import pl.edu.mimuw.seega.exceptions.FieldPlayerMismatchException

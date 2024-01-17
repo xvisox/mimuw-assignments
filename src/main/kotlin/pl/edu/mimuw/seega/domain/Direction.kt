@@ -1,4 +1,4 @@
-package pl.edu.mimuw.seega
+package pl.edu.mimuw.seega.domain
 
 enum class Direction(val col: Int, val row: Int) {
     UP(0, -1),
