@@ -84,16 +84,16 @@ class SeegaControllerTest {
     }
 
     @Test
-    fun `changeColor should toggle currentPlayerColor between white and black`() {
+    fun `endPlayerTurn should toggle currentPlayerColor between white and black`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
         // when & then
-        seegaController.changeColor()
+        seegaController.endPlayerTurn()
         assert(seegaController.currentPlayerColor == PawnColor.BLACK)
 
-        seegaController.changeColor()
+        seegaController.endPlayerTurn()
         assert(seegaController.currentPlayerColor == PawnColor.WHITE)
     }
 
@@ -104,8 +104,8 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board)
 
         seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
-        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
+        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
+        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
 
         // when
         val pawnsTaken = seegaController.executeMove('b', 3, Direction.LEFT)
@@ -163,7 +163,7 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        seegaController.executeDeploy('a', 1).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 1).also { seegaController.endPlayerTurn() }
 
         // when & then
         assertThrows<FieldPlayerMismatchException> { seegaController.executeMove('a', 1, Direction.DOWN) }
@@ -188,7 +188,7 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        seegaController.executeDeploy('a', 1).also { seegaController.changeColor() }
+        seegaController.executeDeploy('a', 1).also { seegaController.endPlayerTurn() }
         seegaController.executeDeploy('a', 2)
 
         // when
@@ -205,8 +205,8 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board)
 
         seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
-        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
+        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
+        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
         assertTrue(seegaController.isPhaseTwo())
 
         // when
@@ -239,8 +239,8 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board)
 
         seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.changeColor() }
-        seegaController.executeDeploy('a', 2).also { seegaController.changeColor() }
+        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
+        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
 
         // when
         seegaController.executeMove('b', 3, Direction.LEFT)
@@ -255,7 +255,7 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        seegaController.executeDeploy('e', 5).also { seegaController.changeColor() }
+        seegaController.executeDeploy('e', 5).also { seegaController.endPlayerTurn() }
         seegaController.executeDeploy('a', 1)
         repeat(10) {
             seegaController.executeMove('a', 1, Direction.RIGHT)
@@ -276,7 +276,7 @@ class SeegaControllerTest {
         val board = Board(SMALL_BOARD_SIZE)
         val seegaController = SeegaController(board)
 
-        seegaController.executeDeploy('e', 5).also { seegaController.changeColor() }
+        seegaController.executeDeploy('e', 5).also { seegaController.endPlayerTurn() }
         seegaController.executeDeploy('a', 1)
         repeat(9) {
             seegaController.executeMove('a', 1, Direction.RIGHT)

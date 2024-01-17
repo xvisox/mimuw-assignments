@@ -41,6 +41,23 @@ class SeegaController(private val board: Board) {
         }
     }
 
+    fun validMoveExistsForCurrentPlayer(): Boolean {
+        for (row in 1..board.size) {
+            for (col in 'a'..<'a' + board.size) {
+                if (board.getFieldColor(col, row) != currentPlayerColor) continue
+
+                for (direction in Direction.entries) {
+                    if (board.isFieldInBounds(col + direction.col, row + direction.row) &&
+                        board.isFieldEmpty(col + direction.col, row + direction.row)
+                    ) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
     fun proceedToNextPhase() {
         board.removePawn('a' + board.size / 2, board.size / 2 + 1)
     }
@@ -52,7 +69,7 @@ class SeegaController(private val board: Board) {
     fun whoWon(): PawnColor =
         if (board.whitePawns == 0) PawnColor.BLACK else if (board.blackPawns == 0) PawnColor.WHITE else PawnColor.EMPTY
 
-    fun changeColor() {
+    fun endPlayerTurn() {
         currentPlayerColor = PawnColor.getOppositeColor(currentPlayerColor)
     }
 }

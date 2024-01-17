@@ -41,18 +41,22 @@ class SeegaGame(
                     seegaController.executeDeploy(col, row).also { outputPrinter.printBoard(board) }
                 }
             }
-            seegaController.changeColor()
+            seegaController.endPlayerTurn()
         }
     }
 
     private fun gamePhaseTwo(seegaController: SeegaController, board: Board) {
         while (seegaController.isPhaseTwo()) {
+            if (!seegaController.validMoveExistsForCurrentPlayer()) {
+                seegaController.endPlayerTurn()
+                continue
+            }
             val pawnsTaken = retry {
                 outputPrinter.printPlayerTurn(seegaController.currentPlayerColor)
                 val (col, row, direction) = inputReader.readMoveCommand()
                 seegaController.executeMove(col, row, direction).also { outputPrinter.printBoard(board) }
             }
-            if (!pawnsTaken) seegaController.changeColor()
+            if (!pawnsTaken) seegaController.endPlayerTurn()
         }
     }
 }
