@@ -1,6 +1,6 @@
 package pl.edu.mimuw.seega
 
-enum class Field(private val symbol: Char) {
+enum class PawnColor(private val symbol: Char) {
     EMPTY(' '),
     WHITE('W'),
     BLACK('B'),
@@ -11,7 +11,7 @@ enum class Field(private val symbol: Char) {
     }
 
     companion object {
-        fun getOppositeColor(color: Field): Field {
+        fun getOppositeColor(color: PawnColor): PawnColor {
             return if (color == WHITE) BLACK else WHITE
         }
     }

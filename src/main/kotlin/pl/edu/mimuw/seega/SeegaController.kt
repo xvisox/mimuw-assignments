@@ -5,7 +5,8 @@ import pl.edu.mimuw.seega.exceptions.FieldOutOfBoundsException
 import pl.edu.mimuw.seega.exceptions.FieldPlayerMismatchException
 
 class SeegaController(private val board: Board) {
-    var currentPlayerColor: Field = Field.WHITE
+    private var movesWithoutTaking: Int = 0
+    var currentPlayerColor: PawnColor = PawnColor.WHITE
         private set
 
     fun executeDeploy(col: Char, row: Int) {
@@ -30,7 +31,9 @@ class SeegaController(private val board: Board) {
 
         board.movePawnAndGetNewField(col, row, direction).also {
             val (newCol, newRow) = it
-            return board.takeOpponentPawnsAndGetResult(newCol, newRow)
+            val pawnsTaken = board.takeOpponentPawnsAndGetResult(newCol, newRow)
+            if (pawnsTaken) movesWithoutTaking = 0 else movesWithoutTaking++
+            return pawnsTaken
         }
     }
 
@@ -40,9 +43,12 @@ class SeegaController(private val board: Board) {
 
     fun isPhaseOne(): Boolean = board.size * board.size > board.whitePawns + board.blackPawns + 1
 
-    fun isPhaseTwo(): Boolean = board.whitePawns > 0 && board.blackPawns > 0
+    fun isPhaseTwo(): Boolean = board.whitePawns > 0 && board.blackPawns > 0 && movesWithoutTaking < 20
+
+    fun whoWon(): PawnColor =
+        if (board.whitePawns == 0) PawnColor.BLACK else if (board.blackPawns == 0) PawnColor.WHITE else PawnColor.EMPTY
 
     fun changeColor() {
-        currentPlayerColor = Field.getOppositeColor(currentPlayerColor)
+        currentPlayerColor = PawnColor.getOppositeColor(currentPlayerColor)
     }
 }

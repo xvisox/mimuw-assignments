@@ -23,6 +23,7 @@ class SeegaGame(
         outputPrinter.printPhaseTwoPrompt()
         gamePhaseTwo(seegaController, board)
 
+        outputPrinter.printWonMessage(seegaController.whoWon())
         outputPrinter.printGameFinishedMessage()
     }
 

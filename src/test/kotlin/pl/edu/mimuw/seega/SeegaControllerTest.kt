@@ -38,8 +38,8 @@ class SeegaControllerTest {
     @Test
     fun `executeDeploy on non-empty field should throw FieldEmptinessException`() {
         // given
-        val board = Board(SMALL_BOARD_SIZE).also { it.placePawn('a', 1, Field.WHITE) }
-        val seegaController = SeegaController(board)
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board).also { it.executeDeploy('a', 1) }
 
         // when & then
         assertThrows<FieldEmptinessException> { seegaController.executeDeploy('a', 1) }
@@ -87,10 +87,10 @@ class SeegaControllerTest {
 
         // when & then
         seegaController.changeColor()
-        assert(seegaController.currentPlayerColor == Field.BLACK)
+        assert(seegaController.currentPlayerColor == PawnColor.BLACK)
 
         seegaController.changeColor()
-        assert(seegaController.currentPlayerColor == Field.WHITE)
+        assert(seegaController.currentPlayerColor == PawnColor.WHITE)
     }
 
     @Test

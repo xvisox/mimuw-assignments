@@ -5,21 +5,22 @@ import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_SPACING
 import pl.edu.mimuw.seega.Constants.Companion.ROW_INDENT
 
 class Board(val size: Int) {
-    private val fields: Array<Array<Field>> = Array(size) { Array(size) { Field.EMPTY } }.also { it[size / 2][size / 2] = Field.STAR }
+    private val fields: Array<Array<PawnColor>> =
+        Array(size) { Array(size) { PawnColor.EMPTY } }.also { it[size / 2][size / 2] = PawnColor.STAR }
     var blackPawns: Int = 0
         private set
     var whitePawns: Int = 0
         private set
 
-    fun placePawn(col: Char, row: Int, fieldColor: Field) {
-        fields[rowToIndex(row)][colToIndex(col)] = fieldColor
-        changePawnsCount(fieldColor, 1)
+    fun placePawn(col: Char, row: Int, pawnColor: PawnColor) {
+        fields[rowToIndex(row)][colToIndex(col)] = pawnColor
+        changePawnsCount(pawnColor, 1)
     }
 
     fun removePawn(col: Char, row: Int) {
-        val prevFieldColor = fields[rowToIndex(row)][colToIndex(col)]
-        fields[rowToIndex(row)][colToIndex(col)] = Field.EMPTY
-        changePawnsCount(prevFieldColor, -1)
+        val prevPawnColor = fields[rowToIndex(row)][colToIndex(col)]
+        fields[rowToIndex(row)][colToIndex(col)] = PawnColor.EMPTY
+        changePawnsCount(prevPawnColor, -1)
     }
 
     fun movePawnAndGetNewField(col: Char, row: Int, direction: Direction): Pair<Char, Int> {
@@ -43,7 +44,7 @@ class Board(val size: Int) {
     }
 
     fun isFieldEmpty(col: Char, row: Int): Boolean {
-        return fields[rowToIndex(row)][colToIndex(col)] == Field.EMPTY
+        return fields[rowToIndex(row)][colToIndex(col)] == PawnColor.EMPTY
     }
 
     fun isFieldInBounds(col: Char, row: Int): Boolean {
@@ -54,7 +55,7 @@ class Board(val size: Int) {
         return rowToIndex(row) == size / 2 && colToIndex(col) == size / 2
     }
 
-    fun getFieldColor(col: Char, row: Int): Field {
+    fun getFieldColor(col: Char, row: Int): PawnColor {
         return fields[rowToIndex(row)][colToIndex(col)]
     }
 
@@ -87,7 +88,7 @@ class Board(val size: Int) {
         val nextAdjacentRow = adjacentRow + direction.row
 
         if (!isFieldInBounds(adjacentCol, adjacentRow) || isMiddleField(adjacentCol, adjacentRow) ||
-            fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] != Field.getOppositeColor(fieldColor)
+            fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] != PawnColor.getOppositeColor(fieldColor)
         )
             return false
 
@@ -100,8 +101,8 @@ class Board(val size: Int) {
         return true
     }
 
-    private fun changePawnsCount(fieldColor: Field, change: Int) {
-        if (fieldColor == Field.WHITE)
+    private fun changePawnsCount(pawnColor: PawnColor, change: Int) {
+        if (pawnColor == PawnColor.WHITE)
             whitePawns += change
         else
             blackPawns += change

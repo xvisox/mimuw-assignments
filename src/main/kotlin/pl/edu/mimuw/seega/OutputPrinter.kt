@@ -25,11 +25,19 @@ class OutputPrinter {
         println(board)
     }
 
-    fun printPlayerTurn(color: Field) {
+    fun printPlayerTurn(color: PawnColor) {
         when (color) {
-            Field.WHITE -> println("White player's turn.")
-            Field.BLACK -> println("Black player's turn.")
+            PawnColor.WHITE -> println("White player's turn.")
+            PawnColor.BLACK -> println("Black player's turn.")
             else -> throw IllegalArgumentException("Invalid color: $color")
+        }
+    }
+
+    fun printWonMessage(color: PawnColor) {
+        when (color) {
+            PawnColor.WHITE -> println("White player won!")
+            PawnColor.BLACK -> println("Black player won!")
+            else -> print("Draw!")
         }
     }
 
