@@ -111,7 +111,7 @@ class SeegaControllerTest {
         val pawnsTaken = seegaController.executeMove('b', 3, Direction.LEFT)
 
         // then
-        assertTrue(pawnsTaken)
+        assertTrue(pawnsTaken.isNotEmpty())
         assertTrue(board.isFieldEmpty('b', 3))
         assertTrue(board.isFieldEmpty('a', 2))
         assertFalse(board.isFieldEmpty('a', 1))

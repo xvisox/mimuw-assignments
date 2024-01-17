@@ -59,7 +59,10 @@ class SeegaController(private val board: Board) {
     }
 
     fun proceedToNextPhase() {
-        board.removePawn('a' + board.size / 2, board.size / 2 + 1)
+        val middleCol = 'a' + board.size / 2
+        val middleRow = board.size / 2 + 1
+        assert(board.isMiddleField(middleCol, middleRow) && !board.isFieldEmpty(middleCol, middleRow))
+        board.removePawn(middleCol, middleRow)
     }
 
     fun isPhaseOne(): Boolean = board.size * board.size > board.whitePawns + board.blackPawns + 1
