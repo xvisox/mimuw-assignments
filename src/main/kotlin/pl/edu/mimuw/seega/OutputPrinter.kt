@@ -1,10 +1,8 @@
 package pl.edu.mimuw.seega
 
-import pl.edu.mimuw.seega.Constants.Companion.BLACK
 import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.MEDIUM_BOARD_SIZE
 import pl.edu.mimuw.seega.Constants.Companion.LARGE_BOARD_SIZE
-import pl.edu.mimuw.seega.Constants.Companion.WHITE
 
 class OutputPrinter {
 
@@ -27,11 +25,11 @@ class OutputPrinter {
         println(board)
     }
 
-    fun printPlayerTurn(colorChar: Char) {
-        when (colorChar) {
-            WHITE -> println("White player's turn.")
-            BLACK -> println("Black player's turn.")
-            else -> throw IllegalArgumentException("Invalid colorChar: $colorChar")
+    fun printPlayerTurn(color: Field) {
+        when (color) {
+            Field.WHITE -> println("White player's turn.")
+            Field.BLACK -> println("Black player's turn.")
+            else -> throw IllegalArgumentException("Invalid color: $color")
         }
     }
 

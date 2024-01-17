@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Test
-import pl.edu.mimuw.seega.Constants.Companion.BLACK
 import pl.edu.mimuw.seega.Constants.Companion.SMALL_BOARD_SIZE
-import pl.edu.mimuw.seega.Constants.Companion.WHITE
 
 class SeegaControllerTest {
 
@@ -36,7 +34,7 @@ class SeegaControllerTest {
     @Test
     fun `executeDeploy on non-empty field should throw Exception`() {
         // given
-        val board = Board(SMALL_BOARD_SIZE).also { it.placePawn('a', 1, WHITE) }
+        val board = Board(SMALL_BOARD_SIZE).also { it.placePawn('a', 1, Field.WHITE) }
         val seegaController = SeegaController(board)
 
         // when & then
@@ -53,7 +51,7 @@ class SeegaControllerTest {
         // the field in the middle isn't empty
         for (i in 1..SMALL_BOARD_SIZE) {
             for (j in 1..<SMALL_BOARD_SIZE) {
-                board.placePawn('a' + i - 1, j, WHITE)
+                board.placePawn('a' + i - 1, j, Field.WHITE)
             }
         }
 
@@ -69,7 +67,7 @@ class SeegaControllerTest {
 
         for (i in 1..SMALL_BOARD_SIZE) {
             for (j in 1..SMALL_BOARD_SIZE) {
-                board.placePawn('a' + i - 1, j, WHITE)
+                board.placePawn('a' + i - 1, j, Field.WHITE)
             }
         }
 
@@ -85,10 +83,10 @@ class SeegaControllerTest {
 
         // when & then
         seegaController.changeColor()
-        assert(seegaController.currentPlayerColor == BLACK)
+        assert(seegaController.currentPlayerColor == Field.BLACK)
 
         seegaController.changeColor()
-        assert(seegaController.currentPlayerColor == WHITE)
+        assert(seegaController.currentPlayerColor == Field.WHITE)
     }
 
 }

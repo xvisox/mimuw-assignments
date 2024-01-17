@@ -1,10 +1,7 @@
 package pl.edu.mimuw.seega
 
-import pl.edu.mimuw.seega.Constants.Companion.BLACK
-import pl.edu.mimuw.seega.Constants.Companion.WHITE
-
 class SeegaController(private val board: Board) {
-    var currentPlayerColor: Char = WHITE
+    var currentPlayerColor: Field = Field.WHITE
         private set
 
     fun executeDeploy(col: Char, row: Int) {
@@ -35,9 +32,9 @@ class SeegaController(private val board: Board) {
 
     fun isPhaseOne(): Boolean = board.size * board.size > board.whitePawns + board.blackPawns + 1
 
-    fun isPhaseTwo(): Boolean = true
+    fun isPhaseTwo(): Boolean = board.whitePawns == 0 || board.blackPawns == 0
 
     fun changeColor() {
-        currentPlayerColor = if (currentPlayerColor == WHITE) BLACK else WHITE
+        currentPlayerColor = Field.getOppositeColor(currentPlayerColor)
     }
 }

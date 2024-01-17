@@ -6,11 +6,6 @@ class Constants {
         val FIRST_ROW_SPACING = " ".repeat(3)
         val ROW_INDENT = " ".repeat(3)
 
-        const val BLACK = 'B'
-        const val WHITE = 'W'
-        const val EMPTY = ' '
-        const val STAR = '*'
-
         const val DEPLOY = "deploy"
         const val MOVE = "move"
         val DEPLOY_PATTERN = Regex("$DEPLOY [a-z][1-9]")

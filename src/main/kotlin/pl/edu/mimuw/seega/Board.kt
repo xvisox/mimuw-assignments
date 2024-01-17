@@ -1,55 +1,51 @@
 package pl.edu.mimuw.seega
 
-import pl.edu.mimuw.seega.Constants.Companion.BLACK
-import pl.edu.mimuw.seega.Constants.Companion.EMPTY
 import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_INDENT
 import pl.edu.mimuw.seega.Constants.Companion.FIRST_ROW_SPACING
 import pl.edu.mimuw.seega.Constants.Companion.ROW_INDENT
-import pl.edu.mimuw.seega.Constants.Companion.STAR
-import pl.edu.mimuw.seega.Constants.Companion.WHITE
 
 class Board(val size: Int) {
-    private val fields: Array<Array<Char>> = Array(size) { Array(size) { EMPTY } }.also { it[size / 2][size / 2] = STAR }
+    private val fields: Array<Array<Field>> = Array(size) { Array(size) { Field.EMPTY } }.also { it[size / 2][size / 2] = Field.STAR }
     var blackPawns: Int = 0
         private set
     var whitePawns: Int = 0
         private set
 
-    fun placePawn(col: Char, row: Int, color: Char) {
-        fields[rowToIndex(row)][colToIndex(col)] = color
-        changePawnsCount(color, 1)
+    fun placePawn(col: Char, row: Int, fieldColor: Field) {
+        fields[rowToIndex(row)][colToIndex(col)] = fieldColor
+        changePawnsCount(fieldColor, 1)
     }
 
     fun movePawnAndGetNewField(col: Char, row: Int, direction: Direction): Pair<Char, Int> {
-        val color = fields[rowToIndex(row)][colToIndex(col)]
+        val fieldColor = fields[rowToIndex(row)][colToIndex(col)]
         val newCol = col + direction.col
         val newRow = row + direction.row
 
-        fields[rowToIndex(row)][colToIndex(col)] = EMPTY
-        fields[rowToIndex(newRow)][colToIndex(newCol)] = color
+        fields[rowToIndex(row)][colToIndex(col)] = Field.EMPTY
+        fields[rowToIndex(newRow)][colToIndex(newCol)] = fieldColor
         return newCol to newRow
     }
 
     fun takeOpponentPawnsAndGetResult(newCol: Char, newRow: Int): Boolean {
         val takenPawns = false
-        val color = fields[rowToIndex(newRow)][colToIndex(newCol)]
+        val fieldColor = fields[rowToIndex(newRow)][colToIndex(newCol)]
 
         for (direction in Direction.entries) {
-            takenPawns or takeOpponentPawn(newCol, newRow, direction, color)
+            takenPawns or takeOpponentPawn(newCol, newRow, direction, fieldColor)
         }
 
         return takenPawns
     }
 
     fun isFieldEmpty(col: Char, row: Int): Boolean {
-        return fields[rowToIndex(row)][colToIndex(col)] == EMPTY
+        return fields[rowToIndex(row)][colToIndex(col)] == Field.EMPTY
     }
 
     fun isFieldInBounds(col: Char, row: Int): Boolean {
         return col in 'a'..<'a' + size && row in 1..size
     }
 
-    fun getFieldColor(col: Char, row: Int): Char {
+    fun getFieldColor(col: Char, row: Int): Field {
         return fields[rowToIndex(row)][colToIndex(col)]
     }
 
@@ -73,26 +69,30 @@ class Board(val size: Int) {
         return stringBuilder.toString()
     }
 
-    private fun takeOpponentPawn(col: Char, row: Int, direction: Direction, color: Char): Boolean {
+    private fun takeOpponentPawn(col: Char, row: Int, direction: Direction, fieldColor: Field): Boolean {
         val adjacentCol = col + direction.col
         val adjacentRow = row + direction.row
 
         val nextAdjacentCol = adjacentCol + direction.col
         val nextAdjacentRow = adjacentRow + direction.row
 
-        if (!isFieldInBounds(adjacentCol, adjacentRow) || fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] == color)
+        if (!isFieldInBounds(adjacentCol, adjacentRow) ||
+            fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] == fieldColor
+        )
             return false
 
-        if (!isFieldInBounds(nextAdjacentCol, nextAdjacentRow) || fields[rowToIndex(nextAdjacentRow)][colToIndex(nextAdjacentCol)] != color)
+        if (!isFieldInBounds(nextAdjacentCol, nextAdjacentRow) ||
+            fields[rowToIndex(nextAdjacentRow)][colToIndex(nextAdjacentCol)] != fieldColor
+        )
             return false
 
-        fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] = EMPTY
-        changePawnsCount(if (color == WHITE) BLACK else WHITE, -1)
+        fields[rowToIndex(adjacentRow)][colToIndex(adjacentCol)] = Field.EMPTY
+        changePawnsCount(Field.getOppositeColor(fieldColor), -1)
         return true
     }
 
-    private fun changePawnsCount(color: Char, change: Int) {
-        if (color == WHITE)
+    private fun changePawnsCount(fieldColor: Field, change: Int) {
+        if (fieldColor == Field.WHITE)
             whitePawns += change
         else
             blackPawns += change
