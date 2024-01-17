@@ -289,4 +289,54 @@ class SeegaControllerTest {
         // then
         assertTrue(result)
     }
+
+    @Test
+    fun `validMoveExistsForCurrentPlayer should return true when a valid move exists`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        seegaController.executeDeploy('b', 1)
+        seegaController.executeDeploy('a', 2)
+        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
+        seegaController.executeDeploy('b', 2)
+
+        // when
+        val result = seegaController.validMoveExistsForCurrentPlayer()
+
+        // then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `validMoveExistsForCurrentPlayer should return false when no valid move exists`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        seegaController.executeDeploy('b', 1)
+        seegaController.executeDeploy('a', 2)
+        seegaController.executeDeploy('c', 2)
+        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
+        seegaController.executeDeploy('b', 2)
+
+        // when
+        val result = seegaController.validMoveExistsForCurrentPlayer()
+
+        // then
+        assertFalse(result)
+    }
+
+    @Test
+    fun `validMoveExistsForCurrentPlayer should return false when the board is empty`() {
+        // given
+        val board = Board(SMALL_BOARD_SIZE)
+        val seegaController = SeegaController(board)
+
+        // when
+        val result = seegaController.validMoveExistsForCurrentPlayer()
+
+        // then
+        assertFalse(result)
+    }
 }
