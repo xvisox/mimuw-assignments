@@ -35,8 +35,10 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board)
 
         // when & then
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeDeploy('a' + SMALL_BOARD_SIZE, 1) }
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeDeploy('a', 1 + SMALL_BOARD_SIZE) }
+        seegaController.also {
+            assertThrows<FieldOutOfBoundsException> { it.executeDeploy('a' + SMALL_BOARD_SIZE, 1) }
+            assertThrows<FieldOutOfBoundsException> { it.executeDeploy('a', 1 + SMALL_BOARD_SIZE) }
+        }
     }
 
     @Test
@@ -90,48 +92,56 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board)
 
         // when & then
-        seegaController.endPlayerTurn()
-        assert(seegaController.currentPlayerColor == PawnColor.BLACK)
-
-        seegaController.endPlayerTurn()
-        assert(seegaController.currentPlayerColor == PawnColor.WHITE)
+        seegaController.also {
+            it.endPlayerTurn()
+            assert(it.currentPlayerColor == PawnColor.BLACK)
+            it.endPlayerTurn()
+            assert(it.currentPlayerColor == PawnColor.WHITE)
+        }
     }
 
     @Test
     fun `executeMove with valid input should move pawn and capture opponents`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.executeDeploy('b', 3)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 2)
+            it.endPlayerTurn()
+        }
 
         // when
         val pawnsTaken = seegaController.executeMove('b', 3, Direction.LEFT)
 
         // then
         assertTrue(pawnsTaken.isNotEmpty())
-        assertTrue(board.isFieldEmpty('b', 3))
-        assertTrue(board.isFieldEmpty('a', 2))
-        assertFalse(board.isFieldEmpty('a', 1))
-        assertFalse(board.isFieldEmpty('a', 3))
+        board.also {
+            assertTrue(it.isFieldEmpty('b', 3))
+            assertTrue(it.isFieldEmpty('a', 2))
+
+            assertFalse(it.isFieldEmpty('a', 1))
+            assertFalse(it.isFieldEmpty('a', 3))
+        }
     }
 
     @Test
     fun `executeMove with invalid input should throw FieldOutOfBoundsException for out of bounds`() {
         // given
         val board = Board(5)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('e', 5)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.executeDeploy('e', 5)
+        }
 
         // when & then
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeMove('a', 1, Direction.LEFT) }
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeMove('a', 1, Direction.UP) }
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeMove('e', 5, Direction.RIGHT) }
-        assertThrows<FieldOutOfBoundsException> { seegaController.executeMove('e', 5, Direction.DOWN) }
+        seegaController.also {
+            assertThrows<FieldOutOfBoundsException> { it.executeMove('a', 1, Direction.LEFT) }
+            assertThrows<FieldOutOfBoundsException> { it.executeMove('a', 1, Direction.UP) }
+            assertThrows<FieldOutOfBoundsException> { it.executeMove('e', 5, Direction.RIGHT) }
+            assertThrows<FieldOutOfBoundsException> { it.executeMove('e', 5, Direction.DOWN) }
+        }
     }
 
     @Test
@@ -148,10 +158,10 @@ class SeegaControllerTest {
     fun `executeMove with invalid input should throw FieldEmptinessException for non-empty destination`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('a', 2)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.executeDeploy('a', 2)
+        }
 
         // when & then
         assertThrows<FieldEmptinessException> { seegaController.executeMove('a', 1, Direction.DOWN) }
@@ -161,9 +171,10 @@ class SeegaControllerTest {
     fun `executeMove with invalid input should throw FieldPlayerMismatchException for moving opponent's pawn`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1).also { seegaController.endPlayerTurn() }
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.endPlayerTurn()
+        }
 
         // when & then
         assertThrows<FieldPlayerMismatchException> { seegaController.executeMove('a', 1, Direction.DOWN) }
@@ -186,10 +197,11 @@ class SeegaControllerTest {
     fun `isPhaseTwo should return true when white and black pawns are still on the board`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 2)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 2)
+        }
 
         // when
         val result = seegaController.isPhaseTwo()
@@ -202,12 +214,14 @@ class SeegaControllerTest {
     fun `isPhaseTwo should return false when either white or black pawns are eliminated`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
-        assertTrue(seegaController.isPhaseTwo())
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.executeDeploy('b', 3)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 2)
+            it.endPlayerTurn()
+            assertTrue(it.isPhaseTwo())
+        }
 
         // when
         seegaController.executeMove('b', 3, Direction.LEFT)
@@ -224,9 +238,11 @@ class SeegaControllerTest {
         val seegaController = SeegaController(board).also { it.executeDeploy('a', 1) }
 
         // when
-        seegaController.executeMove('a', 1, Direction.DOWN)
-        seegaController.executeMove('a', 2, Direction.DOWN)
-        seegaController.executeMove('a', 3, Direction.DOWN)
+        seegaController.also {
+            it.executeMove('a', 1, Direction.DOWN)
+            it.executeMove('a', 2, Direction.DOWN)
+            it.executeMove('a', 3, Direction.DOWN)
+        }
 
         // then
         assertEquals(3, seegaController.movesWithoutTaking)
@@ -236,11 +252,13 @@ class SeegaControllerTest {
     fun `executeMove should reset movesWithoutTaking when pawns are taken`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('a', 1)
-        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 2).also { seegaController.endPlayerTurn() }
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('a', 1)
+            it.executeDeploy('b', 3)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 2)
+            it.endPlayerTurn()
+        }
 
         // when
         seegaController.executeMove('b', 3, Direction.LEFT)
@@ -253,10 +271,12 @@ class SeegaControllerTest {
     fun `isPhaseTwo should return false when movesWithoutTaking reaches 20`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('e', 5)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 1)
+        }
 
-        seegaController.executeDeploy('e', 5).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 1)
         repeat(10) {
             seegaController.executeMove('a', 1, Direction.RIGHT)
             seegaController.executeMove('b', 1, Direction.LEFT)
@@ -274,10 +294,12 @@ class SeegaControllerTest {
     fun `isPhaseTwo should return true when movesWithoutTaking is less than 20`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('e', 5)
+            it.endPlayerTurn()
+            it.executeDeploy('a', 1)
+        }
 
-        seegaController.executeDeploy('e', 5).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('a', 1)
         repeat(9) {
             seegaController.executeMove('a', 1, Direction.RIGHT)
             seegaController.executeMove('b', 1, Direction.LEFT)
@@ -294,12 +316,13 @@ class SeegaControllerTest {
     fun `validMoveExistsForCurrentPlayer should return true when a valid move exists`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('b', 1)
-        seegaController.executeDeploy('a', 2)
-        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('b', 2)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('b', 1)
+            it.executeDeploy('a', 2)
+            it.executeDeploy('b', 3)
+            it.endPlayerTurn()
+            it.executeDeploy('b', 2)
+        }
 
         // when
         val result = seegaController.validMoveExistsForCurrentPlayer()
@@ -312,13 +335,14 @@ class SeegaControllerTest {
     fun `validMoveExistsForCurrentPlayer should return false when no valid move exists`() {
         // given
         val board = Board(SMALL_BOARD_SIZE)
-        val seegaController = SeegaController(board)
-
-        seegaController.executeDeploy('b', 1)
-        seegaController.executeDeploy('a', 2)
-        seegaController.executeDeploy('c', 2)
-        seegaController.executeDeploy('b', 3).also { seegaController.endPlayerTurn() }
-        seegaController.executeDeploy('b', 2)
+        val seegaController = SeegaController(board).also {
+            it.executeDeploy('b', 1)
+            it.executeDeploy('a', 2)
+            it.executeDeploy('c', 2)
+            it.executeDeploy('b', 3)
+            it.endPlayerTurn()
+            it.executeDeploy('b', 2)
+        }
 
         // when
         val result = seegaController.validMoveExistsForCurrentPlayer()
