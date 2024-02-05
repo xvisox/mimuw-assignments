@@ -1,0 +1,48 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[polish]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{setspace}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{algpseudocode}
+\usepackage[T1]{fontenc}
+\usepackage[mathscr]{euscript}
+\usepackage[colorlinks=true, allcolors=blue]{hyperr ef}
+
+\author{Hubert Michalski}
+
+\begin{document}
+\Large
+\maketitle
+
+\section{Zadanie 4}
+
+Wpierw zauważmy, że problem jest klasie NP. Istotnie: żeby go rozwiązać, niedeterministycznie zgadujemy wartościowanie $v$ a następnie bierzemy minimum z liczby literałów które są prawdziwe w każdej klauzuli przy danym wartościowaniu $v$, na koniec sprawdzamy czy liczba ta jest w zakresie od $3$ do $5$. Jest to algorytm niedeterministyczny działający w czasie wielomianowym.
+
+Teraz pokażemy poprzez redukcję z problemu 3-CNF-SAT, który jest NP-zupełny, że rozważany problem jest NP-trudny. Wskażmy zatem wielomianowy algorytm, który przyjmuje formułę boolowską $\psi$ z 3-CNF i przekształca ją na taką formułę $\phi$ z CNF, że $3\leq score(\phi,v) \leq 5$ wtedy i tylko wtedy, gdy istnieje wartościowanie $v$ które spełnia formułę $\psi$. Rozważmy następującą transformację - dla danej formuły $\psi$ zastąpimy każdą jej klauzulę $C$ przez taką klauzulę $C'$, że będzie ona identyczna jak $C$ lecz dodatkowo ostatni literał będzie dodany na koniec czterokrotnie - dwa razy tak samo i dwa razy zanegowany.
+Przykładowo:
+$$
+(p\lor q \lor r) \land (x\lor y) \mapsto
+(p\lor q \lor r \lor r \lor r \lor \neg r \lor \neg r) \land (x\lor y \lor y \lor y \lor \neg y \lor \neg y)
+$$
+Oczywiście można pokazać, że taki algorytm da się zrealizować w czasie wielomianowym. Sprawdźmy więc, czy zachodzi wcześniej wspominana równoważność.
+
+Łatwo zaobserwować, że dla formuły $\psi$ z 3-CNF i wartościowaniu $v$ $score(\psi, v)$ leży między zero a trzy, z kolei rozszerzenie każdej klauzuli $C$ o nowe literały dodaje dokładnie dwa $true$, ponieważ będą dodatkowo spełnione albo dwa sklonowane literały albo ich negacje, zatem dla nowej formuły z CNF zachodzi $2\leq score(\phi, v) \leq 5$. Przypuśćmy, że formuła $\psi$ jest spełnialna przez pewne wartościowanie $v$. To oznacza, że przy wartościowaniu $v$ w każdej klauzuli $C$ co najmniej jeden literał jest prawdziwy, tak więc w każdej klauzuli $C'$ formuły $\phi$ są co najmniej trzy prawdziwe literały, czyli istnieje takie wartościowanie, że $3\leq score(\phi, v) \leq 5$.
+\newpage
+
+Z drugiej strony załóżmy, że istnieje wartościowanie $v$ takie, że\break $3 \leq score(\phi,v) \leq 5$. W takim przypadku wiemy, że w każdej klauzuli $C'$ formuły $\phi$ co najmniej trzy literały są prawdziwe przy wartościowaniu $v$, przy czym dokładnie dwa z nich znajdują się w ostatnich czterech literałach. Otrzymujemy w ten sposób, że co najmniej jeden literał w każdej klauzuli $C$ formuły $\psi$ jest prawdziwy, zatem ta formuła jest spełnialna przez wartościowanie $v$.
+
+Ostatecznie stworzyliśmy wielomianowy algorytm który zamienia wejścia problemu 3-CNF-SAT na równoważne wejścia naszego problemu, czyli nasz problem też jest NP-trudny. Udowodniliśmy także na początku, że należy on do NP, zatem problem ten jest NP-zupełny.
+
+\end{document}

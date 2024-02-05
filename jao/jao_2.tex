@@ -1,0 +1,97 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[polish]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{setspace}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage[T1]{fontenc}
+\usepackage[mathscr]{euscript}
+\usepackage[colorlinks=true, allcolors=blue]{hyperr ef}
+
+\title{JAIO - Zadanie 2}
+\author{Hubert Michalski}
+
+\begin{document}
+\Large
+\maketitle
+
+\section{Zadanie pierwsze}
+$$L_{\exists}=\{a b^{n_{1}} a b^{n_{2}} a \ldots a b^{n_{k}} a \in \{a,b\}^{*} \mid \exists i \in \mathbb{N}. 1 \leq i \leq k \land n_{i} = k \} $$
+Gramatyka generująca język $L_{\exists}$ to $\mathcal{G}$ z symbolem startowym $S$:
+$$\mathcal{G} = \begin{cases}
+S \ \rightarrow \ aLbRa  \\
+L \ \rightarrow \ BaLb \ | \ \varepsilon \\
+R \ \rightarrow \ bRaB \ | \ \varepsilon \\
+B \ \rightarrow \ Bb \ | \ \varepsilon \\
+\end{cases}$$
+
+Można pokazać, że gramatyka jest poprawna, czyli zachodzi $L(\mathcal{G}) \subseteq L_{\exists}$. Zgodnie z definicją języka $L_{\exists}$ słowa posiadające $k+1$ znaków $a$ muszą zawierać co najmniej jeden segment długości $k$ znaków $b$. Słowo $aba$ należy do $L_{\exists}$, ponieważ istnieje tylko jeden segment znaków $b$ długości $n_{1}=k=1$. Dalej obserwujemy, że produkcje $L$ i $R$ na każdy nowo generowany znak $a$ dodają do "skrajnego" $ $ segmentu ($L$ do skrajnie prawego, a $R$ do skrajnie lewego) znak $b$. Zatem zachowywany jest niezmiennik taki, że istnieje segment długości $k$ znaków $b$ podczas gdy słowo ma $k+1$ znaków $a$, a to oznacza, że słowa generowane przez tę gramatykę należą do języka $L_{\exists}$.
+
+Aby udowodnić inkluzję $L_{\exists} \subseteq L(\mathcal{G})$ weźmy słowo $w \in L_{\exists}$ i skonstruujmy derywację tego słowa. Jeśli $w=aba$ szukana derywacja wygląda tak:
+$$
+S \rightarrow aLbRa \rightarrow a\varepsilon bRa \rightarrow a\varepsilon b \varepsilon a
+$$
+
+Przypuśćmy teraz, że $|w|>3$. Bez straty ogólności załóżmy, że słowo $w$ posiada $k+1$ liter $a$ dla $k \in \mathbb{N}, k > 1$. Słowo $w$ posiada co najmniej jeden segment znaków $b$ długości $k$ - oznaczmy przez $i$ początek \textbf{pierwszego} takiego segmentu, czyli $w[i\ldots i + k - 1]$ wyznacza segment samych liter $b$ długości $k$. Dodatkowo oznaczmy liczbę liter $a$ w prefiksie słowa $w$ do indeksu $i$ przez $l=\#_{a}(w[1\ldots i])$. Zatem widzimy, że słowo $w$ jest postaci:
+$$
+w= ab^{n_1}a \ldots b^{n_{(l-1)}} a b^{k} ab^{n_{(l+1)}} \ldots a b^{n_k} a
+$$
+
+Zauważmy, że teraz jeśli chcemy otrzymać derywację słowa $w$ wystarczy zastosować produkcję $L\rightarrow BaLb$ dokładnie $(l-1)$ razy, ponieważ podczas każdego kolejnego zastosowania produkcji w słowie pojawia się dokładnie jedna litera $a$ oraz dokładnie jedna litera $b$ w skrajnie prawym bloku, a produkcję $R\rightarrow bRaB$ dokładnie $(k+1)-2-(l-1)=k-l$ razy z analogicznej przyczyny.
+Pierwsze i ostatnie znaki $a$ są produkowane z $S$. Ostatnim krokiem będzie rozwinięcie wszystkich nie-terminali $B$ do oczekiwanej liczby znaków $b$ w każdym segmencie. Skonstruujmy więc derywację dla danego słowa $w$:
+$$
+S \rightarrow aLbRa \rightarrow a\textbf{BaLb}bRa
+\rightarrow \ldots \rightarrow a \underbrace{Ba \ldots Ba}_{2 \cdot (l-1)}
+\underbrace{b\ldots b}_{(l-1)}bRa
+$$
+
+Następnie postępujemy analogicznie z drugiej strony:
+$$
+a \underbrace{Ba \ldots Ba}_{2 \cdot(l-1)}
+\underbrace{b\ldots b}_{(l-1)}bRa
+\rightarrow
+\ldots
+\rightarrow
+a \underbrace{Ba \ldots Ba}_{2 \cdot (l-1)}
+\underbrace{b\ldots b}_{(l-1)}b \underbrace{b\ldots b}_{(k-l)}
+\underbrace{aB \ldots aB}_{2\cdot(k-l)} a
+$$
+
+Teraz wystarczy rozwinąć wszystkie nie-terminale B do oczekiwanej liczby znaków $b$ w każdym z segmentów słowa $w$:
+$$
+a \underbrace{Ba \ldots Ba}_{2 \cdot (l-1)}
+\underbrace{b\ldots b}_{k}
+\underbrace{aB \ldots aB}_{2\cdot(k-l)} a
+\rightarrow \ldots \rightarrow
+ab^{n_1}a \ldots b^{n_{(l-1)}} a b^{k} ab^{n_{(l+1)}} \ldots ab^{n_k} a
+$$
+
+Otrzymujemy w ten sposób derywację dowolnego słowa $w\in L_{\exists}$ zatem gramatyka $\mathcal{G}$ generuje wszystkie słowa z tego języka. $ \hfill \blacksquare$
+
+\newpage
+\section{Zadanie drugie}
+$$L_{\forall}=\{a b^{n_{1}} a b^{n_{2}} a \ldots a b^{n_{k}} a \in \{a,b\}^{*} \mid \forall i \in \mathbb{N}. \ 1 \leq i \leq k \implies n_{i} = k \}
+$$
+
+Udowodnijmy, że podany język nie jest bezkontekstowy z wykorzystaniem lematu o pompowaniu dla języków bezkontekstowych. Załóżmy, że $L_{\forall}$ jest bezkontekstowy i niech $n$ będzie jak z lematu. Niech $w=ab^{n}ab^{n}\ldots ab^{n}a$ (czyli $k=n$). Rozważmy faktoryzację $w=\it prefix \cdot \it left \cdot \it infix \cdot \it right \cdot \it suffix$ jak w lemacie. Przypomnijmy, że co najmniej jedno z $\it left, \it right$ jest niepuste, zatem dokładnie jeden z poniższych przypadków zachodzi:
+\begin{enumerate}
+	\item $\textit{left}$ i $\textit{right}$ zawierają same litery $b$
+	\item $\textit{left}$ lub $\textit{right}$ zawiera literę $a$
+\end{enumerate}
+
+Przypuśćmy, że zachodzi przypadek pierwszy. Weźmy $w'=\it prefix \cdot \it left^2 \cdot \it infix \cdot \it right^2 \cdot \it suffix$, wtedy na pewno jeden z segmentów $b$, do których należały $\it left $ i $\it right$ jest większy od $k$, a ponieważ liczba liter $a$ się nie zmieniła to liczba segmentów liter $b$ dalej jest równa $k$. Zatem $w' \not \in L_{\forall}$, ponieważ $\exists_i : n_i > k$ co jest sprzeczne z definicją języka.
+
+Rozważmy teraz drugi przypadek i weźmy $w'$ jak w pierwszym punkcie. Bez straty ogólności załóżmy, że litera $a$ występuje w $\it left$ (może wystąpić maksymalnie jedna ponieważ $\it |left \cdot \it infix \cdot \it right| \leq n$). Zauważmy, że gdy napompujemy $\it left$ to zwiększa się liczba liter $a$, co za tym idzie powstaje nowy segment liter $b$ (być może pusty), czyli zwiększamy $k$ do $k+1$. Łatwo zaobserwować, że nowo utworzony segment liter $b$ musi mieć długość mniejszą niż $k+1$ (ponownie dlatego, że $\it |left \cdot \it infix \cdot \it right| \leq n$). Co za tym idzie $\exists_i : n_i < k+1 $, czyli $w' \not \in L_{\forall}$. Zatem język $L_{\forall}$ nie jest bezkontekstowy.$ \hfill \blacksquare$
+
+\end{document}

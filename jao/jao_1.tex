@@ -1,0 +1,65 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[polish]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage[T1]{fontenc}
+\usepackage[mathscr]{euscript}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{JAIO - Zadanie 1}
+\author{Hubert Michalski}
+
+\begin{document}
+\Large
+\maketitle
+
+\section{Zadanie pierwsze.}
+
+Załóżmy, że $\mathcal{A}=\langle Q, I, F, \delta \rangle$ jest automatem deterministycznym rozpoznającym język $\mathnormal{L}$. Zdefiniujmy automat $\mathcal{B}=\langle Q_{\mathcal{B}}, I_{\mathcal{B}}, F_{\mathcal{B}}, \delta_{\mathcal{B}} \rangle$ rozpoznający język $EvenLen(L)$. Stanami tego automatu będą podzbiory stanów automatu $\mathcal{A}$ czyli $\mathscr{Q_\mathcal{B}}=\mathcal{P}(\mathscr{Q})$.  Będziemy chcieli utrzymać niezmiennik taki, że po przejściu słowa $\mathnormal{w}$ automat $\mathcal{B}$ znajdzie się w takim stanie $\mathnormal{X}\subseteq\mathscr{Q}$, że do $\mathnormal{X}$ należą wszystkie stany, do których istnieje \textbf{nieparzysta} liczba biegów długości $\mathnormal{|w|}$ ze stanu początkowego $\mathnormal{q_0 \in I}$ w automacie $\mathcal{A}$.
+
+Dlaczego chcemy utrzymywać informacje o akurat takich stanach? Ostatecznie potrzebujemy wyliczyć, jaka jest parzystość liczby słów akceptowanych przez automat $\mathcal{A}$ o danej długości - oznaczmy ją $n$. Informacja, że istnieje parzysta liczba ścieżek o długości $n$ do pewnego stanu $q \in \mathscr{Q}$ nie musi być utrzymywana przez automat, ponieważ to oznacza, że istnieje parzysta liczba słów długości $n$ kończących się w $q$, które nie zmieniają parzystości końcowego wyniku. Można w takim razie przyjąć, że jeśli danego stanu nie ma w zbiorze to prowadzi do niego parzysta liczba ścieżek (być może 0). Zatem jako stany końcowe automatu $\mathcal{B}$ interesują nas podzbiory stanów automatu $\mathcal{A}$ takie, że liczba stanów akceptujących $q_F \in F $ jest \textbf{parzysta} ponieważ to mówi nam, że automat $\mathcal{A}$ akceptuje parzystą liczbę słów w pewnej liczbie kroków. Formalnie:
+$$
+F_{\mathcal{B}}=\{X\subseteq\mathscr{Q} : |X\cap F| \equiv 0 \mod 2\}
+$$
+
+Zdefiniujmy również stan początkowy automatu $\mathcal{B}$:
+$$
+I_{\mathcal{B}}=\{\{q_0\}\}.
+$$
+
+Stan początkowy jest zdefiniowany w ten sposób, bo tylko do stanu początkowego automatu $\mathcal{A}$ prowadzi nieparzysta liczba ścieżek w 0 krokach, konkretnie prowadzi do niego bieg pusty.
+\newpage
+
+Pozostało jedynie zdefiniować relację przejścia. Zatem zgodnie z pierwotnym niezmiennikiem chcemy przejść ze stanu $X$ automatu $\mathcal{B}$ do stanu $Y$ takiego, że w $Y$ będą wszystkie te stany, które potrafimy osiągnąć w jednym kroku przechodząc ze stanów zbioru $X$ i liczba sposobów, na które możemy dojść do stanów automatu $\mathcal{A}$ zawartych w $Y$ w określonej liczbie kroków, jest \textbf{nieparzysta}. Czyli:
+$$
+\delta_{\mathcal{B}}(X, 1)=\{q \in \mathscr{Q} : |\{(p,a) : a\in A \land p \in X \land \delta(p, a)=q \}| \equiv 1 \mod 2 \}
+$$
+
+Udowodnijmy indukcyjnie po długości słowa, że automat $\mathcal{B}$ akceptuje słowo $w$ $\iff w \in L',$ gdzie $L'=EvenLen(L)$. Bazę indukcyjną wyznacza słowo puste $\varepsilon$. Zauważmy, że słowo $\varepsilon \in L'$ wtedy i tylko wtedy gdy stan początkowy \textbf{nie} jest stanem końcowym w automacie $\mathcal{A}$. Stan początkowy automatu $\mathcal{B}$ jest zdefiniowany jako singleton stanu początkowego pierwotnego automatu, więc zgodnie z definicja stanów końcowych automatu $\mathcal{B}$ łatwo zauważyć, że stan początkowy jest akceptujący jeśli $q_0$ \textbf{nie} jest. Tak więc baza indukcyjna jest spełniona.
+
+Załóżmy więc, że automat $\mathcal{B}$ poprawnie odpowiada dla słów długości $n$. Rozważmy słowo $w=1^{n+1}$, po wczytaniu prefiksu długości $n$ słowa $w$ automat znajdzie się w takim stanie $X$, że do każdego $q\in X$ istnieje nieparzysta liczba biegów dł. $n$, a do reszty stanów parzysta liczba biegów dł. $n$. Czytając kolejny znak alfabetu znajdziemy się w stanie $Y$ wyznaczającym to samo tylko dla biegów długości $n+1$. Na podstawie tego, ile jest stanów akceptujących w $Y$ potrafimy stwierdzić czy liczba słów długości $n+1$ w $L$ była parzysta. A zauważmy, że jest parzysta tylko wtedy, gdy stanów końcowych $q_F\in F$ w $Y$ jest parzyście wiele co jest równoważne byciu stanem końcowym automatu $\mathcal{B}$. To z kolei dowodzi poprawności automatu $\mathcal{B}$.
+
+\newpage
+\section{Zadanie drugie.}
+Aby pokazać, że języki regularne nie są zamknięte na operację $SquareLen$, wystarczy znaleźć język regularny, z którego operacja $SquareLen$ generuje język nieregularny. Rozważmy zatem język regularny $L$ nad alfabetem $A=\{a,b\}$ taki, że $L=L(a^* b a^*)$. Zauważmy, że wszystkie słowa długości $n \in \mathbb{N}$ należące do $L$ są postaci $a^i b a^{n-i}$ dla wszystkich $i \in \mathbb{N}, 0 \leq i \leq n$, zatem słów długości $n$ w $L$ jest dokładnie $n$. Łatwo następnie zaobserwować, że do języka wynikowego należą jedynie słowa $w$, których długość jest potęgą liczby naturalnej:
+$$SquareLen(L)=\{1^{n^2}:n \in \mathbb{N}\}$$
+
+Udowodnię przez sprzeczność, że język $L'=SquareLen(L)$ jest nieregularny. Załóżmy zatem, że język jest regularny. Niech $N$ będzie stałą z lematu o pompowaniu i rozważmy słowo $w=1^{N^2} \in L'$. Z lematu o pompowaniu istnieje dekompozycja $w=xyz$, gdzie $|xy|\le N,|y| \ge 1 $ i słowo $xy^i z$ należy do języka $L'$ dla każdego $i \in \mathbb{N}$.
+Zbadajmy zatem słowo $w'=x y^2z$.
+\hfill \break
+Zauważmy, że $|x y^2z|= (N^2 + |y|)<(N^2 + 2N + 1) = (N+1)^2$, bo $|y| \le N$.
+To z kolei oznacza, że słowo $w'$ ma długość która nie jest kwadratem liczby naturalnej, zatem nie należy do języka $L'$ a to prowadzi do sprzeczności. Tak więc otrzymujemy, że klasa języków regularnych nie jest zamknięta na operację $SquareLen$.
+
+\end{document}

@@ -5,6 +5,14 @@ _lab_: [Michał Gruchała](https://usosweb.mimuw.edu.pl/kontroler.php?_action=ka
 ---
 _co-author:_ [@Aleksander-Bloch](https://github.com/Aleksander-Bloch)
 
-All application backend microservices can be found [here](https://github.com/xvisox/brokerapp), whereas the frontend can be found [here](https://github.com/xvisox/brokerapp-front).
+| Criteria                   | Score | Max |
+|----------------------------|-------|-----|
+| Design doc                 | 2     | 2   |
+| Containerization           | 2     | 2   |
+| Async communication        | 2     | 2   |
+| Microservices architecture | 2     | 2   |
+| Deploy to Cloud            | 2     | 2   |
 
 ---
+All application backend microservices can be found [here](https://github.com/xvisox/brokerapp), whereas the frontend can
+be found [here](https://github.com/xvisox/brokerapp-front).
