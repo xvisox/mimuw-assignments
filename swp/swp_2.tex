@@ -1,0 +1,135 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[a4paper, total={7in, 9in}]{geometry}
+\usepackage{mathtools}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{empheq}
+\usepackage{bm}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{$#2$}}%
+
+\newcommand{\sembr}[1]{[\![#1]\!]}
+\newcommand{\pto}{\rightharpoonup}
+
+\newcommand{\syn}[1]{{\bf \textcolor{RawSienna}{#1}}}
+\newcommand{\sem}[1]{{\bf \textcolor{olive}{#1}}}
+\newcommand{\semcol}[1]{{\textcolor{olive}{#1}}}
+\newcommand{\comm}[1]{\quad \; \text{ \textcolor{black!42}{ - #1} } }
+
+\newcommand{\boxedeq}[1]{\begin{empheq}[box={\fboxsep=6pt\fbox}]{align*}#1\end{empheq}}
+
+\newcommand{\bigeps}{\mathcal{E}}
+\newcommand{\true}{{\tt true}}
+\newcommand{\false}{{\tt false}}
+
+\pagestyle{empty}
+
+\title{\vspace{-1cm}
+Semantyka i Weryfikacja programów \\
+\large Praca domowa 2.
+}
+\author{Hubert Michalski hm438596}
+
+\begin{document}
+
+\maketitle
+
+\section{Zadanie}
+
+Podaj semantykę denotacyjną dla języka o następującej gramatyce:
+\begin{flalign*}
+	& {\bf Num} \ni n ::= \ 0 \ | \ 1 \ | \ -1 \ | \ 2 \ | \ -2 \ | \dots \\
+	& {\bf Var} \ni x ::= \ x \ | \ y \ | \dots \\
+	& {\bf PVar} \ni p ::= \ p \ | \ q \ | \dots \\
+	& {\bf Expr} \ni E ::= \ n \ | \ x \
+	| \ E_{1} + E_{2} \
+	| \ E_{1} - E_{2} \\
+	& {\bf Instr} \ni I ::= x := E \
+	| \ I_1;I_2 \
+	| \ {\bf skip} \
+	| \ {\bf if} \ E = 0 \ {\bf then} \ I_{1} \ {\bf else} \ I_{2} \
+	| \ {\bf begin} \ d \ I \ {\bf end} \
+	| \ {\bf call} \ p(x) \
+	| \ {\bf export} \ p \
+	| \ {\bf exit} \ p \\
+	& {\bf Decl} \ni d ::= {\bf var} \ x := E \
+	| \ {\bf proc} \ p(x) \ {\bf is} \ (I) \
+	| \ d_1;d_2
+\end{flalign*}
+
+\section{Rozwiązanie}
+Wszystko jest zdefiniowane standardowo jak na wykładzie z wyjątkiem dodatkowego "środowiska" \ przekazywanego do wykonywanej procedury. $\sem{XEnv}$ mapuje nazwy procedury na: komórkę pamięci argumentu formalnego procedury, komórkę pamięci argumentu aktualnego, którego używamy podczas wykonywania procedury oraz kontynuację zza momentu wywołania procedury. Pierwsza komórka służy oczywiście temu, żeby wiedzieć gdzie przypisać nową wartość podczas wykonywania \textbf{export} lub \textbf{exit}. Druga jest po to, żebyśmy wiedzieli jaką wartość chcemy przypisać podczas wykonywania \textbf{export}. Kontynuacja zaś jest potrzebna, aby procedura wiedziała co zrobić po wykonaniu instrukcji \textbf{exit}. Dla pełni jasności dodam jeszcze, że pamięć na nowa zmienną jest alokowana w momencie wywołania procedury a w deklaracji procedury jest ona odczytywana z $\sem{XEnv}$, podobnie jest także z kontynuacją tzn. $\sem{PROC}$ nie przyjmuje bezpośrednio kontynuacji lecz także ją odczytuje ze środowiska.
+
+\subsection{Dziedziny semantyczne}
+\begin{gather*}
+	\begin{aligned}
+		\sem{Int}    & = \{\semcol{0}, \semcol{1}, \semcol{-1}, \semcol{2}, \semcol{-2}, \dots\} \\
+		\sem{Loc}    & = \{\semcol{0}, \semcol{1}, \semcol{2}, \semcol{3}, \dots\}               \\
+		\\
+		\sem{VEnv}   & = \syn{Var} \to \sem{Loc}                                                 \\
+		\sem{PEnv}   & = \syn{PVar} \to \sem{PROC}                                               \\
+		\sem{XEnv}   & = \syn{PVar} \to (\sem{Loc} \times \sem{Loc} \times \sem{Cont})           \\
+		\sem{Store}  & = \sem{Loc} \to \sem{Int}                                                 \\
+		\\
+		\sem{Cont}   & = \sem{Store} \to \sem{Ans}                                               \\
+		\sem{Cont_E} & = \sem{Int} \to \sem{Cont}                                                \\
+		\sem{Cont_D} & = \sem{VEnv} \to \sem{PEnv} \to \sem{Cont}                                \\
+		\\
+		\sem{PROC}   & = \sem{XEnv} \to \sem{Int} \to \sem{Cont}                                 \\
+		\sem{EXPR}   & = \sem{VEnv} \to \sem{Cont_E} \to \sem{Cont}                              \\
+		\sem{DECL}   & = \sem{VEnv} \to \sem{PEnv} \to \sem{Cont_D} \to \sem{Cont}               \\
+		\sem{INSTR}  & =\sem{VEnv}\to \sem{PEnv}\to \sem{XEnv} \to \sem{Cont} \to \sem{Cont}     \\
+	\end{aligned}
+\end{gather*}
+
+\subsection{Funkcje semantyczne}
+\begin{gather*}
+	\semcol{\mathcal{N}}: \syn{Num} \to \sem{Int} \\
+	\semcol{\bigeps}: \syn{Expr} \to \sem{EXPR} \\
+	\semcol{I}: \syn{Instr} \to \sem{INSTR} \\
+	\semcol{D}: \syn{Decl} \to \sem{DECL} \\
+\end{gather*}
+
+\subsection{Równania semantyczne}
+\boxedeq{ \semcol{I}: \syn{Instr} \to \sem{INSTR} }
+\begin{align*}
+	  & \semcol{I}\sembr{x \syn{:=} E} \rho_V \rho_P \rho_X \kappa = \semcol{\bigeps} \sembr{E} \rho_V (\lambda n. \lambda s. \ \kappa s[l\mapsto n])                                                                                                                                                                   \\
+	  & \ \ \  \ \ \ \ \ \ \ \ \ \ \ \textbf{ where } l := \rho_V(x)                                                                                                                                                                                                                                                    \\
+	  & \semcol{I}\sembr{I_1\syn{;}I_2} \rho_V \rho_P \rho_X \kappa = \semcol{I}\sembr{I_1}\rho_V \rho_P \rho_X (\semcol{I}\sembr{I_2}\rho_V \rho_P \rho_X \kappa)                                                                                                                                                      \\
+	  & \semcol{I}\sembr{\syn{skip}} \rho_V \rho_P \rho_X \kappa = \kappa                                                                                                                                                                                                                                               \\
+	  & \semcol{I}\sembr{\syn{if} \ E = 0 \ \syn{then} \ I_{1} \ \syn{else} \ I_{2}} \rho_V \rho_P \rho_X \kappa =\semcol{\bigeps} \sembr{E} \rho_V (\lambda n. \ \textbf{if } n = 0 \textbf{ then } \semcol{I}\sembr{I_1}\rho_V \rho_P \rho_X \kappa \textbf{ else } \semcol{I}\sembr{I_2}\rho_V \rho_P \rho_X \kappa) \\
+	  & \semcol{I}\sembr{\syn{begin} \ d \ I \ \syn{end}} \rho_V \rho_P \rho_X \kappa = \semcol{D}\sembr{d} \rho_V \rho_P (\lambda \rho'_V. \lambda \rho'_P. \ \semcol{I}\sembr{I} \rho'_V \rho'_P \rho_X \kappa)                                                                                                       \\
+	  & \semcol{I}\sembr{\syn{call} \ p(x)} \rho_V \rho_P \rho_X \kappa = \lambda s. \ \rho_P\bigl(p\bigr) (\rho_X[p\mapsto (l, l', \kappa)])(n)(s)                                                                                                                                                                     \\
+	  & \ \ \  \ \ \ \ \ \ \ \ \ \ \ \textbf{ where } l:=\rho_V(x),l'=newloc(s),n:=s(l)                                                                                                                                                                                                                                 \\
+	  & \semcol{I}\sembr{\syn{export} \ p} \rho_V \rho_P \rho_X \kappa = \lambda s. \ \kappa s[l\mapsto s(l')]                                                                                                                                                                                                          \\
+	  & \ \ \  \ \ \ \ \ \ \ \ \ \ \ \textbf{ where } (l, l', \kappa') := \rho_X(p)                                                                                                                                                                                                                                     \\
+	  & \semcol{I}\sembr{\syn{exit} \ p} \rho_V \rho_P \rho_X \kappa = \lambda s. \ \kappa's[l\mapsto s(l) + 1]                                                                                                                                                                                                         \\
+	  & \ \ \  \ \ \ \ \ \ \ \ \ \ \ \textbf{ where } (l, l', \kappa') := \rho_X(p)                                                                                                                                                                                                                                     \\
+\end{align*}
+
+\boxedeq{ \semcol{D}: \syn{Decl} \to \sem{DECL} }
+\begin{align*}
+	  & \semcol{D}\sembr{\syn{var} \ x \syn{:=} E} \rho_V \rho_P \kappa_D = \semcol{\bigeps} \sembr{E} \rho_V (\lambda n. \lambda s. \ \kappa_D \rho_V[x\mapsto l] \rho_P s[l\mapsto n])         \\
+	  & \ \ \ \ \ \ \ \ \textbf{ where } l := newloc(s)                                                                                                                                          \\
+	  & \semcol{D}\sembr{\syn{proc} \ p(x) \ \syn{is} \ (I)} \rho_V \rho_P \kappa_D = \kappa_D \rho_V \rho_P[p\mapsto Fix(\Phi)]                                                                 \\
+	  & \ \ \ \ \ \ \ \ \textbf{ where } \Phi(F) = \lambda \rho_X. \lambda n. \bigl( \lambda s. \ \semcol{I}\sembr{I}\rho_V[x\mapsto l'] \rho_P[p \mapsto F] \rho_X \kappa' s[l'\mapsto n]\bigr) \\
+	  & \ \ \ \ \ \ \ \ \textbf{ where } (l,l',\kappa') := \rho_X(p)                                                                                                                             \\
+	  & \semcol{D}\sembr{d_1 \syn{;} d_2} \rho_V \rho_P \kappa_D = \semcol{D}\sembr{d_1}\rho_V \rho_P (\lambda \rho'_V. \lambda \rho'_P. \ \semcol{D} \sembr{d_2}\rho'_V \rho'_P \kappa_D)       \\
+\end{align*}
+
+\boxedeq{ \semcol{\bigeps}: \syn{Expr} \to \sem{EXPR} }
+\begin{align*}
+	  & \semcol{\bigeps}\sembr{n} \rho_V \kappa_E = \kappa_E\bigl(\semcol{\mathcal{N}}\sembr{n}\bigr) \\
+	  & \semcol{\bigeps}\sembr{x} \rho_V \kappa_E = \lambda s. \  \kappa_E\bigl(s(\rho_V(x)\bigr)s    \\
+	  & \semcol{\bigeps}\sembr{E_1 \syn{+} E_2} \rho_V \kappa_E = \semcol{\bigeps}\sembr{E_1}\rho_V
+	\bigl( \lambda n_1. \ \semcol{\bigeps}\sembr{E_2}\rho_V (\lambda n_2. \ \kappa_E (n_1 + n_2)) \bigr) \\
+	  & \semcol{\bigeps}\sembr{E_1 \syn{-} E_2} \rho_V \kappa_E = \text{analogicznie...}              \\
+\end{align*}
+
+\end{document}

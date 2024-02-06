@@ -1,0 +1,110 @@
+\documentclass[final,12pt]{article}
+\usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage[polish,english]{babel}
+\selectlanguage{english}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[pdftex]{graphicx}
+\usepackage[pdftex]{color}
+\usepackage[final]{listings}
+\usepackage[a4paper,margin=0.8in,footskip=0.25in]{geometry}
+
+
+%%%%%%%%%%%%% listings
+\lstdefinelanguage{whileprograms}{morekeywords={while,do,if,then,else,=),(,decr,in,wrt},%
+   sensitive,%
+   morecomment=[l]//,%
+   morecomment=[s]{\{}{\}},%
+   morecomment=[s]{[}{]},%
+    basicstyle=\small\tt,
+    keywordstyle=\normalfont\bfseries\color{black},
+    commentstyle=\color{blue},
+    mathescape=true,
+}
+
+\lstset{language=whileprograms,flexiblecolumns=true,mathescape=true,frame=none}
+\lstset{commentstyle=\it,basicstyle=\tt}
+\lstset{literate={<=}{{$\leq \ $}}1
+                 {>=}{{$\geq$}}1
+                 {^2}{{$^2$}}1
+                 {^k}{{$^k$}}1
+                 {EEK}{{$\exists_{k \in \mathbb{N}.} $}}1
+                 {&}{{$\land \ $}}1}
+
+\usepackage[final]{listings}
+
+\pagestyle{empty}
+
+\title{\vspace{-1cm}
+Semantyka i Weryfikacja programów \\
+\large Praca domowa 3.
+}
+\author{Hubert Michalski hm438596}
+
+\begin{document}
+\lstset{language=whileprograms} \selectlanguage{polish}
+
+\maketitle
+\section{Zadanie}
+Na kolejnej stronie podany jest program zapisany w języku $TINY$ rozszerzonym o operację \textbf{div2} dzielenia całkowitego przez 2 oraz, na potrzeby formułowania asercji, o operację podnoszenia liczb całkowitych do całkowitej nieujemnej potęgi. Jak widać z podanej specyfikacji, jest to kolejna wersja liczenia pierwiastka całkowitego liczby całkowitej dodatniej. Udowodnij częściową poprawność tego programu względem podanej specyfikacji, podając niezmienniki obu pętli oraz wstawiając odpowiednie formuły w nawiasy \{. . .\} tak, aby podane niezmienniki i asercje zapisały przeprowadzony dowód częściowej poprawności programu w logice Hoare'a. Jeśli w dwóch sąsiednich wierszach występują nawiasy \{. . .\} to pomiędzy wstawionymi tam asercjami powinna zachodzić implikacja. Można też dodać dodatkowe nawiasy i wpisać w nie odpowiednie asercje. Poza niezmiennikami $\gamma_1$ i $\gamma_2$ , wymagane jest przynajmniej podanie formuł $\alpha_1, \alpha_2, \alpha_3, \alpha_4, \alpha_5$ (ale ewentualne błędy w innych
+formułach też będą wpływały na ostateczną ocenę rozwiązania).
+
+\newpage
+\section{Rozwiązanie}
+
+\begin{lstlisting}
+{ n > 0 }
+i := 1;
+{ n > 0 & i = 1 }
+kw := 4;
+{ n > 0 & i = 1 & kw = 4 }
+while {$\gamma_1$: kw = 4i^2 & i^2 <= n & EEK i = 2^k }
+    kw <= n
+  do
+  ({ kw = 4i^2 & 4i^2 <= n & EEK 2i = 2^k }
+   i := 2*i;
+   {$\alpha_1$: kw = i^2 & i^2 <= n & EEK i = 2^k }
+   kw := 4*kw
+   { kw = 4i^2 & i^2 <= n & EEK i = 2^k }
+  )
+{$\alpha_2$: kw = (2i)^2 & i^2 <= n < kw & EEK i = 2^k }
+r := i;
+{ kw = (r + i)^2 & r = i & r^2 <= n < kw & EEK i = 2^k }
+dri := kw div2;
+{ kw = (r + i)^2 & r = i & dri = 2ri & r^2 <= n < kw & EEK i = 2^k }
+ik := dri div2;
+{ kw = (r + i)^2 & r = i & dri = 2ri & ik = i^2 & r^2 <= n < kw & EEK i = 2^k }
+while {$\gamma_2$: kw = (r + i)^2 & dri = 2ri & ik = i^2 & r^2 <= n < kw & EEK i = 2^k }
+     i > 1
+  do
+  ({ ik/4 = i^2/4 & dri/2 = 2ri/2 & kw = (r + i)^2 & r^2 <= n < kw & EEK i = 2^k & i > 1 }
+   i := i div2;
+   {$\alpha_3$: ik/4 = i^2 & dri/2 = 2ri & kw = (r + 2i)^2 & r^2 <= n < kw & EEK i = 2^k }
+   ik := (ik div2) div2;
+   { ik = i^2 & dri/2 = 2ri & kw = (r + 2i)^2 & r^2 <= n < kw & EEK i = 2^k }
+   dri := dri div2;
+   {$\alpha_4$: ik = i^2 & dri = 2ri & kw = (r + 2i)^2 & r^2 <= n < kw & EEK i = 2^k }
+   if (kw - dri - 3*ik) <=  n
+   then
+      { ik = i^2 & dri + 2ik = 2(r+i)i & kw = (r + 2i)^2 & (r+i)^2 <= n < kw & EEK i = 2^k }
+      r := r + i;
+      {$\alpha_5$: ik = i^2 & dri + 2ik = 2ri & kw = (r + i)^2 & r^2 <= n < kw & EEK i = 2^k }
+      dri := dri + 2*ik
+      { ik = i^2 & dri = 2ri & kw = (r + i)^2 & r^2 <= n < kw & EEK i = 2^k }
+   else
+      { ik = i^2 & dri = 2ri & kw = (r + i)^2 + dri + 3ik & r^2 <= n < (r + i)^2 & EEK i = 2^k }
+      kw := kw - dri - 3*ik;
+      { ik = i^2 & dri = 2ri & kw = (r + i)^2 & r^2 <= n < kw & EEK i = 2^k }
+  )
+{ r^2 <= n < (r + i)^2 & EEK i = 2^k & i <= 1 }
+{ r^2 <= n < (r + 1)^2 }
+\end{lstlisting}
+
+
+
+
+
+\end{document}

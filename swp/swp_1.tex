@@ -1,0 +1,264 @@
+Paste Latex Here\documentclass{article}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[a4paper, total={7in, 9in}]{geometry}
+\usepackage{mathtools}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{$#2$}}%
+
+\newcommand{\sembr}[1]{[\![#1]\!]}
+\newcommand{\pto}{\rightharpoonup}
+
+\newcommand{\true}{{\tt true}}
+\newcommand{\false}{{\tt false}}
+
+\pagestyle{empty}
+
+\title{\vspace{-1cm}
+	Semantyka i Weryfikacja programów \\
+	\large Praca domowa 1.
+}
+\author{Hubert Michalski hm438596}
+
+\begin{document}
+
+\maketitle
+
+\section{Zadanie}
+
+Podaj semantykę naturalną (semantykę operacyjną dużych kroków) dla języka o następującej gramatyce:
+\begin{flalign*}
+	& {\bf Num} \ni n ::=  0 \ | \ 1 \ | \ -1 \ | \ 2 \ | \ -2 \ | \ \dots \\
+	& {\bf Var} \ni x ::=  x \ | \ y \ | \ \dots \\
+	& {\bf Expr} \ni e ::=  n \ | \ x \
+	| \ e_{1} + e_{2} \
+	| \ e_{1} * e_{2} \
+	| \ e_{1} - e_{2} \\
+	& {\bf Instr} \ni I ::=  x :=  e \
+	| \ I_{1}; I_{2} \
+	| \ {\bf skip} \
+	| \ {\bf if} \ e=0 \ {\bf then} \ I_{1} \ {\bf else} \ I_{2} \
+	| \ {\bf step} \ x \ {\bf by } \ e \ {\bf check} \
+	| \ {\bf for} \ {\bf var} \ x :=  e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end} \
+\end{flalign*}
+
+\section{Rozwiązanie}
+
+Zdefiniujmy początkowo konfiguracje robocze oraz końcowe rozwiązania:
+
+\begin{itemize}
+	\item $\Gamma = Inst \times State \times Limit$ (konf. robocze)
+	\item $T = State \cup State \times \{B,C\} \times Var$ (konf. końcowe)
+\end{itemize}
+gdzie:
+\begin{itemize}
+	\item
+	      $State: Var \rightarrow \mathbb{Z}$ -- ''podstawowa`` definicja stanu
+
+	\item
+	      $Limit: Var \rightarrow \mathbb{Z}$ -- definicja dla wartości granicznych, tzn. jeśli $Limit(x)=y$ to $y$ jest wartością graniczną dla zmiennej $x$ w ciele najbardziej wewnętrznej pętli
+
+	\item
+	      $\{B,C\} \times Var$ -- flaga, którą będziemy propagować wyżej do zatrzymania ($B = break$) lub kontynuowania ($C = continue$) pętli, oraz zmienna której dotyczy ta flaga
+
+\end{itemize}
+''Kształt`` relacji strzałka:
+\begin{itemize}
+	\item $I,s,l \rightarrow s'$
+	\item $I,s,l \rightarrow s',f,x$ gdzie $f \in \{B,C\}$, $x \in Var$
+\end{itemize}
+Teraz możemy opisać sementykę:
+\begin{itemize}
+	\item
+	      Rozpatrzmy na początku semantykę związaną z operacją:
+	      $$
+	      {\bf step} \ x \ {\bf by } \ e \ {\bf check}
+	      $$
+
+	      W przypadku, gdy nowa wartość zmiennej $x$ jest równa wartości granicznej tej zmiennej, to zwracamy jedynie stan ze zmodyfikowaną zmienną:
+	      $$
+	      \frac {
+	      	\\
+	      	} {
+	      	\langle {\bf step} \ x \ {\bf by } \ e \ {\bf check}, s, l \rangle
+	      	\rightarrow \langle s[x\mapsto n] \rangle
+	      }
+	      n := \mathcal{E} \llbracket x + e \rrbracket s, \
+	      n = l(x)
+	      $$
+	      Jeśli jednak nowa wartość zmiennej $x\neq l(x)$, to musimy przekazać adekwatną flagę oraz nazwę zmiennej której dotyczy ta flaga:
+	      $$
+	      \frac {
+	      	\\
+	      	} {
+	      	\langle {\bf step} \ x \ {\bf by } \ e \ {\bf check}, s, l \rangle
+	      	\rightarrow \langle s[x\mapsto n], C, x \rangle
+	      }
+	      n := \mathcal{E} \llbracket x + e \rrbracket s, \
+	      n < l(x)
+	      $$
+	      $$
+	      \frac {
+	      	\\
+	      	} {
+	      	\langle {\bf step} \ x \ {\bf by } \ e \ {\bf check}, s, l \rangle
+	      	\rightarrow \langle s[x\mapsto n], B, x \rangle
+	      }
+	      n := \mathcal{E} \llbracket x + e \rrbracket s, \
+	      n > l(x)
+	      $$
+
+
+	\item
+	      Teraz rozpatrzmy semantykę dla operacji:
+	      $$
+	      {\bf for} \ {\bf var} \ x :=  e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}
+	      $$
+	      Jest to miejsce w którym będą realizowane wszystkie funkcjonalności związane z operacją ${\bf step}$. Spójrzmy najpierw na podstawową sytuację, gdy ciało pętli nie zwraca flagi, wtedy wykonujemy {\bf jedną} iterację pętli zgodnie z opisem instrukcji:
+	      $$
+	      \frac {
+	      	\langle I, s[x\mapsto n_1], l[x\mapsto n_2] \rangle \rightarrow \langle s' \rangle \ \
+	      	} {
+	      	\langle {\bf for} \ {\bf var} \ x :=  e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}, s, l \rangle
+	      	\rightarrow \langle s' \rangle
+	      }
+	      n_1 := \mathcal{E} \llbracket e_1 \rrbracket s, \
+	      n_2 := \mathcal{E} \llbracket e_2 \rrbracket s
+	      $$
+	      Następnie możemy zająć się definiowaniem zachowania dla sytuacji, gdy ciało pętli zwróci flagę $break$ oraz flaga ta będzie dotyczyła zmiennej $x$. W tym wypadku jedynie zwracamy stan w którym flaga ta została podniesiona:
+	      $$
+	      \frac {
+	      	\langle I, s[x\mapsto n_1], l[x\mapsto n_2] \rangle \rightarrow \langle s', B, x \rangle
+	      	} {
+	      	\langle {\bf for} \ {\bf var} \ x := e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}, s, l \rangle
+	      	\rightarrow \langle s' \rangle
+	      }
+	      n_1 := \mathcal{E} \llbracket e_1 \rrbracket s, \
+	      n_2 := \mathcal{E} \llbracket e_2 \rrbracket s
+	      $$
+	      W przeciwnym przypadku, gdy flaga ta nie dotyczy zmiennej z tej pętli -- propagujemy ją wyżej:
+	      $$
+	      \frac {
+	      	\langle I, s[x\mapsto n_1], l[x\mapsto n_2] \rangle \rightarrow \langle s', B, y \rangle
+	      	} {
+	      	\langle {\bf for} \ {\bf var} \ x := e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}, s, l \rangle
+	      	\rightarrow \langle s', B, y \rangle
+	      }
+	      n_1 := \mathcal{E} \llbracket e_1 \rrbracket s, \
+	      n_2 := \mathcal{E} \llbracket e_2 \rrbracket s
+	      $$
+	      Musimy także zapisać analogiczne reguły dla flagi $continue$. Zatem jeśli flaga dotyczy zmiennej z danej pętli, to zostanie wykonana kolejna iteracja. W przeciwnym wypadku propagujemy flagę wyżej do pętli której ona dotyczy -- takiej pętli może oczywiście nie być, ale mamy dowolność co do zachowania w tej sytuacji. Jasne jest, że uwaga ta tyczy się obu flag.
+	      $$
+	      \frac {
+	      	\langle I, s[x\mapsto n_1], l[x\mapsto n_2] \rangle \rightarrow \langle s', C, x \rangle \ \
+	      	\langle {\bf for} \ {\bf var} \ x := x \ {\bf to} \ n_2 \ {\bf do} \ I \ {\bf end}, s', l \rangle
+	      	\rightarrow \langle z \rangle
+	      	} {
+	      	\langle {\bf for} \ {\bf var} \ x := e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}, s, l \rangle
+	      	\rightarrow \langle z \rangle
+	      }
+	      n_1 := \mathcal{E} \llbracket e_1 \rrbracket s, \
+	      n_2 := \mathcal{E} \llbracket e_2 \rrbracket s
+	      $$
+	      $$
+	      \frac {
+	      	\langle I, s[x\mapsto n_1], l[x\mapsto n_2] \rangle \rightarrow \langle s', C, y \rangle
+	      	} {
+	      	\langle {\bf for} \ {\bf var} \ x := e_1 \ {\bf to} \ e_2 \ {\bf do} \ I \ {\bf end}, s, l \rangle
+	      	\rightarrow \langle s', C, y \rangle
+	      }
+	      n_1 := \mathcal{E} \llbracket e_1 \rrbracket s, \
+	      n_2 := \mathcal{E} \llbracket e_2 \rrbracket s
+	      $$
+	      Gdzie $\langle z \rangle$ w tym przypadku może być zarówno $\langle s'' \rangle$ jak i $\langle s'', f, y\rangle$ ($y \neq x$).
+
+	\item
+	      Następnie weźmy semantykę dla operacji:
+	      $$
+	      I_{1}; I_{2}
+	      $$
+	      Poza łączeniem kolejnych instrukcji ma ona także za zadanie przerywanie obliczeń w momencie napotkania na flagę, zatem jej semantyka jest kluczowa dla prawidłowego zachowania reszty operacji:
+	      $$
+	      \frac {
+	      	\langle I_{1}, s, l \rangle \rightarrow \langle s' \rangle \ \
+	      	\langle I_{2}, s', l \rangle \rightarrow \langle z \rangle
+	      	} {
+	      	\langle I_{1}; I_{2}, s, l \rangle
+	      	\rightarrow \langle z \rangle
+	      }
+	      $$
+	      gdzie $\langle z \rangle$ jest zdefiniowane jak poprzednio tzn. rozbija się na sytuację z flagą i bez. Gdy $I_{1}$ zwróci flagę to:
+	      $$
+	      \frac {
+	      	\langle I_{1}, s, l \rangle \rightarrow \langle s',f,x \rangle
+	      	} {
+	      	\langle I_{1}; I_{2}, s, l \rangle
+	      	\rightarrow \langle s',f,x \rangle
+	      }
+	      $$
+
+	\item
+	      Pozostały teraz jedynie w miarę ''podstawowe`` reguły. Kolejną operacją niech będzie:
+	      $$
+	      {\bf if} \ e=0 \ {\bf then} \ I_{1} \ {\bf else} \ I_{2}
+	      $$
+	      Definiując semantykę tej operacji, warto jednak pamiętać, że ona także musi propagować zwracane flagi:
+	      $$
+	      \frac {
+	      	\langle I_{1}, s, l \rangle \rightarrow \langle z \rangle
+	      	} {
+	      	\langle {\bf if} \ e=0 \ {\bf then} \ I_{1} \ {\bf else} \ I_{2}, s, l \rangle
+	      	\rightarrow \langle z \rangle
+	      }
+	      n := \mathcal{E} \llbracket e \rrbracket s, \
+	      n = 0
+	      $$
+	      gdzie $\langle z \rangle$ jest zdefiniowane tak samo jak wyżej. Zupełnie analogiczna reguła będzie dla przypadku $n \neq 0$:
+	      $$
+	      \frac {
+	      	\langle I_{2}, s, l \rangle \rightarrow \langle z \rangle
+	      	} {
+	      	\langle {\bf if} \ e=0 \ {\bf then} \ I_{1} \ {\bf else} \ I_{2}, s, l \rangle
+	      	\rightarrow \langle z \rangle
+	      }
+	      n := \mathcal{E} \llbracket e \rrbracket s, \
+	      n \neq 0
+	      $$
+	\item
+	      Semantykę dla operacji:
+	      $$
+	      x :=  e
+	      $$
+	      definiujemy standardowo:
+	      $$
+	      \frac {
+	      	\\
+	      	} {
+	      	\langle x :=  e, s, l \rangle
+	      	\rightarrow \langle s[x\mapsto n] \rangle
+	      }
+	      n := \mathcal{E} \llbracket e \rrbracket s
+	      $$
+
+	\item
+	      Na koniec definiujemy operację:
+	      $$
+	      \frac {
+	      	\\
+	      	} {
+	      	\langle {\bf skip}, s, l \rangle
+	      	\rightarrow \langle s \rangle
+	      }
+	      $$
+
+
+
+
+\end{itemize}
+
+\end{document}
