@@ -1,0 +1,177 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amssymb,mathrsfs,amsmath,amscd,amsthm}
+\usepackage[mathcal]{euscript}
+\usepackage{stmaryrd}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{graphics}
+\usepackage{blindtext}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{mathtools}
+
+\makeatletter
+\makeatother
+
+\RequirePackage{a4wide}
+
+%%%%%%% makra do notacji
+
+\renewcommand{\le}{\leqslant} %mniejsze bądź równe
+\renewcommand{\ge}{\geqslant} %większe bądź równe
+\renewcommand\qedsymbol{\scalebox{0.75}{$\blacksquare$}} %koniec dowodu
+\newcommand\exendsymbol{\scalebox{1}{$\lrcorner$}} %inny koniec dowodu
+\renewcommand{\phi}{\varphi} %litera φ
+\newcommand{\eps}{\varepsilon} %litera ε
+
+\newcommand{\N}{\mathbb N} %liczby naturalne
+\newcommand{\R}{\mathbb R} %liczby rzeczywiste
+\newcommand{\I}{\mathbb I} %liczby rzeczywiste
+\newcommand{\set}[1]{\{#1\}} %\set{1,2,3} to zbiór {1,2,3}
+\newcommand{\setof}[2]{\{#1\mid #2\}} %\setof{(x,y)}{x,y\in\N,x+y=5} to {(x,y)|x,y∈N, x+y=5}
+\newcommand{\from}{\colon} %f\from X\to Y to funkcja f:X→Y
+
+\renewcommand{\subset}{\subseteq} %symbol ⊆
+\newcommand{\Longupdownarrow}{\Big\Updownarrow}
+
+\newtheorem{twierdzenie}{Twierdzenie}
+\newtheorem{fakt}{Fakt}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{lemat}{Lemat}
+\newtheorem{zadanie}{Zadanie}
+\newtheorem{zadanie*}{Zadanie$^*$}
+
+\title{\vspace{-1cm}
+    Metody Numeryczne \\
+    \large Praca domowa 2.
+}
+\author{
+    Hubert Michalski hm438596 \\
+}
+
+\begin{document}
+
+\maketitle
+
+\section*{Zadanie 2.1}
+
+Wyprowadź i następnie zapisz w postaci macierzowej układ równań, jaki musi spełniać splajn kubiczny $s$, oparty na węzłach $x_0,\dots, x_n$ i reprezentowany w postaci PP, interpolujący pewną funkcję $f$ w tych węzłach oraz spełniający dodatkowe dwa warunki:
+$$
+s''' \text{ jest ciągła w } x_1 \text{ oraz w } x_{n-1}.
+$$
+Podaj algorytm rozwiązania tego układu kosztem liniowym w $n$. Tam, gdzie to sensowne, można powołać się wprost na wiedzę z wykładu.
+
+\section*{\large Rozwiązanie }
+Spróbujmy skonstruować powyższy splajn kubiczny interpolujący daną funkcję $f$ w podanych węzłach $x_0, \dots, x_n$ reprezentując go w postaci PP czyli podać:
+$$
+s_i(x) = a_i + b_i(x-x_i) + c_i(x-x_i)^2 + d_i(x-x_i)^3 \text{, dla } i = 0,\dots,n-1
+$$
+Zatem musimy wyznaczyć wszystkie współczynniki $a_i, b_i, c_i, d_i$ dla $i = 0,\dots,n-1$. Dla uproszczenia zapisu oznaczmy $h_i=x_{i+1}-x_i$. Wykorzystując wiedzę z wykładu mamy:
+$$
+a_i = f(x_i) \text{, dla } i = 0,\dots,n-1
+$$
+$$
+d_i = \frac{c_{i+1}-c_i}{3h_i} \text{, dla } i = 0,\dots,n-1
+$$
+$$
+b_i = \frac{f(x_{i+1})-f(x_{i})}{h_{i}}-\frac{h_{i}}{3}(c_{i+1}+2c_i) \text{, dla } i = 0,\dots,n-2
+$$
+Gdzie $c_n$ będzie dobrane tak, aby zachodziły dodatkowe warunki brzegowe, które zostaną rozwinięte poniżej. Zatem mamy $b_i$ (poza $b_{n-1}$) oraz $d_i$ zależne tylko od $c_i$, więc jeśli udałoby się wyznaczyć $c_i$ to otrzymamy już prawie całe rozwiązanie. Dalej wykorzystując przekształcenia z wykładu:
+$$
+\frac{h_i}{h_i+h_{i+1}}c_i + 2c_{i+1} + \frac{h_{i+1}}{h_i + h_{i+1}}c_{i+2} = 3f[x_i, x_{i+1},x_{i+2}] \text{, dla } i = 0,\dots,n-2
+$$
+Mamy więc $n-1$ równań na współczynniki $c_0, \dots, c_n$ ale jeszcze nie wykorzystaliśmy dodatkowych warunków:
+$$
+s_0'''(x_1) = s_1'''(x_1) \text{ oraz } s_{n-2}'''(x_{n-1}) = s_{n-1}'''(x_{n-1})
+$$
+Otrzymujemy w ten sposób równania:
+$$
+d_0 = d_1 \text{ oraz } d_{n-2} = d_{n-1} \text{, ponieważ } s_i'''(x) = 6d_i
+$$
+Rozpisując z wcześniej wyznaczonego wzoru na $d_i$ mamy:
+$$
+\frac{c_1-c_0}{3h_0} = \frac{c_2-c_1}{3h_1} \text{ oraz }
+\frac{c_{n-1}-c_{n-2}}{3h_{n-2}} = \frac{c_{n}-c_{n-1}}{3h_{n-1}}
+$$
+Z powyższych równań wyznaczamy $c_0$ oraz $c_n$:
+$$
+c_0 = c_1(1+\frac{h_0}{h_1}) - \frac{h_0}{h_1}c_2
+$$
+$$
+c_n = c_{n-1}(1+\frac{h_{n-1}}{h_{n-2}}) - \frac{h_{n-1}}{h_{n-2}}c_{n-2}
+$$
+Następnie możemy podstawić $c_0$ pod wzór z wykładu dla $i = 0$:
+$$
+\frac{h_0}{h_0+h_1}c_0 + 2c_{1} + \frac{h_{1}}{h_0 + h_{1}}c_{2} = 3f[x_0, x_{1},x_{2}]
+$$
+$$
+\frac{h_0}{h_0+h_1}(c_1(1+\frac{h_0}{h_1}) - \frac{h_0}{h_1}c_2) + 2c_{1} + \frac{h_{1}}{h_0 + h_{1}}c_{2} = 3f[x_0, x_{1},x_{2}]
+$$
+$$
+c_1\underbrace{\Bigl(\frac{h_0}{h_0+h_1}(1+\frac{h_0}{h_1})+2\Bigr)}_{ozn.\ \alpha} +
+c_2\underbrace{\Bigl(\frac{h_0}{h_0+h_1}(-\frac{h_0}{h_1})+\frac{h_{1}}{h_0 + h_{1}} \Bigr)}_{ozn.\ \beta} = 3f[x_0, x_{1},x_{2}]
+$$
+Analogiczne przekształcenia wykonujemy dla $i=n-2$:
+$$
+\frac{h_{n-2}}{h_{n-2}+h_{n-1}}c_{n-2} + 2c_{n-1} + \frac{h_{n-1}}{h_{n-2} + h_{n-1}}c_{n} = 3f[x_{n-2}, x_{n-1},x_{n}]
+$$
+$$
+\frac{h_{n-2}}{h_{n-2}+h_{n-1}}c_{n-2} + 2c_{n-1} + \frac{h_{n-1}}{h_{n-2} + h_{n-1}}(c_{n-1}(1+\frac{h_{n-1}}{h_{n-2}}) - \frac{h_{n-1}}{h_{n-2}}c_{n-2}) = 3f[x_{n-2}, x_{n-1},x_{n}]
+$$
+$$
+c_{n-1}\underbrace{\Bigl(\frac{h_{n-1}}{h_{n-2}+h_{n-1}}(1+\frac{h_{n-1}}{h_{n-2}}) + 2 \Bigr)}_{ozn.\ \delta} +
+c_{n-2}\underbrace{\Bigl(\frac{h_{n-1}}{h_{n-2}+h_{n-1}}(-\frac{h_{n-1}}{h_{n-2}}) + \frac{h_{n-2}}{h_{n-2}+h_{n-1}} \Bigr)}_{ozn.\ \gamma}
+= 3f[x_{n-2}, x_{n-1},x_{n}]
+$$
+Dodatkowo pamiętamy, że możemy wyznaczyć $b_{n-1}$ wykorzystując ostatni warunek interpolacji $s(x_n)=f(x_n)$, z tego otrzymujemy równanie:
+$$
+f(x_{n-1}) + b_{n-1}h_{n-1} + c_{n-1}h^2_{n-1} + d_{n-1}h^3_{n-1} = f(x_n) \text{ skąd wyznaczamy } b_{n-1}
+$$
+Ostatecznie zadanie sprowadza się do układu równań na współczynniki $c_1,\dots,c_{n-1}$ z macierzą:
+$$
+T = \begin{bmatrix}
+\alpha & \beta &  &  & & \\
+\eta_1 & 2 & \zeta_1 &  &  & \\
+& \eta_2 & 2 & \zeta_2 &  & \\
+&  & \ddots & \ddots & \ddots  &\\
+&  &  & \eta_{n-3} & 2 & \zeta_{n-3} \\
+&  &  &  & \gamma & \delta
+\end{bmatrix}
+\text{, gdzie } \eta_i = \underbrace{\frac{h_i}{h_i+h_{i+1}}}_{ < 1},\
+\zeta_i = \underbrace{\frac{h_{i+1}}{h_i+h_{i+1}}}_{< 1}
+$$
+Sprawdźmy dodatkowo, czy otrzymana macierz jest diagonalnie dominująca. Oczywiście zachodzi $2 > |\eta_i| + |\zeta_i|$ więc wystarczy sprawdzić czy $|\alpha| > |\beta|$ oraz $|\delta| > |\gamma|$:
+$$
+\underbrace{\Bigl|\Bigl(\frac{h_0}{h_0+h_1}(1+\frac{h_0}{h_1})+2\Bigr)\Bigr|}_{\alpha} > \underbrace{\Bigl|\Bigl(\frac{h_0}{h_0+h_1}(-\frac{h_0}{h_1})+\frac{h_{1}}{h_0 + h_{1}} \Bigr)\Bigr|}_{\beta}
+$$
+$$
+\frac{h_0}{h_0+h_1}(1+\frac{h_0}{h_1})+2 >
+\Bigl|\frac{h_0}{h_0+h_1}(-\frac{h_0}{h_1})+\frac{h_{1}}{h_0 + h_{1}} \Bigr|
+$$
+$$
+\frac{h_0 h_1}{(h_0+h_1)h_1}+ \frac{h_0^2}{(h_0+h_1)h_1}+ \frac{2(h_0+h_1)h_1}{(h_0+h_1)h_1} >
+\Bigl|\frac{h_{1}^2-h_{0}^2}{(h_0+h_1)h_1}\Bigr|
+$$
+\begin{itemize}
+	\item dla $h_1 > h_0$: \\
+	      $$
+	      h_0 h_1+ h_0^2 + 2(h_0+h_1)h_1 > h_{1}^2-h_{0}^2
+	      $$
+	      $$
+	      3h_0h_1+ 2h_0^2 + h_1^2 > 0
+	      $$
+	\item wpp. \\
+	      $$
+	      h_0 h_1+ h_0^2 + 2(h_0+h_1)h_1 > h_{0}^2-h_{1}^2
+	      $$
+	      $$
+	      3h_0h_1 + 3h_1^2 > 0
+	      $$
+\end{itemize}
+Spełnione - analogicznie można sprawdzić $|\delta| > |\gamma|$. Zatem powyższa macierz jest diagonalnie dominująca, więc nieosobliwa. Taką macierz trójdiagonalną można rozwiązać w czasie liniowym eliminacją Gaussa bez osiowania. Resztę współczynników $a_i, b_i, d_i$ także wyznaczamy w czasie liniowym, więc ostateczny algorytm ma koszt liniowy. \qed
+
+\end{document}

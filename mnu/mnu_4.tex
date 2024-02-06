@@ -1,0 +1,113 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amssymb,mathrsfs,amsmath,amscd,amsthm}
+\usepackage[mathcal]{euscript}
+\usepackage{stmaryrd}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{graphics}
+\usepackage{blindtext}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{mathtools}
+
+\makeatletter
+\makeatother
+
+\RequirePackage{a4wide}
+
+%%%%%%% makra do notacji
+
+\renewcommand{\le}{\leqslant} %mniejsze bądź równe
+\renewcommand{\ge}{\geqslant} %większe bądź równe
+\renewcommand\qedsymbol{\scalebox{0.75}{$\blacksquare$}} %koniec dowodu
+\newcommand\exendsymbol{\scalebox{1}{$\lrcorner$}} %inny koniec dowodu
+\renewcommand{\phi}{\varphi} %litera φ
+\newcommand{\eps}{\varepsilon} %litera ε
+
+\newcommand{\N}{\mathbb N} %liczby naturalne
+\newcommand{\R}{\mathbb R} %liczby rzeczywiste
+\newcommand{\I}{\mathbb I} %liczby rzeczywiste
+\newcommand{\set}[1]{\{#1\}} %\set{1,2,3} to zbiór {1,2,3}
+\newcommand{\setof}[2]{\{#1\mid #2\}} %\setof{(x,y)}{x,y\in\N,x+y=5} to {(x,y)|x,y∈N, x+y=5}
+\newcommand{\from}{\colon} %f\from X\to Y to funkcja f:X→Y
+
+\renewcommand{\subset}{\subseteq} %symbol ⊆
+\newcommand{\Longupdownarrow}{\Big\Updownarrow}
+
+\newtheorem{twierdzenie}{Twierdzenie}
+\newtheorem{fakt}{Fakt}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{lemat}{Lemat}
+\newtheorem{zadanie}{Zadanie}
+\newtheorem{zadanie*}{Zadanie$^*$}
+
+\title{\vspace{-1cm}
+    Metody Numeryczne \\
+    \large Praca domowa 2.
+}
+\author{
+    Hubert Michalski hm438596 \\
+}
+
+\begin{document}
+\maketitle
+
+\section*{Zadanie 2.2}
+
+Wykaż, ze jeśli współczynniki $b_0, b_1, b_2$ rozwinięcia w bazie Newtona wielomianu interpolacyjnego Lagrange'a opartego na trzech węzłach równoodległych: $x_0=0, x_1=1, x_2=2$ zaburzymy z błędem bezwzględnym nie przekraczającym $\varepsilon$, to jego wartości na przedziale $[ x_0, x_2 ]$  zmienią się nie więcej niż o $E=5\varepsilon$.
+
+Następnie, oszacuj $E$ dla przypadku, gdy $x_i=i\cdot h \ (i=0,1,2)$  dla pewnego $h > 0$.
+
+\section*{\large Rozwiązanie }
+Zauważmy początkowo, że oszacowanie $E$ dla przypadku, gdy $x_i=i\cdot h \ (i=0,1,2)$  dla pewnego $h > 0$ to ogólna wersja początkowo danego zadania. Zatem możemy od razu przystąpić do dowodu wersji ogólniejszej, a następnie pokazać, że faktycznie ograniczenie dla $h=1$ będzie wynosiło $E=5\varepsilon$.
+Zapiszmy najpierw dany WIL oraz jego zaburzoną wersję:
+$$
+p(x) = b_0 + b_1 x + b_2 x (x-h)
+$$
+$$
+p'(x) = b_0' + b_1' x + b_2' x (x-h)
+$$
+Gdzie $|b_i - b_i'|\leq \varepsilon$. Dla tak danych wielomianów, będziemy szukać funkcji $\alpha(\varepsilon)$ następującej:
+$$
+|p(x) - p'(x)| \leq \alpha(\varepsilon) \cdot \varepsilon \text{ dla każdego } x \in [x_0, x_2]
+$$
+Rozpisując powyższe wyrażenie otrzymujemy:
+$$
+|p(x) - p'(x)| = |(b_0-b_0') + (b_1-b_1')x + (b_2-b_2')x(x-h)| \leq
+\underbrace{|(b_0-b_0')|}_{\leq \varepsilon} + \underbrace{|(b_1-b_1')|}_{\leq \varepsilon}|x| + \underbrace{|(b_2-b_2')|}_{\leq \varepsilon}|x||x-h| \leq
+$$
+$$
+\varepsilon + \varepsilon|x| + \varepsilon|x||x-h| \leq
+\varepsilon + \varepsilon x + \varepsilon x |x-h|
+$$
+Opuściliśmy moduł z $x$ ponieważ rozważamy ten wielomian jedynie na przedziale $[x_0, x_2]$, więc same dodatnie wartości. Czyli na ten momenty mamy:
+$$
+|p(x) - p'(x)| \leq \varepsilon + \varepsilon \cdot x + \varepsilon \cdot x \cdot |x-h| \leq \alpha(\varepsilon) \cdot \varepsilon
+$$
+Rozważmy $\varepsilon > 0$, ponieważ gdy $\varepsilon = 0$ to funkcje $p$ i $p'$ są równe.
+$$
+\varepsilon + \varepsilon \cdot x + \varepsilon \cdot x \cdot |x-h| \leq \alpha(\varepsilon) \cdot \varepsilon
+$$
+$$
+1 + x + x \cdot |x-h| \leq \alpha(\varepsilon)
+$$
+Obserwujemy teraz, że aby poznać $\alpha(\varepsilon)$ wystarczy znaleźć maksymalną wartość jaką przyjmuje funkcja $f(x)=1 + x + x \cdot |x-h|$ na przedziale $[x_0, x_2]$. Dodatkowo wiemy, że jeśli składniki sumy przyjmują maksimum w jednym punkcie, to cała suma przyjmuje maksimum w tym punkcie. Oczywiście pierwszy składnik nie zależy od $x$ a drugi to funkcja liniowa zatem przyjmuje maksimum na krańcu przedziału tzn. dla $x= 2h$. Zatem wystarczy teraz udowodnić, że składnik $x \cdot |x-h|$ także przyjmuje maksimum w tym punkcie:
+\begin{itemize}
+	\item dla $x > h$ mamy: $x(x-h)$ czyli funkcje kwadratową z ramionami zwróconymi w górę, oś symetrii tej funkcji jest w punkcie $x=\frac{h}{2}$, więc maksymalną wartość funkcja ta przyjmuje na końcu przedziału tzn. $x=2h$ co daje nam ostatecznie wartość $2h^2$.
+	\item dla $x < h$ mamy: $x(h-x)$ czyli funkcje kwadratową z ramionami zwróconymi w dół, największą wartość funkcja ta przyjmuje w osi symetrii tzn. dla $x=\frac{h}{2}$ gdzie po podstawieniu otrzymujemy wartość $\frac{1}{4}h^2$ -- zatem nie większą niż dla $x=2h$.
+	\item dla $x=h$ dostajemy 0.
+\end{itemize}
+To oznacza, że ostatni składnik sumy także przyjmuje maksimum dla $x=2h$. Podsumowując powyższe rozważania otrzymujemy, że maksymalną wartością jaką przyjmuje funkcja $1 + x + x \cdot |x-h|$ na przedziale $[x_0, x_2]$ jest $1 + 2h + 2h^2$. Zatem oszacowaniem $E$ w przypadku ogólnym jest:
+$$
+E = (1 + 2h + 2h^2) \cdot \varepsilon
+$$
+Dla $h = 1$ mamy $E=(1 + 2 + 2)\cdot \varepsilon= 5\cdot \varepsilon$, co należało udowodnić.
+
+
+
+
+\end{document}

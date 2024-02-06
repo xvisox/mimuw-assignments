@@ -1,0 +1,130 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amssymb,mathrsfs,amsmath,amscd,amsthm}
+\usepackage[mathcal]{euscript}
+\usepackage{stmaryrd}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{graphics}
+\usepackage{blindtext}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{mathtools}
+
+\makeatletter
+\makeatother
+
+\RequirePackage{a4wide}
+
+%%%%%%% makra do notacji
+
+\renewcommand{\le}{\leqslant} %mniejsze bądź równe
+\renewcommand{\ge}{\geqslant} %większe bądź równe
+\renewcommand\qedsymbol{\scalebox{0.75}{$\blacksquare$}} %koniec dowodu
+\newcommand\exendsymbol{\scalebox{1}{$\lrcorner$}} %inny koniec dowodu
+\renewcommand{\phi}{\varphi} %litera φ
+\newcommand{\eps}{\varepsilon} %litera ε
+
+\newcommand{\N}{\mathbb N} %liczby naturalne
+\newcommand{\R}{\mathbb R} %liczby rzeczywiste
+\newcommand{\I}{\mathbb I} %liczby rzeczywiste
+\newcommand{\set}[1]{\{#1\}} %\set{1,2,3} to zbiór {1,2,3}
+\newcommand{\setof}[2]{\{#1\mid #2\}} %\setof{(x,y)}{x,y\in\N,x+y=5} to {(x,y)|x,y∈N, x+y=5}
+\newcommand{\from}{\colon} %f\from X\to Y to funkcja f:X→Y
+
+\renewcommand{\subset}{\subseteq} %symbol ⊆
+\newcommand{\Longupdownarrow}{\Big\Updownarrow}
+
+\newtheorem{twierdzenie}{Twierdzenie}
+\newtheorem{fakt}{Fakt}
+\newtheorem{wniosek}{Wniosek}
+\newtheorem{lemat}{Lemat}
+\newtheorem{zadanie}{Zadanie}
+\newtheorem{zadanie*}{Zadanie$^*$}
+
+\title{\vspace{-1cm}
+    Metody Numeryczne \\
+    \large Praca domowa 1.
+}
+\author{
+    Hubert Michalski hm438596 \\
+}
+
+\begin{document}
+
+\maketitle
+
+\section*{Zadanie 1.1}
+
+Dla silnie diagonalnie dominującej macierzy $A \in R^{N \times N}$ w postaci $Hessenberga$, tzn. takiej, że $a_{ij}=0$ dla $i > j + 1$:
+
+$$\begin{bmatrix}
+* & * & \dots & * \\
+* & * & \dots & * \\
+& \ddots & \ddots & \vdots \\
+&  & *     & * \\
+\end{bmatrix}$$
+
+sformułuj:
+\begin{enumerate}[label=(\alph*)]
+	\item
+	      algorytm wyznaczający kosztem $O(N^2)$ jej rozkład $LU$;
+
+	\item
+	      algorytm wyznaczający dla zadanego $b \in R^N$ rozwiązanie $x$ układu równań $Ax=b$ kosztem $O(N^2)$.
+
+\end{enumerate}
+
+
+\section*{\large Rozwiązanie $a)$}
+
+Do rozkładu macierzy $A$ można użyć zmodyfikowanego algorytmu $GEPP$. Warto jednak na początku zaznaczyć, że rozważana macierz $A$ jest silnie diagonalnie dominująca tzn. $$\forall_{k} \\|a_{k,k}|>\sum_{i \neq k}|a_{k,i}|$$ więc nie ma konieczności wykorzystywania zamiany wierszy. Gdyby jednak zadana macierz nie miała tej własności, to można by dodatkowo zaobserwować, że dla $k$-tego elementu diagonali mamy jedynie dwie możliwe wartości tzn. $a_{k,k}$ lub $a_{k+1,k}$ ponieważ wszystkie elementy $a_{i,k}$, dla $i > k + 1$ są zerami z definicji. Zatem gdyby $|a_{k+1,k}| > |a_{k,k}|$ to byśmy zmieniali wiersze $k$ i $k+1$. Teraz jednak ten krok może zostać pominięty.
+
+W przypadku standardowego algorytmu $GEPP$ kolejnym krokiem byłoby wyznaczenie $k$-tej kolumny macierzy $L$, w tym celu podzielilibyśmy jej elementy pod diagonalą przez $a_{k,k}$. Jednak dla naszego specjalnego przypadku wystarczy jedynie zmodyfikować wartość $a_{k+1,k}$, ponieważ (ponownie z definicji) reszta elementów tej kolumny to zera.
+
+Następnie należy zaktualizować pozostałą część macierzy, biorąc pod uwagę poprzednie modyfikacje. Z poprzedniego kroku wiadomo, że zmieniła się tylko wartość $a_{k+1,k}$, co oznacza, że wystarczy zaktualizować wyłącznie $k+1$-szy wiersz macierzy $A$. Powyższe kroki powtarzamy dla $k = 1 : N - 1$.
+
+\begin{algorithm}
+	\begin{algorithmic}[1]
+		\caption{LU decomposition for Hessenberg matrix}\label{alg:cap1}
+		\For{k = 1 : $N - 1$}
+		\State $a_{k+1,k} \gets a_{k+1,k} / a_{k,k}$
+
+		\For{i = k + 1 : $N$}
+		\State $a_{k+1,i} \gets a_{k+1,i} - a_{k+1,k}a_{k,i}$
+		\EndFor
+		\EndFor
+	\end{algorithmic}\label{alg:algorithm1}
+\end{algorithm}
+
+\newpage
+Szacowany koszt:
+\begin{itemize}
+	\item
+	      liczba iteracji: $\mathcal{O}(N)$
+
+	\item
+	      aktualizacja wiersza w $k$-tej iteracji: $\mathcal{O}(N)$
+
+\end{itemize}
+
+Ostatecznie otrzymujemy: $\mathcal{O}(N^2)$
+
+\section*{\large Rozwiązanie $b)$}
+
+Aby wyznaczyć rozwiązanie zadanego układu równań skorzystajmy z wyżej wymienionego algorytmu do przedstawienia macierzy $A$ jako iloczynu macierzy $L$ oraz $U$. Dodatkowo wiemy, że równania z macierzami trójkątnymi można rozwiązać w czasie $\mathcal{O}(N^2)$. Wystarczy zatem dwukrotnie zastosować ten fakt do rozłożonej poprzednio macierzy i otrzymujemy rozwiązanie zadania:
+
+\begin{algorithm}
+	\begin{algorithmic}[1]
+		\caption{Solve equation $Ax=b$ for Hessenberg matrix}\label{alg:cap2}
+		\State $L,U \gets decompose(A)$ // $\mathcal{O}(N^2)$ z poprzedniego zadania, dla uproszczenia zapisu jako dwie macierze lecz nie zmienia to złożoności rozwiązania
+		\State $y \gets L^{-1}b$ // Rozwiąż $Ly=b$, czas $\mathcal{O}(N^2)$
+		\State $x \gets U^{-1}y$ // Rozwiąż $Ux=y$, czas $\mathcal{O}(N^2)$
+	\end{algorithmic}\label{alg:algorithm2}
+\end{algorithm}
+Każdy krok ma złożoność $\mathcal{O}(N^2)$ zatem złożoność całego algorytmu to $\mathcal{O}(N^2)$.
+
+\end{document}
