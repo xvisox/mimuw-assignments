@@ -51,7 +51,7 @@ def solve_task_1(hostname, port):
         conn.sendline(str(result).encode())
 
         flag = conn.recvline().strip().decode()
-        conn.recvall()
+        _ = conn.recvall()
         conn.close()
 
     return flag
