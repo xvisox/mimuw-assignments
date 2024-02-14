@@ -56,6 +56,13 @@ def solve_task_1(hostname, port):
     return flag
 
 
+def send_with_new_iv(conn, iv, encrypted, current, wanted):
+    sth = utils.xor(iv, utils.pad(current))
+    iv_prime = utils.xor(sth, utils.pad(wanted))
+    conn.sendline((iv_prime + encrypted).hex())
+    return conn.recvline().strip()
+
+
 def solve_task_2(hostname, port):
     conn = remote(hostname, port)
     conn.recvuntil(b'>')
@@ -66,21 +73,15 @@ def solve_task_2(hostname, port):
     iv = conv[:16]
     encrypted = conv[16:]
 
-    sth = utils.xor(iv, utils.pad(b'Hello'))
-    iv_prime = utils.xor(sth, utils.pad(b'flag?'))
-    conn.sendline((iv_prime + encrypted).hex())
-    recv = conn.recvline().strip()
+    recv = send_with_new_iv(conn, iv, encrypted, b'Hello', b'flag?')
     conv = bytes.fromhex(recv.decode())
-    encrypted = conv[16:]
+    flag_encrypted = conv[16:]
 
     flag = b'flag{'
     alphanums = string.printable.encode()
     for i in range(10):
         for c in alphanums:
-            sth = utils.xor(iv, utils.pad(flag + bytes([c])))
-            iv_prime = utils.xor(sth, utils.pad(b' ' * (i + 1) + b'flag?'))
-            conn.sendline((iv_prime + encrypted).hex())
-            recv = conn.recvline().strip()
+            recv = send_with_new_iv(conn, iv, flag_encrypted, flag + bytes([c]), b' ' * (i + 1) + b'flag?')
             if len(recv) > 64:
                 flag += bytes([c])
                 break
