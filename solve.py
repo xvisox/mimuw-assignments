@@ -62,16 +62,32 @@ def solve_task_2(hostname, port):
     conn.sendline(b'2')
 
     recv = conn.recvline().strip()
-    conv = int(recv, 16).to_bytes(16 + 16, 'big')
+    conv = bytes.fromhex(recv.decode())
     iv = conv[:16]
     encrypted = conv[16:]
 
     sth = utils.xor(iv, utils.pad(b'Hello'))
     iv_prime = utils.xor(sth, utils.pad(b'flag?'))
     conn.sendline((iv_prime + encrypted).hex())
-    flag = conn.recvline().strip().decode()
+    recv = conn.recvline().strip()
+    conv = bytes.fromhex(recv.decode())
+    encrypted = conv[16:]
 
+    result = b'flag{'
+    alphanums = string.printable.encode()
+    for i in range(10):
+        for c in alphanums:
+            sth = utils.xor(iv, utils.pad(result + bytes([c])))
+            iv_prime = utils.xor(sth, utils.pad(b' ' * (i + 1) + b'flag?'))
+            conn.sendline((iv_prime + encrypted).hex())
+            recv = conn.recvline().strip()
+            if len(recv) > 64:
+                result += bytes([c])
+                break
+
+    result += b'}'
     conn.close()
+    return result.decode()
 
 
 def solve_task_3(hostname, port):
@@ -87,12 +103,12 @@ def main():
     port = int(sys.argv[2])
 
     tasks = [
-        # "1) NCG",
+        "1) NCG",
         "2) Block cipher (easy)",
         "3) Block cipher (hard)",
     ]
     flags = [
-        # solve_task_1(hostname, port),
+        solve_task_1(hostname, port),
         solve_task_2(hostname, port),
         solve_task_3(hostname, port)
     ]
