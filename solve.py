@@ -1,7 +1,6 @@
-from functools import reduce
-from math import gcd
-
 from pwn import *
+
+import utils
 
 
 def solve_equation(s_0, s_1, s_2):
@@ -58,7 +57,21 @@ def solve_task_1(hostname, port):
 
 
 def solve_task_2(hostname, port):
-    pass
+    conn = remote(hostname, port)
+    conn.recvuntil(b'>')
+    conn.sendline(b'2')
+
+    recv = conn.recvline().strip()
+    conv = int(recv, 16).to_bytes(16 + 16, 'big')
+    iv = conv[:16]
+    encrypted = conv[16:]
+
+    sth = utils.xor(iv, utils.pad(b'Hello'))
+    iv_prime = utils.xor(sth, utils.pad(b'flag?'))
+    conn.sendline((iv_prime + encrypted).hex())
+    flag = conn.recvline().strip().decode()
+
+    conn.close()
 
 
 def solve_task_3(hostname, port):
@@ -74,12 +87,12 @@ def main():
     port = int(sys.argv[2])
 
     tasks = [
-        "1) NCG",
+        # "1) NCG",
         "2) Block cipher (easy)",
         "3) Block cipher (hard)",
     ]
     flags = [
-        solve_task_1(hostname, port),
+        # solve_task_1(hostname, port),
         solve_task_2(hostname, port),
         solve_task_3(hostname, port)
     ]

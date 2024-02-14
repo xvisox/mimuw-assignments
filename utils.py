@@ -14,7 +14,7 @@ def xor(a, b):
 
 
 def split_by(data, cnt):
-    return [data[i : i+cnt] for i in range(0, len(data), cnt)]
+    return [data[i: i + cnt] for i in range(0, len(data), cnt)]
 
 
 def pad(msg):
