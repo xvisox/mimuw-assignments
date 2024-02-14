@@ -73,21 +73,21 @@ def solve_task_2(hostname, port):
     conv = bytes.fromhex(recv.decode())
     encrypted = conv[16:]
 
-    result = b'flag{'
+    flag = b'flag{'
     alphanums = string.printable.encode()
     for i in range(10):
         for c in alphanums:
-            sth = utils.xor(iv, utils.pad(result + bytes([c])))
+            sth = utils.xor(iv, utils.pad(flag + bytes([c])))
             iv_prime = utils.xor(sth, utils.pad(b' ' * (i + 1) + b'flag?'))
             conn.sendline((iv_prime + encrypted).hex())
             recv = conn.recvline().strip()
             if len(recv) > 64:
-                result += bytes([c])
+                flag += bytes([c])
                 break
+    flag += b'}'
 
-    result += b'}'
     conn.close()
-    return result.decode()
+    return flag.decode()
 
 
 def solve_task_3(hostname, port):
