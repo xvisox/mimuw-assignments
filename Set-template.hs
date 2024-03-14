@@ -2,6 +2,7 @@ module Set(Set(..), empty, null, singleton, union, fromList
               , member, toList, toAscList, elems
               ) where
 import Prelude hiding(null)
+import qualified Data.List
 
 data Set a = Empty
            | Singleton a
