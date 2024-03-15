@@ -109,7 +109,10 @@ instance Functor Basic where
 -- edges [(1,2),(2,34),(34,5)] + vertices [17]
 
 mergeV :: Eq a => a -> a -> a -> Basic a -> Basic a
-mergeV prev1 prev2 curr graph = (\v -> if v == prev1 || v == prev2 then curr else v) <$> graph
+mergeV prev1 prev2 curr graph = mapV <$> graph where
+  mapV vertex
+    | vertex == prev1 || vertex == prev2 = curr
+    | otherwise = vertex
 
 instance Applicative Basic where
 
