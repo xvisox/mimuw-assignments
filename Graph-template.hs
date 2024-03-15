@@ -1,6 +1,7 @@
 module Graph where
 import Set(Set)
 import qualified Set as Set
+
 class Graph g where
   empty   :: g a
   vertex  :: a -> g a
@@ -16,12 +17,40 @@ data Basic a = Empty
              | Connect (Basic a) (Basic a)
 
 instance Graph Relation where
-                
+  empty         = Relation {domain = Set.empty, relation = Set.empty}
+  vertex el     = Relation {domain = Set.singleton el, relation = Set.empty}
+  union g1 g2   = Relation {domain = newDomain, relation = newRelation} where
+    newDomain   = domain g1 <> domain g2
+    newRelation = relation g1 <> relation g2
+  connect g1 g2 = Relation { domain = newDomain, relation = newRelation } where
+    newDomain   = domain g1 <> domain g2
+    newRelation = relation g1 <> relation g2 <> crossProduct (domain g1) (domain g2)
+    crossProduct d1 d2 = Set.fromList [(x, y) | x <- Set.toList d1, y <- Set.toList d2]
+
 instance (Ord a, Num a) => Num (Relation a) where
+  fromInteger = vertex . fromInteger
+  (+)         = union
+  (*)         = connect
+  signum      = const empty
+  abs         = id
+  negate      = id
 
 instance Graph Basic where
+  empty = Empty
+  vertex = Vertex
+  union = auxUnion where
+    auxUnion Empty graph   = graph
+    auxUnion graph Empty   = graph
+    auxUnion graph1 graph2 = Union graph1 graph2
+  connect = auxConnect where
+    auxConnect Empty graph   = graph
+    auxConnect graph Empty   = graph
+    auxConnect graph1 graph2 = Connect graph1 graph2
 
 instance Ord a => Eq (Basic a) where
+  graph1 == graph2 = graphRelation1 == graphRelation2 where
+    graphRelation1 = (fromBasic :: Basic a -> Relation a) graph1
+    graphRelation2 = (fromBasic :: Basic a -> Relation a) graph2
 
 instance (Ord a, Num a) => Num (Basic a) where
     fromInteger = vertex . fromInteger
@@ -38,6 +67,10 @@ instance Monoid (Basic a) where
   mempty = Empty
 
 fromBasic :: Graph g => Basic a -> g a
+fromBasic Empty                   = empty
+fromBasic (Vertex el)             = vertex el
+fromBasic (Union graph1 graph2)   = union (fromBasic graph1) (fromBasic graph2)
+fromBasic (Connect graph1 graph2) = connect (fromBasic graph1) (fromBasic graph2)
 
 instance (Ord a, Show a) => Show (Basic a) where
 
