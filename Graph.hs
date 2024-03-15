@@ -109,21 +109,34 @@ instance Functor Basic where
 -- edges [(1,2),(2,34),(34,5)] + vertices [17]
 
 mergeV :: Eq a => a -> a -> a -> Basic a -> Basic a
-mergeV prev1 prev2 curr graph = mapV <$> graph where
-  mapV vertex
+mergeV prev1 prev2 curr graph = auxMerge <$> graph where
+  auxMerge vertex
     | vertex == prev1 || vertex == prev2 = curr
     | otherwise = vertex
 
 instance Applicative Basic where
+  pure                      = vertex
+  Empty           <*> _     = empty
+  (Vertex f)      <*> graph = f <$> graph
+  (Connect f1 f2) <*> graph = connect (f1 <*> graph) (f2 <*> graph)
+  (Union f1 f2)   <*> graph = union (f1 <*> graph) (f2 <*> graph)
 
 instance Monad Basic where
+  return                        = vertex
+  Empty                   >>= _ = Empty
+  (Vertex el)             >>= f = f el
+  (Union graph1 graph2)   >>= f = union (graph1 >>= f) (graph2 >>= f)
+  (Connect graph1 graph2) >>= f = connect (graph1 >>= f) (graph2 >>= f)
 
 -- | Split Vertex
 -- >>> splitV 34 3 4 (mergeV 3 4 34 example34)
 -- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
 
 splitV :: Eq a => a -> a -> a -> Basic a -> Basic a
-splitV = undefined
+splitV prev curr1 curr2 graph = graph >>= auxSplit where
+  auxSplit vertex
+    | vertex == prev = (return curr1) <> (return curr2)
+    | otherwise      = return vertex
 
 getEdgesAndIsolatedVertices :: Ord a => Basic a -> ([(a,a)], [a])
 getEdgesAndIsolatedVertices basicGraph = (edges, isolatedVertices) where
