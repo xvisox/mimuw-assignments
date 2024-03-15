@@ -34,13 +34,13 @@ toList set = toListAcc set [] where
   toListAcc (Union set1 set2) acc = toListAcc set1 (toListAcc set2 acc)
 
 toAscList :: Ord a => Set a -> [a]
-toAscList = removeDuplicates . Data.List.sort . toList where
-  removeDuplicates :: Ord a => [a] -> [a]
-  removeDuplicates [] = []
-  removeDuplicates [x] = [x]
-  removeDuplicates (x:y:zs)
-    | x == y    = removeDuplicates (y:zs)
-    | otherwise = x : removeDuplicates (y:zs)
+toAscList = nubOrd . Data.List.sort . toList where
+  nubOrd :: Ord a => [a] -> [a]
+  nubOrd [] = []
+  nubOrd [x] = [x]
+  nubOrd (x:y:zs)
+    | x == y    = nubOrd (y:zs)
+    | otherwise = x : nubOrd (y:zs)
 
 elems :: Set a -> [a]
 elems = toList

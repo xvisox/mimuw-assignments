@@ -73,6 +73,9 @@ fromBasic (Union graph1 graph2)   = union (fromBasic graph1) (fromBasic graph2)
 fromBasic (Connect graph1 graph2) = connect (fromBasic graph1) (fromBasic graph2)
 
 instance (Ord a, Show a) => Show (Basic a) where
+  show graph        = showsPrec (-1) graph ""
+  showsPrec _ graph = showString "edges " . showList edges . showString " + vertices " . showList vertices where
+    (edges, vertices) = getEdgesAndVertices graph
 
 -- | Example graph
 -- >>> example34
@@ -104,3 +107,24 @@ instance Monad Basic where
 splitV :: Eq a => a -> a -> a -> Basic a -> Basic a
 splitV = undefined
 
+getEdgesAndIsolatedVertices :: Ord a => Basic a -> ([(a,a)], [a])
+getEdgesAndIsolatedVertices basicGraph = (edges, isolatedVertices) where
+  edges            = Set.toAscList (relation relationGraph)
+  isolatedVertices = diff domainVertices edgesVertices where
+    diff :: Ord a => [a] -> [a] -> [a]
+    diff [] _ = []
+    diff xs [] = xs
+    diff (x:xs) (y:ys)
+      | x < y     = x : diff xs (y:ys)
+      | x == y    = diff xs ys
+      | otherwise = diff (x:xs) ys
+
+  relationGraph  = (fromBasic :: Basic a -> Relation a) basicGraph
+  domainVertices = domain relationGraph
+  edgesVertices  = nubOrd $ sort $ concatMap (\(x, y) -> [x, y]) edges where
+    nubOrd :: Ord a => [a] -> [a]
+    nubOrd [] = []
+    nubOrd [x] = [x]
+    nubOrd (x:y:zs)
+      | x == y    = nubOrd (y:zs)
+      | otherwise = x : nubOrd (y:zs)
