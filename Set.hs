@@ -68,4 +68,4 @@ instance Show a => Show (Set a) where
 instance Functor Set where
   fmap f Empty = empty
   fmap f (Singleton el) = singleton (f el)
-  fmap f (Union set1 set2) = (fmap f set2) <> (fmap f set2)
+  fmap f (Union set1 set2) = (fmap f set1) <> (fmap f set2)
