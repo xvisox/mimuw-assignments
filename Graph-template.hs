@@ -73,9 +73,9 @@ fromBasic (Union graph1 graph2)   = union (fromBasic graph1) (fromBasic graph2)
 fromBasic (Connect graph1 graph2) = connect (fromBasic graph1) (fromBasic graph2)
 
 instance (Ord a, Show a) => Show (Basic a) where
-  show graph        = showsPrec (-1) graph ""
-  showsPrec _ graph = showString "edges " . showList edges . showString " + vertices " . showList vertices where
-    (edges, vertices) = getEdgesAndVertices graph
+  show graph        = showsPrec 0 graph ""
+  showsPrec _ graph = showString "edges " . showList edges . showString " + vertices " . showList isolatedVertices where
+    (edges, isolatedVertices) = getEdgesAndIsolatedVertices graph
 
 -- | Example graph
 -- >>> example34
@@ -85,9 +85,25 @@ example34 :: Basic Int
 example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
 
 todot :: (Ord a, Show a) => Basic a -> String
-todot = undefined
+todot graph = showsTodot graph "" where
+  (edges, isolatedVertices) = getEdgesAndIsolatedVertices graph
+
+  showsTodot :: (Ord a, Show a) => Basic a -> ShowS
+  showsTodot graph = showString "digraph {\n" . showsEdges edges . showsIsolatedVertices isolatedVertices . showString "}\n" where
+
+    showsEdges :: (Ord a, Show a) => [(a,a)] -> ShowS
+    showsEdges [] = id
+    showsEdges ((x,y):xs) = (showsPrec 0 x) . showString " -> " . (showsPrec 0 y) . showString ";\n" . showsEdges xs
+
+    showsIsolatedVertices :: (Ord a, Show a) => [a] -> ShowS
+    showsIsolatedVertices [] = id
+    showsIsolatedVertices (x:xs) = (showsPrec 0 x) . showString ";\n" . showsIsolatedVertices xs
 
 instance Functor Basic where
+  fmap f Empty                   = empty
+  fmap f (Vertex el)             = vertex (f el)
+  fmap f (Union graph1 graph2)   = union (f <$> graph1) (f <$> graph2)
+  fmap f (Connect graph1 graph2) = connect (f <$> graph1) (f <$> graph2)
 
 -- | Merge vertices
 -- >>> mergeV 3 4 34 example34
