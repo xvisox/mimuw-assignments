@@ -1,6 +1,7 @@
 module Graph where
 import Set(Set)
 import qualified Set as Set
+import qualified Data.List
 
 class Graph g where
   empty   :: g a
@@ -122,7 +123,6 @@ instance Applicative Basic where
   (Union f1 f2)   <*> graph = union (f1 <*> graph) (f2 <*> graph)
 
 instance Monad Basic where
-  return                        = vertex
   Empty                   >>= _ = Empty
   (Vertex el)             >>= f = f el
   (Union graph1 graph2)   >>= f = union (graph1 >>= f) (graph2 >>= f)
@@ -151,8 +151,8 @@ getEdgesAndIsolatedVertices basicGraph = (edges, isolatedVertices) where
       | otherwise = diff (x:xs) ys
 
   relationGraph  = (fromBasic :: Basic a -> Relation a) basicGraph
-  domainVertices = domain relationGraph
-  edgesVertices  = nubOrd $ sort $ concatMap (\(x, y) -> [x, y]) edges where
+  domainVertices = Set.toAscList $ domain relationGraph
+  edgesVertices  = nubOrd $ Data.List.sort $ concatMap (\(x, y) -> [x, y]) edges where
     nubOrd :: Ord a => [a] -> [a]
     nubOrd [] = []
     nubOrd [x] = [x]
