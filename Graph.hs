@@ -90,7 +90,7 @@ todot graph = showsTodot graph "" where
   (edges, isolatedVertices) = getEdgesAndIsolatedVertices graph
 
   showsTodot :: (Ord a, Show a) => Basic a -> ShowS
-  showsTodot graph = showString "digraph {" . showsEdges edges . showsIsolatedVertices isolatedVertices . showString "}" where
+  showsTodot graph = showString "digraph { " . showsEdges edges . showsIsolatedVertices isolatedVertices . showString "}" where
     showsEdges :: (Ord a, Show a) => [(a,a)] -> ShowS
     showsEdges [] = id
     showsEdges ((x,y):xs) = (showsPrec 0 x) . showString " -> " . (showsPrec 0 y) . showString "; " . showsEdges xs
