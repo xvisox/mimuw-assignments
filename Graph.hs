@@ -141,14 +141,14 @@ splitV prev curr1 curr2 graph = graph >>= auxSplit where
 getEdgesAndIsolatedVertices :: Ord a => Basic a -> ([(a,a)], [a])
 getEdgesAndIsolatedVertices basicGraph = (edges, isolatedVertices) where
   edges            = Set.toAscList (relation relationGraph)
-  isolatedVertices = diff domainVertices edgesVertices where
-    diff :: Ord a => [a] -> [a] -> [a]
-    diff [] _ = []
-    diff xs [] = xs
-    diff (x:xs) (y:ys)
-      | x < y     = x : diff xs (y:ys)
-      | x == y    = diff xs ys
-      | otherwise = diff (x:xs) ys
+  isolatedVertices = diffOrd domainVertices edgesVertices where
+    diffOrd :: Ord a => [a] -> [a] -> [a]
+    diffOrd [] _ = []
+    diffOrd xs [] = xs
+    diffOrd (x:xs) (y:ys)
+      | x < y     = x : diffOrd xs (y:ys)
+      | x == y    = diffOrd xs ys
+      | otherwise = diffOrd (x:xs) ys
 
   relationGraph  = (fromBasic :: Basic a -> Relation a) basicGraph
   domainVertices = Set.toAscList $ domain relationGraph
