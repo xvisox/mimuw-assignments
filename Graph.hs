@@ -86,11 +86,11 @@ example34 :: Basic Int
 example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
 
 todot :: (Ord a, Show a) => Basic a -> String
-todot graph = showsTodot graph "" where
+todot graph = showsTodot "" where
   (edges, isolatedVertices) = getEdgesAndIsolatedVertices graph
 
-  showsTodot :: (Ord a, Show a) => Basic a -> ShowS
-  showsTodot graph = showString "digraph {\n" . showsEdges edges . showsIsolatedVertices isolatedVertices . showString "}" where
+  showsTodot :: ShowS
+  showsTodot = showString "digraph {\n" . showsEdges edges . showsIsolatedVertices isolatedVertices . showString "}" where
     showsEdges :: (Ord a, Show a) => [(a,a)] -> ShowS
     showsEdges [] = id
     showsEdges ((x,y):xs) = (showsPrec 0 x) . showString " -> " . (showsPrec 0 y) . showString ";\n" . showsEdges xs
@@ -100,7 +100,7 @@ todot graph = showsTodot graph "" where
     showsIsolatedVertices (x:xs) = (showsPrec 0 x) . showString ";\n" . showsIsolatedVertices xs
 
 instance Functor Basic where
-  fmap f Empty                   = empty
+  fmap _ Empty                   = empty
   fmap f (Vertex el)             = vertex (f el)
   fmap f (Union graph1 graph2)   = union (f <$> graph1) (f <$> graph2)
   fmap f (Connect graph1 graph2) = connect (f <$> graph1) (f <$> graph2)
@@ -111,9 +111,10 @@ instance Functor Basic where
 
 mergeV :: Eq a => a -> a -> a -> Basic a -> Basic a
 mergeV prev1 prev2 curr graph = auxMerge <$> graph where
-  auxMerge vertex
-    | vertex == prev1 || vertex == prev2 = curr
-    | otherwise = vertex
+  auxMerge v
+    | v == prev1 = curr
+    | v == prev2 = curr
+    | otherwise  = v
 
 instance Applicative Basic where
   pure                      = vertex
@@ -134,9 +135,9 @@ instance Monad Basic where
 
 splitV :: Eq a => a -> a -> a -> Basic a -> Basic a
 splitV prev curr1 curr2 graph = graph >>= auxSplit where
-  auxSplit vertex
-    | vertex == prev = (return curr1) <> (return curr2)
-    | otherwise      = return vertex
+  auxSplit v
+    | v == prev = (return curr1) <> (return curr2)
+    | otherwise = return v
 
 getEdgesAndIsolatedVertices :: Ord a => Basic a -> ([(a,a)], [a])
 getEdgesAndIsolatedVertices basicGraph = (edges, isolatedVertices) where
