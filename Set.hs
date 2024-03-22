@@ -13,11 +13,11 @@ empty = Empty
 
 null :: Set a -> Bool
 null Empty = True
-null _ = False
+null _     = False
 
 member :: Eq a => a -> Set a -> Bool
-member _ Empty = False
-member el (Singleton val) = el == val
+member _ Empty              = False
+member el (Singleton val)   = el == val
 member el (Union set1 set2) = member el set1 || member el set2
 
 singleton :: a -> Set a
@@ -66,6 +66,6 @@ instance Show a => Show (Set a) where
   show = show . toList
 
 instance Functor Set where
-  fmap _ Empty = empty
-  fmap f (Singleton el) = singleton (f el)
+  fmap _ Empty             = empty
+  fmap f (Singleton el)    = singleton (f el)
   fmap f (Union set1 set2) = (f <$> set1) <> (f <$> set2)
