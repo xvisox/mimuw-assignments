@@ -120,8 +120,8 @@ instance Applicative Basic where
   pure                      = vertex
   Empty           <*> _     = empty
   (Vertex f)      <*> graph = f <$> graph
-  (Connect f1 f2) <*> graph = connect (f1 <*> graph) (f2 <*> graph)
   (Union f1 f2)   <*> graph = union (f1 <*> graph) (f2 <*> graph)
+  (Connect f1 f2) <*> graph = connect (f1 <*> graph) (f2 <*> graph)
 
 instance Monad Basic where
   Empty                   >>= _ = Empty
