@@ -13,6 +13,14 @@
 % ArrMap - list of pairs (ArrId, [Value1, Value2, ...])
 % IPs - list of instruction pointers
 
+% ==== Entry point ====
+verify :-
+    current_prolog_flag(argv, [N, FilePath]),
+    verify(N, FilePath).
+
+verify :-
+    format('Usage: verify <N> <file>~n').
+
 % ==== Program verification ====
 % verify(+N, +FilePath)
 verify(N, FilePath) :-
