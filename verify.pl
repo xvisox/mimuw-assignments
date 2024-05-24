@@ -65,10 +65,9 @@ evalStmt(assign(VarId, Expr), state(VarMap, ArrMap, IPs), PrId, state(NewVarMap,
     mapUpsert(VarId, Value, VarMap, NewVarMap),
     incrementIP(PrId, IPs, NewIPs).
 
-evalStmt(assign(array(ArrId, IndexExpr), Expr), State, PrId, state(VarMap, NewArrMap, NewIPs)) :-
-    State = state(VarMap, ArrMap, IPs),
-    evalExpr(IndexExpr, State, Index),
-    evalExpr(Expr, State, Value),
+evalStmt(assign(array(ArrId, IndexExpr), Expr), state(VarMap, ArrMap, IPs), PrId, state(VarMap, NewArrMap, NewIPs)) :-
+    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), Index),
+    evalExpr(Expr, state(VarMap, ArrMap, IPs), Value),
     mapGet(ArrId, ArrMap, Array),
     listInsertAt(Value, Index, Array, NewArray),
     mapUpsert(ArrId, NewArray, ArrMap, NewArrMap),
@@ -80,9 +79,9 @@ evalStmt(sekcja, state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)
 evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
     listInsertAt(NewIP, PrId, IPs, NewIPs).
 
-evalStmt(condGoto(BExpr, NewIP), State, PrId, NewState) :-
-    ( evalBExpr(BExpr, State) ->
-        evalStmt(goto(NewIP), State, PrId, NewState)
+evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
+    ( evalBExpr(BExpr, state(VarMap, ArrMap, IPs)) ->
+        evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, NewState)
     ;
         incrementIP(PrId, IPs, NewIPs),
         NewState = state(VarMap, ArrMap, NewIPs)
