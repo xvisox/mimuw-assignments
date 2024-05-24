@@ -13,6 +13,7 @@
 % ArrMap - list of pairs (ArrId, [Value1, Value2, ...])
 % IPs - list of instruction pointers
 
+% ==== Program verification ====
 % verify(+N, +FilePath)
 verify(N, FilePath) :-
     integer(N),
@@ -27,37 +28,63 @@ verify(N, FilePath) :-
         initState(Program, N, InitState),
         dfs(Program, InitState)
     ;
-        format('Error: brak pliku o nazwie - ~w~n', File)
+        format('Error: brak pliku o nazwie - ~w~n', FilePath)
     ).
 
 verify(N, _) :-
     format('Error: parametr ~w powinien byc liczba > 0~n', N).
 
 % initState(+Program, +N, -InitState)
-initState(Program, N, InitState) :-
-    Program = program(VarIdents, ArrIdents, _),
+initState(program(VarIdents, ArrIdents, _), N, state(VarMap, ArrMap, IPs)) :-
     initList(N, 1, IPs),
     initList(N, 0, InitArray),
     initMap(VarIdents, 0, VarMap),
-    initMap(ArrIdents, InitArray, ArrMap),
-    InitState = state(VarMap, ArrMap, IPs).
+    initMap(ArrIdents, InitArray, ArrMap).
 
 % TODO: dfs(+Program, +State)
-dfs(Program, State).
+dfs(_, _).
 
-% TODO: step(+Program, +State, +PrId, -NewState)
-step(Program, State, PrId, NewState).
+% step(+Program, +State, +PrId, -NewState)
+step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
+    nth0(PrId, IPs, IP),
+    nth1(IP, Statements, Statement),
+    evalStmt(Statement, state(VarMap, ArrMap, IPs), PrId, NewState).
 
-% TODO: evalStmt(+Statement, +State, +PrId, -NewState)
-evalStmt(assign(VarId, Expr), State, PrId, NewState).
+% ==== Statement evaluation ====
+evalStmt(assign(VarId, Expr), state(VarMap, ArrMap, IPs), PrId, state(NewVarMap, ArrMap, NewIPs)) :-
+    atom(VarId),
+    evalExpr(Expr, state(VarMap, ArrMap, IPs), Value),
+    mapUpsert(VarId, Value, VarMap, NewVarMap),
+    incrementIP(PrId, IPs, NewIPs).
 
-evalStmt(assign(array(ArrId, IndexExpr), Expr), State, PrId, NewState).
+evalStmt(assign(array(ArrId, IndexExpr), Expr), State, PrId, state(VarMap, NewArrMap, NewIPs)) :-
+    State = state(VarMap, ArrMap, IPs),
+    evalExpr(IndexExpr, State, Index),
+    evalExpr(Expr, State, Value),
+    mapGet(ArrId, ArrMap, Array),
+    listInsertAt(Value, Index, Array, NewArray),
+    mapUpsert(ArrId, NewArray, ArrMap, NewArrMap),
+    incrementIP(PrId, IPs, NewIPs).
 
-evalStmt(sekcja, State, PrId, NewState).
+evalStmt(sekcja, state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
+    incrementIP(PrId, IPs, NewIPs).
 
-evalStmt(goto(IP), State, PrId, NewState).
+evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
+    listInsertAt(NewIP, PrId, IPs, NewIPs).
 
-evalStmt(condGoto(BExpr, IP), State, PrId, NewState).
+evalStmt(condGoto(BExpr, NewIP), State, PrId, NewState) :-
+    ( evalBExpr(BExpr, State) ->
+        evalStmt(goto(NewIP), State, PrId, NewState)
+    ;
+        incrementIP(PrId, IPs, NewIPs),
+        NewState = state(VarMap, ArrMap, NewIPs)
+    ).
+
+% incrementIP(+PrId, +IPs, -NewIPs)
+incrementIP(PrId, IPs, NewIPs) :-
+    nth0(PrId, IPs, IP),
+    NewIP is IP + 1,
+    listInsertAt(NewIP, PrId, IPs, NewIPs).
 
 % ==== Expression evaluation ====
 % evalExpr(+Expr, +State, +PrId, -Value)
@@ -71,15 +98,13 @@ evalExpr(Num, _, Value) :-
     integer(Num),
     Value is Num.
 
-evalExpr(VarId, State, Value) :-
+evalExpr(VarId, state(VarMap, _, _), Value) :-
     atom(VarId),
-    State = state(VarMap, _, _),
-    get(VarId, VarMap, Value).
+    mapGet(VarId, VarMap, Value).
 
-evalExpr(array(ArrId, IndexExpr), State, Value) :-
-    State = state(_, ArrMap, _),
-    evalExpr(IndexExpr, State, Index),
-    get(ArrId, ArrMap, Array),
+evalExpr(array(ArrId, IndexExpr), state(VarMap, ArrMap, IPs), Value) :-
+    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), Index),
+    mapGet(ArrId, ArrMap, Array),
     nth0(Index, Array, Value).
 
 % evalBExpr(+BExpr, +State)
@@ -95,16 +120,16 @@ initMap([], _, []).
 initMap([Ident | RestIdents], Value, [(Ident, Value) | RestMap]) :-
     initMap(RestIdents, Value, RestMap).
 
-% upsert(+Key, +Value, +Map, -NewMap)
-upsert(Key, Value, Map, NewMap) :-
+% mapUpsert(+Key, +Value, +Map, -NewMap)
+mapUpsert(Key, Value, Map, NewMap) :-
     ( select((Key, _), Map, Rest) ->
         NewMap = [(Key, Value) | Rest]
     ;
         NewMap = [(Key, Value) | Map]
     ).
 
-% get(+Key, +VarMap, -Value)
-get(Key, Map, Value) :-
+% mapGet(+Key, +VarMap, -Value)
+mapGet(Key, Map, Value) :-
     member((Key, Value), Map).
 
 % initList(+N, +Value, -List)
@@ -114,9 +139,9 @@ initList(N, Value, [Value | Rest]) :-
     N1 is N - 1,
     initList(N1, Value, Rest).
 
-% insertAt(+Value, +Position, +List, -NewList)
-insertAt(Value, 0, List, [Value | List]).
-insertAt(Value, Position, [Start | Rest], [Start | NewRest]) :-
+% listInsertAt(+Value, +Position, +List, -NewList)
+listInsertAt(Value, 0, List, [Value | List]).
+listInsertAt(Value, Position, [Start | Rest], [Start | NewRest]) :-
     Position > 0,
     NewPosition is Position - 1,
-    insertAt(Value, NewPosition, Rest, NewRest).
+    listInsertAt(Value, NewPosition, Rest, NewRest).
