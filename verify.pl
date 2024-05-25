@@ -11,7 +11,8 @@
     initState/3,
     evalExpr/4,
     evalStmt/4,
-    incrementIP/3
+    incrementIP/3,
+    step/4
 ]).
 
 :- ensure_loaded(library(lists)).
