@@ -14,18 +14,26 @@ test(initMap_multiple) :-
     initMap([a, b, c], 2, Map),
     assertion(Map == [(a, 2), (b, 2), (c, 2)]).
 
-% Test mapUpsert/4
-test(mapUpsert_update) :-
-    mapUpsert(a, 1, [(a, 0), (b, 0)], NewMap),
-    assertion(NewMap == [(a, 1), (b, 0)]).
+% Test mapUpdate/4
+test(update_existing_pair) :-
+    mapUpdate(a, 2, [(a, 1)], NewMap),
+    assertion(NewMap == [(a, 2)]).
 
-test(mapUpsert_insert) :-
-    mapUpsert(c, 2, [(a, 1), (b, 0)], NewMap),
-    assertion(NewMap == [(c, 2), (a, 1), (b, 0)]).
+test(update_existing_pair_non_empty) :-
+    mapUpdate(a, 2, [(a, 1), (b, 3)], NewMap),
+    assertion(NewMap == [(a, 2), (b, 3)]).
 
-test(mapUpsert_empty) :-
-    mapUpsert(a, 1, [], NewMap),
-    assertion(NewMap == [(a, 1)]).
+test(update_at_beginning) :-
+    mapUpdate(a, 5, [(a, 1), (b, 2)], NewMap),
+    assertion(NewMap == [(a, 5), (b, 2)]).
+
+test(update_in_middle) :-
+    mapUpdate(b, 5, [(a, 1), (b, 2), (c, 3)], NewMap),
+    assertion(NewMap == [(a, 1), (b, 5), (c, 3)]).
+
+test(update_at_end) :-
+    mapUpdate(c, 5, [(a, 1), (b, 2), (c, 3)], NewMap),
+    assertion(NewMap == [(a, 1), (b, 2), (c, 5)]).
 
 % Test mapGet/3
 test(mapGet_found) :-
@@ -51,17 +59,17 @@ test(initList_single) :-
     initList(1, 5, List),
     assertion(List == [5]).
 
-% Test listInsertAt/4
-test(listInsertAt_start) :-
-    listInsertAt(x, 0, [a, b, c], NewList),
+% Test listUpdate/4
+test(listUpdate_start) :-
+    listUpdate(x, 0, [a, b, c], NewList),
     assertion(NewList == [x, b, c]).
 
-test(listInsertAt_middle) :-
-    listInsertAt(x, 2, [a, b, c, d], NewList),
+test(listUpdate_middle) :-
+    listUpdate(x, 2, [a, b, c, d], NewList),
     assertion(NewList == [a, b, x, d]).
 
-test(listInsertAt_end) :-
-    listInsertAt(x, 3, [a, b, c, d], NewList),
+test(listUpdate_end) :-
+    listUpdate(x, 3, [a, b, c, d], NewList),
     assertion(NewList == [a, b, c, x]).
 
 % Test initState/3
@@ -274,7 +282,7 @@ test(incrementIP) :-
 test(evalStmt_assign_nested_array) :-
     test_state(VarMap, ArrMap, IPs),
     evalStmt(assign(array(arr2, array(arr, 1)), 42), state(VarMap, ArrMap, IPs), 1, state(VarMap, NewArrMap, NewIPs)),
-    assertion(NewArrMap == [(arr2, [10, 42, 30]), (arr, [0, 1, 2, 3, 4])]),
+    assertion(NewArrMap == [(arr, [0, 1, 2, 3, 4]), (arr2, [10, 42, 30])]),
     assertion(NewIPs == [1, 3, 3]).
 
 test(evalStmt_assign_variable_pid) :-
@@ -338,7 +346,7 @@ test(step_assign_nested_array) :-
     test_state_step(VarMap, ArrMap, IPs),
     Program = program([], [], [assign(array(arr2, array(arr, 1)), 42)]),
     step(Program, state(VarMap, ArrMap, IPs), 1, state(VarMap, NewArrMap, NewIPs)),
-    assertion(NewArrMap == [(arr2, [10, 42, 30]), (arr, [0, 1, 2, 3, 4])]),
+    assertion(NewArrMap == [(arr, [0, 1, 2, 3, 4]), (arr2, [10, 42, 30])]),
     assertion(NewIPs == [1, 2, 1]).
 
 test(step_assign_variable_pid) :-

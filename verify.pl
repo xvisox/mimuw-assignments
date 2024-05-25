@@ -4,10 +4,10 @@
 % FIXME: REMOVE RED CUTS
 :- module(verify, [
     initMap/3,
-    mapUpsert/4,
+    mapUpdate/4,
     mapGet/3,
     initList/3,
-    listInsertAt/4,
+    listUpdate/4,
     initState/3,
     evalExpr/4,
     evalStmt/4,
@@ -75,25 +75,26 @@ step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
 dfs(_, _).
 
 % ==== Statement evaluation ====
+% evalStmt(+Stmt, +State, +PrId, -NewState)
 evalStmt(assign(VarId, Expr), state(VarMap, ArrMap, IPs), PrId, state(NewVarMap, ArrMap, NewIPs)) :-
     atom(VarId),
     evalExpr(Expr, state(VarMap, ArrMap, IPs), PrId, Value),
-    mapUpsert(VarId, Value, VarMap, NewVarMap),
+    mapUpdate(VarId, Value, VarMap, NewVarMap),
     incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(assign(array(ArrId, IndexExpr), Expr), state(VarMap, ArrMap, IPs), PrId, state(VarMap, NewArrMap, NewIPs)) :-
     evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), PrId, Index),
     evalExpr(Expr, state(VarMap, ArrMap, IPs), PrId, Value),
     mapGet(ArrId, ArrMap, Array),
-    listInsertAt(Value, Index, Array, NewArray),
-    mapUpsert(ArrId, NewArray, ArrMap, NewArrMap),
+    listUpdate(Value, Index, Array, NewArray),
+    mapUpdate(ArrId, NewArray, ArrMap, NewArrMap),
     incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(sekcja, state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
     incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
-    listInsertAt(NewIP, PrId, IPs, NewIPs), !.
+    listUpdate(NewIP, PrId, IPs, NewIPs), !.
 
 evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     ( evalBExpr(BExpr, state(VarMap, ArrMap, IPs), PrId) ->
@@ -107,7 +108,7 @@ evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
 incrementIP(PrId, IPs, NewIPs) :-
     nth0(PrId, IPs, IP),
     NewIP is IP + 1,
-    listInsertAt(NewIP, PrId, IPs, NewIPs).
+    listUpdate(NewIP, PrId, IPs, NewIPs).
 
 % ==== Expression evaluation ====
 % evalExpr(+Expr, +State, +PrId, -Value)
@@ -148,15 +149,12 @@ initMap([], _, []).
 initMap([Ident | RestIdents], Value, [(Ident, Value) | RestMap]) :-
     initMap(RestIdents, Value, RestMap).
 
-% mapUpsert(+Key, +Value, +Map, -NewMap)
-mapUpsert(Key, Value, Map, NewMap) :-
-    ( select((Key, _), Map, Rest) ->
-        NewMap = [(Key, Value) | Rest]
-    ;
-        NewMap = [(Key, Value) | Map]
-    ).
+% mapUpdate(+Key, +Value, +Map, -NewMap)
+mapUpdate(Key, Value, [(Key, _) | Rest], [(Key, Value) | Rest]) :- !.
+mapUpdate(Key, Value, [H | Rest], [H | NewRest]) :-
+    mapUpdate(Key, Value, Rest, NewRest).
 
-% mapGet(+Key, +VarMap, -Value)
+% mapGet(+Key, +Map, -Value)
 mapGet(Key, Map, Value) :-
     member((Key, Value), Map), !.
 
@@ -167,9 +165,9 @@ initList(N, Value, [Value | Rest]) :-
     N1 is N - 1,
     initList(N1, Value, Rest).
 
-% listInsertAt(+Value, +Position, +List, -NewList)
-listInsertAt(Value, 0, [_ | Rest] ,[Value | Rest]) :- !.
-listInsertAt(Value, Position, [Start | Rest], [Start | NewRest]) :-
+% listUpdate(+Value, +Position, +List, -NewList)
+listUpdate(Value, 0, [_ | Rest] ,[Value | Rest]) :- !.
+listUpdate(Value, Position, [Start | Rest], [Start | NewRest]) :-
     Position > 0,
     NewPosition is Position - 1,
-    listInsertAt(Value, NewPosition, Rest, NewRest).
+    listUpdate(Value, NewPosition, Rest, NewRest).
