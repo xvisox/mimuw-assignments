@@ -1,5 +1,16 @@
 % Hubert Michalski hm438596
 
+% FIXME: REMOVE THIS
+:- module(verify, [
+    initMap/3,
+    mapUpsert/4,
+    mapGet/3,
+    initList/3,
+    listInsertAt/4,
+    initState/3,
+    evalExpr/4
+]).
+
 :- ensure_loaded(library(lists)).
 :- op(700, xfx, '<>').
 
@@ -15,11 +26,12 @@
 
 % ==== Entry point ====
 verify :-
-    current_prolog_flag(argv, [N, FilePath]),
+    current_prolog_flag(argv, [StrN, FilePath]),
+    atom_number(StrN, N),
     verify(N, FilePath).
 
 verify :-
-    format('Usage: verify <N> <file>~n').
+    format('Error: niepoprawne argumenty~n').
 
 % ==== Program verification ====
 % verify(+N, +FilePath)
@@ -95,30 +107,35 @@ incrementIP(PrId, IPs, NewIPs) :-
 
 % ==== Expression evaluation ====
 % evalExpr(+Expr, +State, +PrId, -Value)
-evalExpr(pid, _, PrId, PrId).
+evalExpr(pid, _, PrId, PrId) :- !.
 
-evalExpr(Expr, State, _, Value) :-
-    evalExpr(Expr, State, Value).
-
-% evalExpr(+Expr, +State, -Value)
-evalExpr(Num, _, Value) :-
+evalExpr(Num, _, _, Value) :-
     integer(Num),
-    Value is Num.
+    Value is Num, !.
 
-evalExpr(VarId, state(VarMap, _, _), Value) :-
+evalExpr(VarId, state(VarMap, _, _), _, Value) :-
     atom(VarId),
-    mapGet(VarId, VarMap, Value).
+    mapGet(VarId, VarMap, Value), !.
 
-evalExpr(array(ArrId, IndexExpr), state(VarMap, ArrMap, IPs), Value) :-
-    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), Index),
+evalExpr(array(ArrId, IndexExpr), State, PrId, Value) :-
+    evalExpr(IndexExpr, State, PrId, Index),
+    State = state(_, ArrMap, _),
     mapGet(ArrId, ArrMap, Array),
-    nth0(Index, Array, Value).
+    nth0(Index, Array, Value), !.
 
-% evalBExpr(+BExpr, +State)
-evalBExpr(BExpr, State) :-
+evalExpr(Expr, State, PrId, Value) :-
+    Expr =.. [Op, Expr1, Expr2],
+    member(Op, [+, -, *, /]),
+    evalExpr(Expr1, State, PrId, Value1),
+    evalExpr(Expr2, State, PrId, Value2),
+    Eval =.. [Op, Value1, Value2],
+    Value is Eval, !.
+
+% evalBExpr(+BExpr, +State, +PrId)
+evalBExpr(BExpr, State, PrId) :-
     BExpr =.. [Op, Expr1, Expr2],
-    evalExpr(Expr1, State, Value1),
-    evalExpr(Expr2, State, Value2),
+    evalExpr(Expr1, State, PrId, Value1),
+    evalExpr(Expr2, State, PrId, Value2),
     call(Op, Value1, Value2).
 
 % ==== Utility functions ====
@@ -137,17 +154,17 @@ mapUpsert(Key, Value, Map, NewMap) :-
 
 % mapGet(+Key, +VarMap, -Value)
 mapGet(Key, Map, Value) :-
-    member((Key, Value), Map).
+    member((Key, Value), Map), !.
 
 % initList(+N, +Value, -List)
-initList(0, _, []).
+initList(0, _, []) :- !.
 initList(N, Value, [Value | Rest]) :-
     N > 0,
     N1 is N - 1,
     initList(N1, Value, Rest).
 
 % listInsertAt(+Value, +Position, +List, -NewList)
-listInsertAt(Value, 0, List, [Value | List]).
+listInsertAt(Value, 0, [_ | Rest] ,[Value | Rest]) :- !.
 listInsertAt(Value, Position, [Start | Rest], [Start | NewRest]) :-
     Position > 0,
     NewPosition is Position - 1,
