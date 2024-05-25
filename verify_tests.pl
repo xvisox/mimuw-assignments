@@ -227,4 +227,66 @@ test(evalExpr_pid_nested) :-
     evalExpr(array(arr, pid), state(VarMap, ArrMap, IPs), 2, Value),
     assertion(Value == 2).
 
+% New state used in tests
+test_state(VarMap, ArrMap, IPs) :-
+    VarMap = [(a, 10), (b, 20), (c, 30)],
+    ArrMap = [(arr, [0, 1, 2, 3, 4]), (arr2, [10, 20, 30])],
+    IPs = [1, 2, 3].
+
+% Test evalStmt/4
+test(evalStmt_assign_variable) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(assign(a, 42), state(VarMap, ArrMap, IPs), 1, state(NewVarMap, ArrMap, NewIPs)),
+    assertion(NewVarMap == [(a, 42), (b, 20), (c, 30)]),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_assign_array) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(assign(array(arr, 2), 42), state(VarMap, ArrMap, IPs), 1, state(VarMap, NewArrMap, NewIPs)),
+    assertion(NewArrMap == [(arr, [0, 1, 42, 3, 4]), (arr2, [10, 20, 30])]),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_sekcja) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(sekcja, state(VarMap, ArrMap, IPs), 1, state(VarMap, ArrMap, NewIPs)),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_goto) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(goto(5), state(VarMap, ArrMap, IPs), 1, state(VarMap, ArrMap, NewIPs)),
+    assertion(NewIPs == [1, 5, 3]).
+
+test(evalStmt_condGoto_true) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(condGoto(b > a, 5), state(VarMap, ArrMap, IPs), 1, state(VarMap, ArrMap, NewIPs)),
+    assertion(NewIPs == [1, 5, 3]).
+
+test(evalStmt_condGoto_false) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(condGoto(b < a, 5), state(VarMap, ArrMap, IPs), 1, state(VarMap, ArrMap, NewIPs)),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(incrementIP) :-
+    test_state(_, _, IPs),
+    incrementIP(1, IPs, NewIPs),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_assign_nested_array) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(assign(array(arr2, array(arr, 1)), 42), state(VarMap, ArrMap, IPs), 1, state(VarMap, NewArrMap, NewIPs)),
+    assertion(NewArrMap == [(arr2, [10, 42, 30]), (arr, [0, 1, 2, 3, 4])]),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_assign_variable_pid) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(assign(a, pid), state(VarMap, ArrMap, IPs), 1, state(NewVarMap, ArrMap, NewIPs)),
+    assertion(NewVarMap == [(a, 1), (b, 20), (c, 30)]),
+    assertion(NewIPs == [1, 3, 3]).
+
+test(evalStmt_assign_array_pid) :-
+    test_state(VarMap, ArrMap, IPs),
+    evalStmt(assign(array(arr, pid), 42), state(VarMap, ArrMap, IPs), 1, state(VarMap, NewArrMap, NewIPs)),
+    assertion(NewArrMap == [(arr, [0, 42, 2, 3, 4]), (arr2, [10, 20, 30])]),
+    assertion(NewIPs == [1, 3, 3]).
+
 :- end_tests(verify).

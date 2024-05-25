@@ -1,6 +1,7 @@
 % Hubert Michalski hm438596
 
 % FIXME: REMOVE THIS
+% FIXME: REMOVE RED CUTS
 :- module(verify, [
     initMap/3,
     mapUpsert/4,
@@ -8,7 +9,9 @@
     initList/3,
     listInsertAt/4,
     initState/3,
-    evalExpr/4
+    evalExpr/4,
+    evalStmt/4,
+    incrementIP/3
 ]).
 
 :- ensure_loaded(library(lists)).
@@ -61,43 +64,43 @@ initState(program(VarIdents, ArrIdents, _), N, state(VarMap, ArrMap, IPs)) :-
     initMap(VarIdents, 0, VarMap),
     initMap(ArrIdents, InitArray, ArrMap).
 
-% TODO: dfs(+Program, +State)
-dfs(_, _).
-
 % step(+Program, +State, +PrId, -NewState)
 step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     nth0(PrId, IPs, IP),
     nth1(IP, Statements, Statement),
     evalStmt(Statement, state(VarMap, ArrMap, IPs), PrId, NewState).
 
+% TODO: dfs(+Program, +State)
+dfs(_, _).
+
 % ==== Statement evaluation ====
 evalStmt(assign(VarId, Expr), state(VarMap, ArrMap, IPs), PrId, state(NewVarMap, ArrMap, NewIPs)) :-
     atom(VarId),
-    evalExpr(Expr, state(VarMap, ArrMap, IPs), Value),
+    evalExpr(Expr, state(VarMap, ArrMap, IPs), PrId, Value),
     mapUpsert(VarId, Value, VarMap, NewVarMap),
-    incrementIP(PrId, IPs, NewIPs).
+    incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(assign(array(ArrId, IndexExpr), Expr), state(VarMap, ArrMap, IPs), PrId, state(VarMap, NewArrMap, NewIPs)) :-
-    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), Index),
-    evalExpr(Expr, state(VarMap, ArrMap, IPs), Value),
+    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), PrId, Index),
+    evalExpr(Expr, state(VarMap, ArrMap, IPs), PrId, Value),
     mapGet(ArrId, ArrMap, Array),
     listInsertAt(Value, Index, Array, NewArray),
     mapUpsert(ArrId, NewArray, ArrMap, NewArrMap),
-    incrementIP(PrId, IPs, NewIPs).
+    incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(sekcja, state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
-    incrementIP(PrId, IPs, NewIPs).
+    incrementIP(PrId, IPs, NewIPs), !.
 
 evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
-    listInsertAt(NewIP, PrId, IPs, NewIPs).
+    listInsertAt(NewIP, PrId, IPs, NewIPs), !.
 
 evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
-    ( evalBExpr(BExpr, state(VarMap, ArrMap, IPs)) ->
+    ( evalBExpr(BExpr, state(VarMap, ArrMap, IPs), PrId) ->
         evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, NewState)
     ;
         incrementIP(PrId, IPs, NewIPs),
         NewState = state(VarMap, ArrMap, NewIPs)
-    ).
+    ), !.
 
 % incrementIP(+PrId, +IPs, -NewIPs)
 incrementIP(PrId, IPs, NewIPs) :-
