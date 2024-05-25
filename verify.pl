@@ -28,16 +28,7 @@
 % ArrMap - list of pairs (ArrId, [Value1, Value2, ...])
 % IPs - list of instruction pointers
 
-% ==== Entry point ====
-verify :-
-    current_prolog_flag(argv, [StrN, FilePath]),
-    atom_number(StrN, N),
-    verify(N, FilePath).
-
-verify :-
-    format('Error: niepoprawne argumenty~n').
-
-% ==== Program verification ====
+% ==== Program verification (mandatory functions) ====
 % verify(+N, +FilePath)
 verify(N, FilePath) :-
     integer(N),
@@ -50,7 +41,8 @@ verify(N, FilePath) :-
         seen,
         Program = program(VarIdents, ArrIdents, Statements),
         initState(Program, N, InitState),
-        dfs(Program, InitState)
+        solveProgram(Program, InitState, N, Result),
+        printResult(Result)
     ;
         format('Error: brak pliku o nazwie - ~w~n', FilePath)
     ).
@@ -71,8 +63,82 @@ step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     nth1(IP, Statements, Statement),
     evalStmt(Statement, state(VarMap, ArrMap, IPs), PrId, NewState).
 
-% TODO: dfs(+Program, +State)
-dfs(_, _).
+% ==== Program verification (utility functions) ====
+% solveProgram(+Program, +InitState, +N, -Result)
+solveProgram(Program, InitState, N, Result) :-
+    getProcessesInCriticalSection(Program, InitState, ProcessesInSection),
+    length(ProcessesInSection, ProcessesInSectionLength),
+    ( ProcessesInSectionLength > 1 ->
+        Result = bad([], ProcessesInSection)
+    ;
+        traverse(Program, InitState, 0, N, [InitState], [], Result)
+    ).
+
+% traverse(+Program, +State, +PrId, +N, +Visited, +Path, -Result)
+traverse(_, _, PrId, N, _, _, good) :- PrId >= N, !.
+traverse(Program, State, PrId, N, Visited, Path, Result) :-
+    ( step(Program, State, PrId, NewState) ->
+        ( member(NewState, Visited) ->
+            NextPrId is PrId + 1,
+            traverse(Program, State, NextPrId, N, Visited, Path, Result)
+        ;
+            getIPForProcess(PrId, State, IP),
+            append(Path, [PrId-IP], NewPath),
+            getProcessesInCriticalSection(Program, NewState, ProcessesInSection),
+            length(ProcessesInSection, ProcessesInSectionLength),
+            ( ProcessesInSectionLength > 1 ->
+                Result = bad(NewPath, ProcessesInSection)
+            ;
+                traverse(Program, NewState, 0, N, [NewState | Visited], NewPath, Result)
+            )
+        )
+    ;
+        NextPrId is PrId + 1,
+        traverse(Program, State, NextPrId, N, Visited, Path, Result)
+    ).
+
+% getProcessesInCriticalSection(+Program, +State, -ProcessesInSection)
+getProcessesInCriticalSection(program(_, _, Statements), state(_, _, IPs), ProcessesInSection) :-
+    getProcessesInCriticalSection(IPs, Statements, 0, ProcessesInSection).
+
+% getProcessesInCriticalSection(+IPs, +Statements, +Index, -ProcessesInSection)
+getProcessesInCriticalSection([], _, _, []).
+getProcessesInCriticalSection([IP | IPs], Statements, Index, [Index | ProcessesInSection]) :-
+    nth1(IP, Statements, sekcja), !,
+    NextIndex is Index + 1,
+    getProcessesInCriticalSection(IPs, Statements, NextIndex, ProcessesInSection).
+getProcessesInCriticalSection([_ | IPs], Statements, Index, ProcessesInSection) :-
+    NextIndex is Index + 1,
+    getProcessesInCriticalSection(IPs, Statements, NextIndex, ProcessesInSection).
+
+% getIPForProcess(+PrId, +State, -IP)
+getIPForProcess(PrId, state(_, _, IPs), IP) :-
+    nth0(PrId, IPs, IP).
+
+% printResult(+Result)
+printResult(Result) :-
+    ( Result = good ->
+        format('Program jest poprawny (bezpieczny).~n')
+    ;
+        Result = bad(Path, ProcessesInSection),
+        format('Program jest niepoprawny.~nNiepoprawny przeplot:~n'),
+        printPath(Path),
+        format('Procesy w sekcji:'),
+        printProcesses(ProcessesInSection)
+    ).
+
+% printPath(+Path)
+printPath([]).
+printPath([PrId-IP | Rest]) :-
+    format('    Proces ~d: ~d~n', [PrId, IP]),
+    printPath(Rest).
+
+% printProcesses(+PrIds)
+printProcesses([PrId]) :-
+   format(' ~d.~n', PrId).
+printProcesses([PrId | PrIds]) :-
+   format(' ~d,', PrId),
+   printProcesses(PrIds).
 
 % ==== Statement evaluation ====
 % evalStmt(+Stmt, +State, +PrId, -NewState)
