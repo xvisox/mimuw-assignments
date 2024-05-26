@@ -12,7 +12,8 @@
     evalExpr/4,
     evalStmt/4,
     incrementIP/3,
-    step/4
+    step/4,
+    verify/2
 ]).
 
 :- ensure_loaded(library(lists)).
@@ -40,7 +41,7 @@ verify(N, FilePath) :-
         seen,
         Program = program(VarIdents, ArrIdents, Statements),
         initState(Program, N, InitState),
-        solveProgram(Program, InitState, N, Result),
+        checkState(Program, InitState, N, [], [], Result, _),
         printResult(Result)
     ;
         format('Error: brak pliku o nazwie - ~w~n', FilePath)
@@ -64,37 +65,45 @@ step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     evalStmt(Statement, state(VarMap, ArrMap, IPs), PrId, NewState).
 
 % ==== Program verification (utility functions) ====
-% solveProgram(+Program, +InitState, +N, -Result)
-solveProgram(Program, InitState, N, Result) :-
-    getProcessesInCriticalSection(Program, InitState, ProcessesInSection),
+checkState(Program, State, N, Visited, Path, Result, NewVisited) :-
+    getProcessesInCriticalSection(Program, State, ProcessesInSection),
     length(ProcessesInSection, ProcessesInSectionLength),
     ( ProcessesInSectionLength > 1 ->
-        Result = bad([], ProcessesInSection)
+        Result = bad(Path, ProcessesInSection),
+        NewVisited = Visited
     ;
-        traverse(Program, InitState, 0, N, [InitState], [], Result)
+        generateNeighbours(Program, State, 0, N, Visited, [], [], NewStates, NewPaths),
+        runCheckStateOnNeighbours(Program, NewStates, NewPaths, N, [State | Visited], Path, Result, NewVisited)
     ).
 
-% traverse(+Program, +State, +PrId, +N, +Visited, +Path, -Result)
-traverse(_, _, PrId, N, _, _, good) :- PrId >= N, !.
-traverse(Program, State, PrId, N, Visited, Path, Result) :-
-    ( step(Program, State, PrId, NewState) ->
-        ( member(NewState, Visited) ->
-            NextPrId is PrId + 1,
-            traverse(Program, State, NextPrId, N, Visited, Path, Result)
-        ;
-            getIPForProcess(PrId, State, IP),
-            append(Path, [PrId-IP], NewPath),
-            getProcessesInCriticalSection(Program, NewState, ProcessesInSection),
-            length(ProcessesInSection, ProcessesInSectionLength),
-            ( ProcessesInSectionLength > 1 ->
-                Result = bad(NewPath, ProcessesInSection)
-            ;
-                traverse(Program, NewState, 0, N, [NewState | Visited], NewPath, Result)
-            )
-        )
+% generateNeighbours(+Program, +State, +PrId, +N, +Visited, +AccStates, +AccPaths, -NewStates, -NewPaths)
+generateNeighbours(_, _, PrId, N, _, States, Paths, States, Paths) :- PrId >= N.
+generateNeighbours(Program, State, PrId, N, Visited, AccStates, AccPaths, NewStates, NewPaths) :-
+    ( step(Program, State, PrId, NewState), \+ member(NewState, Visited) ->
+        getIPForProcess(PrId, State, IP),
+        append(AccStates, [NewState], UpdatedStates),
+        append(AccPaths, [[PrId-IP]], UpdatedPaths)
     ;
-        NextPrId is PrId + 1,
-        traverse(Program, State, NextPrId, N, Visited, Path, Result)
+        UpdatedStates = AccStates,
+        UpdatedPaths = AccPaths
+    ),
+    NextPrId is PrId + 1,
+    generateNeighbours(Program, State, NextPrId, N, Visited, UpdatedStates, UpdatedPaths, NewStates, NewPaths).
+
+% runCheckStateOnNeighbours(+Program, +States, +Paths, +N, +Visited, +CurrentPath, -Result, -NewVisited)
+runCheckStateOnNeighbours(_, [], [], _, Visited, _, good, Visited).
+runCheckStateOnNeighbours(Program, [State | RestStates], [PathStep | RestPaths], N, Visited, CurrentPath, Result, NewVisited) :-
+    append(CurrentPath, PathStep, NewPath),
+    ( member(State, Visited) ->
+        runCheckStateOnNeighbours(Program, RestStates, RestPaths, N, Visited, CurrentPath, Result, NewVisited)
+    ;
+        checkState(Program, State, N, Visited, NewPath, CheckStateResult, IntermediateVisited),
+        ( CheckStateResult = bad(_, _) ->
+            Result = CheckStateResult,
+            NewVisited = IntermediateVisited
+        ;
+            runCheckStateOnNeighbours(Program, RestStates, RestPaths, N, IntermediateVisited, CurrentPath, Result, NewVisited)
+        )
     ).
 
 % getProcessesInCriticalSection(+Program, +State, -ProcessesInSection)
