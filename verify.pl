@@ -1,21 +1,5 @@
 % Hubert Michalski hm438596
 
-% FIXME: REMOVE THIS
-% FIXME: REMOVE RED CUTS
-:- module(verify, [
-    initMap/3,
-    mapUpdate/4,
-    mapGet/3,
-    initList/3,
-    listUpdate/4,
-    initState/3,
-    evalExpr/4,
-    evalStmt/4,
-    incrementIP/3,
-    step/4,
-    verify/2
-]).
-
 :- ensure_loaded(library(lists)).
 :- op(700, xfx, '<>').
 
@@ -65,6 +49,7 @@ step(program(_, _, Statements), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     evalStmt(Statement, state(VarMap, ArrMap, IPs), PrId, NewState).
 
 % ==== Program verification (utility functions) ====
+% checkState(+Program, +State, +N, +Visited, +Path, -Result, -NewVisited)
 checkState(Program, State, N, Visited, Path, Result, NewVisited) :-
     getProcessesInCriticalSection(Program, State, ProcessesInSection),
     length(ProcessesInSection, ProcessesInSectionLength),
@@ -93,10 +78,10 @@ generateNeighbours(Program, State, PrId, N, Visited, AccStates, AccPaths, NewSta
 % runCheckStateOnNeighbours(+Program, +States, +Paths, +N, +Visited, +CurrentPath, -Result, -NewVisited)
 runCheckStateOnNeighbours(_, [], [], _, Visited, _, good, Visited).
 runCheckStateOnNeighbours(Program, [State | RestStates], [PathStep | RestPaths], N, Visited, CurrentPath, Result, NewVisited) :-
-    append(CurrentPath, PathStep, NewPath),
     ( member(State, Visited) ->
         runCheckStateOnNeighbours(Program, RestStates, RestPaths, N, Visited, CurrentPath, Result, NewVisited)
     ;
+        append(CurrentPath, PathStep, NewPath),
         checkState(Program, State, N, Visited, NewPath, CheckStateResult, IntermediateVisited),
         ( CheckStateResult = bad(_, _) ->
             Result = CheckStateResult,
