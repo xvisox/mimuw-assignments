@@ -31,8 +31,7 @@
 % ==== Program verification (mandatory functions) ====
 % verify(+N, +FilePath)
 verify(N, FilePath) :-
-    integer(N),
-    N >= 1,
+    verifyN(N),
     set_prolog_flag(fileerrors, off),
     ( see(FilePath) ->
         read(variables(VarIdents)),
@@ -48,6 +47,7 @@ verify(N, FilePath) :-
     ).
 
 verify(N, _) :-
+    \+ verifyN(N),
     format('Error: parametr ~w powinien byc liczba > 0~n', N).
 
 % initState(+Program, +N, -InitState)
@@ -103,13 +103,14 @@ getProcessesInCriticalSection(program(_, _, Statements), state(_, _, IPs), Proce
 
 % getProcessesInCriticalSection(+IPs, +Statements, +Index, -ProcessesInSection)
 getProcessesInCriticalSection([], _, _, []).
-getProcessesInCriticalSection([IP | IPs], Statements, Index, [Index | ProcessesInSection]) :-
-    nth1(IP, Statements, sekcja), !,
+getProcessesInCriticalSection([IP | IPs], Statements, Index, ProcessesInSection) :-
     NextIndex is Index + 1,
-    getProcessesInCriticalSection(IPs, Statements, NextIndex, ProcessesInSection).
-getProcessesInCriticalSection([_ | IPs], Statements, Index, ProcessesInSection) :-
-    NextIndex is Index + 1,
-    getProcessesInCriticalSection(IPs, Statements, NextIndex, ProcessesInSection).
+    ( nth1(IP, Statements, sekcja) ->
+        ProcessesInSection = [Index | RestProcessesInSection]
+    ;
+        ProcessesInSection = RestProcessesInSection
+    ),
+    getProcessesInCriticalSection(IPs, Statements, NextIndex, RestProcessesInSection).
 
 % getIPForProcess(+PrId, +State, -IP)
 getIPForProcess(PrId, state(_, _, IPs), IP) :-
@@ -140,13 +141,18 @@ printProcesses([PrId | PrIds]) :-
    format(' ~d,', PrId),
    printProcesses(PrIds).
 
+% verifyN(+N)
+verifyN(N) :-
+    integer(N),
+    N >= 1.
+
 % ==== Statement evaluation ====
 % evalStmt(+Stmt, +State, +PrId, -NewState)
 evalStmt(assign(VarId, Expr), state(VarMap, ArrMap, IPs), PrId, state(NewVarMap, ArrMap, NewIPs)) :-
     atom(VarId),
     evalExpr(Expr, state(VarMap, ArrMap, IPs), PrId, Value),
     mapUpdate(VarId, Value, VarMap, NewVarMap),
-    incrementIP(PrId, IPs, NewIPs), !.
+    incrementIP(PrId, IPs, NewIPs).
 
 evalStmt(assign(array(ArrId, IndexExpr), Expr), state(VarMap, ArrMap, IPs), PrId, state(VarMap, NewArrMap, NewIPs)) :-
     evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), PrId, Index),
@@ -154,13 +160,13 @@ evalStmt(assign(array(ArrId, IndexExpr), Expr), state(VarMap, ArrMap, IPs), PrId
     mapGet(ArrId, ArrMap, Array),
     listUpdate(Value, Index, Array, NewArray),
     mapUpdate(ArrId, NewArray, ArrMap, NewArrMap),
-    incrementIP(PrId, IPs, NewIPs), !.
+    incrementIP(PrId, IPs, NewIPs).
 
 evalStmt(sekcja, state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
-    incrementIP(PrId, IPs, NewIPs), !.
+    incrementIP(PrId, IPs, NewIPs).
 
 evalStmt(goto(NewIP), state(VarMap, ArrMap, IPs), PrId, state(VarMap, ArrMap, NewIPs)) :-
-    listUpdate(NewIP, PrId, IPs, NewIPs), !.
+    listUpdate(NewIP, PrId, IPs, NewIPs).
 
 evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     ( evalBExpr(BExpr, state(VarMap, ArrMap, IPs), PrId) ->
@@ -168,7 +174,7 @@ evalStmt(condGoto(BExpr, NewIP), state(VarMap, ArrMap, IPs), PrId, NewState) :-
     ;
         incrementIP(PrId, IPs, NewIPs),
         NewState = state(VarMap, ArrMap, NewIPs)
-    ), !.
+    ).
 
 % incrementIP(+PrId, +IPs, -NewIPs)
 incrementIP(PrId, IPs, NewIPs) :-
@@ -182,17 +188,17 @@ evalExpr(pid, _, PrId, PrId) :- !.
 
 evalExpr(Num, _, _, Value) :-
     integer(Num),
-    Value is Num, !.
+    Value is Num.
 
 evalExpr(VarId, state(VarMap, _, _), _, Value) :-
     atom(VarId),
-    mapGet(VarId, VarMap, Value), !.
+    mapGet(VarId, VarMap, Value).
 
 evalExpr(array(ArrId, IndexExpr), State, PrId, Value) :-
     evalExpr(IndexExpr, State, PrId, Index),
     State = state(_, ArrMap, _),
     mapGet(ArrId, ArrMap, Array),
-    nth0(Index, Array, Value), !.
+    nth0(Index, Array, Value).
 
 evalExpr(Expr, State, PrId, Value) :-
     Expr =.. [Op, Expr1, Expr2],
@@ -200,7 +206,7 @@ evalExpr(Expr, State, PrId, Value) :-
     evalExpr(Expr1, State, PrId, Value1),
     evalExpr(Expr2, State, PrId, Value2),
     Eval =.. [Op, Value1, Value2],
-    Value is Eval, !.
+    Value is Eval.
 
 % evalBExpr(+BExpr, +State, +PrId)
 evalBExpr(BExpr, State, PrId) :-
@@ -216,23 +222,23 @@ initMap([Ident | RestIdents], Value, [(Ident, Value) | RestMap]) :-
     initMap(RestIdents, Value, RestMap).
 
 % mapUpdate(+Key, +Value, +Map, -NewMap)
-mapUpdate(Key, Value, [(Key, _) | Rest], [(Key, Value) | Rest]) :- !.
-mapUpdate(Key, Value, [H | Rest], [H | NewRest]) :-
+mapUpdate(Key, Value, [(Key, _) | Rest], [(Key, Value) | Rest]).
+mapUpdate(Key, Value, [Start | Rest], [Start | NewRest]) :-
     mapUpdate(Key, Value, Rest, NewRest).
 
 % mapGet(+Key, +Map, -Value)
 mapGet(Key, Map, Value) :-
-    member((Key, Value), Map), !.
+    member((Key, Value), Map).
 
 % initList(+N, +Value, -List)
-initList(0, _, []) :- !.
+initList(0, _, []).
 initList(N, Value, [Value | Rest]) :-
     N > 0,
     N1 is N - 1,
     initList(N1, Value, Rest).
 
 % listUpdate(+Value, +Position, +List, -NewList)
-listUpdate(Value, 0, [_ | Rest] ,[Value | Rest]) :- !.
+listUpdate(Value, 0, [_ | Rest] ,[Value | Rest]).
 listUpdate(Value, Position, [Start | Rest], [Start | NewRest]) :-
     Position > 0,
     NewPosition is Position - 1,
