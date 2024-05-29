@@ -29,12 +29,12 @@ verify(N, FilePath) :-
         checkState(Program, InitState, N, [], [], Result, _),
         printResult(Result)
     ;
-        format('Error: brak pliku o nazwie - ~w~n', FilePath)
+        format('Error: brak pliku o nazwie - ~w~n', [FilePath])
     ).
 
 verify(N, _) :-
     \+ verifyN(N),
-    format('Error: parametr ~w powinien byc liczba > 0~n', N).
+    format('Error: parametr ~w powinien byc liczba > 0~n', [N]).
 
 % initState(+Program, +N, -InitState)
 initState(program(VarIdents, ArrIdents, _), N, state(VarMap, ArrMap, IPs)) :-
@@ -120,12 +120,12 @@ getIPForProcess(PrId, state(_, _, IPs), IP) :-
 % printResult(+Result)
 printResult(Result) :-
     ( Result = good ->
-        format('Program jest poprawny (bezpieczny).~n')
+        format('Program jest poprawny (bezpieczny).~n', [])
     ;
         Result = bad(Path, ProcessesInSection),
-        format('Program jest niepoprawny.~nNiepoprawny przeplot:~n'),
+        format('Program jest niepoprawny.~nNiepoprawny przeplot:~n', []),
         printPath(Path),
-        format('Procesy w sekcji:'),
+        format('Procesy w sekcji:', []),
         printProcesses(ProcessesInSection)
     ).
 
@@ -137,9 +137,9 @@ printPath([PrId-IP | Rest]) :-
 
 % printProcesses(+PrIds)
 printProcesses([PrId]) :-
-   format(' ~d.~n', PrId).
+   format(' ~d.~n', [PrId]).
 printProcesses([PrId | PrIds]) :-
-   format(' ~d,', PrId),
+   format(' ~d,', [PrId]),
    printProcesses(PrIds).
 
 % verifyN(+N)
