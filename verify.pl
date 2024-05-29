@@ -195,9 +195,8 @@ evalExpr(VarId, state(VarMap, _, _), _, Value) :-
     atom(VarId),
     mapGet(VarId, VarMap, Value).
 
-evalExpr(array(ArrId, IndexExpr), State, PrId, Value) :-
-    evalExpr(IndexExpr, State, PrId, Index),
-    State = state(_, ArrMap, _),
+evalExpr(array(ArrId, IndexExpr), state(VarMap, ArrMap, IPs), PrId, Value) :-
+    evalExpr(IndexExpr, state(VarMap, ArrMap, IPs), PrId, Index),
     mapGet(ArrId, ArrMap, Array),
     nth0(Index, Array, Value).
 
